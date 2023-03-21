@@ -23,21 +23,33 @@ impl CPU {
     pub fn adc_imm(&mut self, imm: u8) -> u8 {
         let sign_before: u8 = self.a & 0x80;
 
-        let int: u16 = (self.a as u16) + (imm as u16);
-        self.a = (int as u8) & u8::MAX;
+        let intermediate: u16 = (self.a as u16) + (imm as u16);
+        self.a = intermediate as u8;
 
         let sign_after: u8 = self.a & 0x80;
 
-        self.c = int > (u8::MAX as u16);
+        self.c = intermediate > (u8::MAX as u16);
         self.z = self.a == 0_u8;
         self.n = (self.a & 0b_1000_0000_u8) > 0;
         self.v = sign_before != sign_after;
 
-        return 2; //Always takes two cycles
+        return 2;
     }
 
-    pub fn adc_zp(&self) {
+    pub fn adc_zp(&mut self, addr: u8, mem: &[u8]) -> u8 {
+        let sign_before: u8 = self.a & 0x80;
 
+        let intermediate: u16 = (self.a as u16) + (mem[addr as usize] as u16);
+        self.a = intermediate as u8;
+
+        let sign_after: u8 = self.a & 0x80;
+
+        self.c = intermediate > (u8::MAX as u16);
+        self.z = self.a == 0_u8;
+        self.n = (self.a & 0b_1000_0000_u8) > 0;
+        self.v = sign_before != sign_after;
+
+        return 3;
     }
 
     pub fn adc_zpx(&self) {
@@ -66,8 +78,7 @@ impl CPU {
 }
 
 #[cfg(test)]
-mod tests {
-    // Note this useful idiom: importing names from outer (for mod tests) scope.
+mod adc_imm_tests {
     use super::*;
 
     #[test]
@@ -142,5 +153,90 @@ mod tests {
         let mut cpu = CPU::new();
         let cycles: u8 = cpu.adc_imm(0b_0000_0000_u8);
         assert_eq!(2, cycles);
+    }
+}
+
+mod adc_zp_tests {
+    use super::*;
+
+    #[test]
+    fn test_adc_zp_number_of_cycles() {
+        let mut cpu = CPU::new();
+
+        let cycles: u8 = cpu.adc_zp(0x00_u8, &[0x00u8]);
+        assert_eq!(3, cycles);
+    }
+
+    #[test]
+    fn test_adc_zp() {
+        let mut cpu = CPU::new();
+        cpu.adc_zp(0x00_u8, &[0x81_u8]);
+
+        assert_eq!(0x81_u8, cpu.a);
+    }
+
+    #[test]
+    fn test_adc_zp_carry_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.adc_zp(0x00_u8, &[0x80_u8]);
+
+        assert_eq!(false, cpu.c);
+
+        cpu.adc_zp(0x00_u8, &[0x81_u8]);
+
+        assert_eq!(true, cpu.c);
+    }
+
+    #[test]
+    fn test_adc_zp_zero_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.adc_zp(0x00_u8, &[0x80_u8]);
+        cpu.adc_zp(0x00_u8, &[0x80_u8]);
+
+        assert_eq!(true, cpu.z);
+
+        cpu.adc_zp(0x00_u8, &[0x01_u8]);
+
+        assert_eq!(false, cpu.z);
+    }
+
+    #[test]
+    fn test_adc_zp_negative_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.adc_zp(0x00_u8, &[0b_1000_0000_u8]);
+
+        assert_eq!(true, cpu.n);
+
+        cpu.adc_zp(0x00_u8, &[0b_1000_0000_u8]);
+
+        assert_eq!(false, cpu.n);
+    }
+
+    #[test]
+    fn test_adc_zp_overflow_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.adc_zp(0x00_u8, &[0b_1000_0000_u8]);
+
+        assert_eq!(true, cpu.v);
+
+        cpu.adc_zp(0x00_u8, &[0b_0000_0001_u8]);
+
+        assert_eq!(false, cpu.v);
+
+        cpu.adc_zp(0x00_u8, &[0b_1000_0000_u8]);
+
+        assert_eq!(true, cpu.v);
+    }
+
+    #[test]
+    fn test_adc_zp_different_mem_address() {
+        let mut cpu = CPU::new();
+        cpu.adc_zp(0x01_u8, &[0b_1111_1111_u8, 0b_1010_1010_u8]);
+
+        assert_eq!(0b_1010_1010_u8, cpu.a);
     }
 }
