@@ -50,22 +50,11 @@ impl CPU {
     }
 
     pub fn adc_absx(&mut self, addr: u16, mem: &[u8]) -> u8 {
-        let page_before: u8 = (addr >> 8) as u8;
-
-        let new_addr = addr.wrapping_add(self.x as u16);
-
-        let page_after: u8 = (new_addr >> 8) as u8;
-        
-        if page_before == page_after { 
-            self.adc_abs(new_addr, mem) 
-        } 
-        else {
-             1 + self.adc_abs(new_addr, mem) 
-        }
+        self._adc_absxy_helper(addr, mem, self.x)
     }
 
-    pub fn adc_absy(&self) {
-
+    pub fn adc_absy(&mut self, addr: u16, mem: &[u8]) -> u8 {
+        self._adc_absxy_helper(addr, mem, self.y)
     }
 
     pub fn adc_indx(&self) {
@@ -74,6 +63,21 @@ impl CPU {
 
     pub fn adc_indy(&self) {
 
+    }
+
+    fn _adc_absxy_helper(&mut self, addr: u16, mem: &[u8], register: u8) -> u8 {
+        let page_before: u8 = (addr >> 8) as u8;
+
+        let new_addr = addr.wrapping_add(register as u16);
+
+        let page_after: u8 = (new_addr >> 8) as u8;
+        
+        if page_before == page_after { 
+            self.adc_abs(new_addr, mem)
+        } 
+        else {
+            1 + self.adc_abs(new_addr, mem)
+        }
     }
 }
 
@@ -440,7 +444,7 @@ mod adc_abs_tests {
 }
 
 #[cfg(test)]
-mod adc_absx_test {
+mod adc_absx_tests {
     use super::*;
 
     #[test]
@@ -552,4 +556,116 @@ mod adc_absx_test {
     }
 }
 
+#[cfg(test)]
+mod adc_absy_tests {
+    use super::*;
+
+    #[test]
+    fn test_adc_absy_no_page_boundary_crossed() {
+        let mut cpu = CPU::new();
+        let mem = [0; 0x10000];
+        cpu.y = 0xff_u8;
+
+        assert_eq!(4, cpu.adc_absy(0x0000_u16, &mem));
+    }
+
+    #[test]
+    fn test_adc_absy_page_boundary_crossed() {
+        let mut cpu = CPU::new();
+        let mem = [0; 0x10000];
+        cpu.y = 0xff_u8;
+
+        assert_eq!(5, cpu.adc_absy(0x0001_u16, &mem));
+    }
+
+    #[test]
+    fn test_adc_absy_page_boundary_crossed_at_end_of_memory() {
+        let mut cpu = CPU::new();
+        let mem = [0; 0x10000];
+        cpu.y = 0xff_u8;
+
+        assert_eq!(5, cpu.adc_absy(0xffff_u16, &mem));
+    }
+
+    #[test]
+    fn test_adc_absy_carry_flag() {
+        let mut cpu = CPU::new();
+        let mut mem = [0; 0x10000];
+        cpu.y = 0x01_u8;
+        mem[0x1] = 0x80;
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(false, cpu.c);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(true, cpu.c);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(false, cpu.c);
+    }
+
+    #[test]
+    fn test_adc_absy_zero_flag() {
+        let mut cpu = CPU::new();
+        let mut mem = [0; 0x10000];
+        cpu.y = 0x01_u8;
+        mem[0x1] = 0x80;
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(false, cpu.z);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(true, cpu.z);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(false, cpu.z);
+    }
+
+    #[test]
+    fn test_adc_absy_negative_flag() {
+        let mut cpu = CPU::new();
+        let mut mem = [0; 0x10000];
+        cpu.y = 0x01_u8;
+        mem[0x1] = 0x80;
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(true, cpu.n);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(false, cpu.n);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(true, cpu.n);
+    }
+
+    #[test]
+    fn test_adc_absy_overflow_flag() {
+        let mut cpu = CPU::new();
+        let mut mem = [0; 0x10000];
+        cpu.y = 0x01_u8;
+        mem[0x1] = 0x80;
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(true, cpu.v);
+
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(true, cpu.v);
+
+        mem[0x1] = 0x01;
+        cpu.adc_absy(0x0000_u16, &mem);
+
+        assert_eq!(false, cpu.v);
+    }
+}
 

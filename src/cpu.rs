@@ -5,6 +5,7 @@ pub struct CPU {
 
     a: u8,
     x: u8,
+    y: u8,
 
     c: bool,
     z: bool,
@@ -19,6 +20,7 @@ impl CPU {
 
             a: 0,
             x: 0,
+            y: 0,
 
             c: false,
             z: true,
@@ -40,6 +42,7 @@ mod tests {
         assert_eq!(0, cpu.pc);
         assert_eq!(0, cpu.a);
         assert_eq!(0, cpu.x);
+        assert_eq!(0, cpu.y);
 
         assert_eq!(false, cpu.c);
         assert_eq!(true, cpu.z);
