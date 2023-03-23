@@ -2,7 +2,10 @@ mod ops;
 
 pub struct CPU {
     pc: u32,
+
     a: u8,
+    x: u8,
+
     c: bool,
     z: bool,
     n: bool,
@@ -13,7 +16,10 @@ impl CPU {
     pub fn new() -> Self {
         Self {
             pc: 0,
+
             a: 0,
+            x: 0,
+
             c: false,
             z: true,
             n: false,
@@ -33,6 +39,7 @@ mod tests {
 
         assert_eq!(0, cpu.pc);
         assert_eq!(0, cpu.a);
+        assert_eq!(0, cpu.x);
 
         assert_eq!(false, cpu.c);
         assert_eq!(true, cpu.z);
