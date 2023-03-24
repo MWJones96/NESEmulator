@@ -5,9 +5,18 @@ impl CPU {
         self.a &= imm;
 
         self.z = self.a == 0;
-        self.n = (self.a & 0b1000_0000) > 0;
+        self.n = (self.a & 0x80) > 0;
         
         2
+    }
+
+    pub fn and_zp(&mut self, addr: u8, mem: &[u8]) -> u8 {
+        self.a &= mem[addr as usize];
+
+        self.z = self.a == 0;
+        self.n = (self.a & 0x80) > 0;
+        
+        3
     }
 }
 
@@ -73,5 +82,55 @@ mod and_imm_tests {
         cpu.and_imm(0xff);
 
         assert_eq!(true, cpu.n)
+    }
+}
+
+#[cfg(test)]
+mod and_zp_tests {
+    use super::*;
+
+    #[test]
+    fn test_and_zp_correct_cycles() {
+        let mut cpu = CPU::new();
+
+        assert_eq!(3, cpu.and_zp(0x0, &[0x00u8]));
+    }
+
+    #[test]
+    fn test_and_zp_correct_output() {
+        let mut cpu = CPU::new();
+
+        cpu.a = 0xff;
+        cpu.and_zp(0x0, &[0x7u8]);
+
+        assert_eq!(0x7, cpu.a);
+    }
+
+    #[test]
+    fn test_and_zp_zero_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.a = 0xff;
+        cpu.and_zp(0x0, &[0xff]);
+
+        assert_eq!(false, cpu.z);
+
+        cpu.and_zp(0x0, &[0x0]);
+
+        assert_eq!(true, cpu.z);
+    }
+
+    #[test]
+    fn test_and_zp_negative_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.a = 0xff;
+        cpu.and_zp(0x0, &[0xff]);
+
+        assert_eq!(true, cpu.n);
+
+        cpu.and_zp(0x0, &[0x0]);
+
+        assert_eq!(false, cpu.n);
     }
 }
