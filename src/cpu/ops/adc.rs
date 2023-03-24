@@ -24,12 +24,12 @@ impl CPU {
     pub fn adc_imm(&mut self, imm: u8) -> u8 {
         let sign_before: u8 = self.a & 0x80;
 
-        let (calc, carry) = self.a.overflowing_add(imm);
-        self.a = calc;
+        let calc: u16 = self.a as u16 + imm as u16 + (if self.c { 1 } else { 0 });
+        self.a = calc as u8;
 
         let sign_after: u8 = self.a & 0x80;
 
-        self.c = carry;
+        self.c = calc > (u8::MAX as u16);
         self.z = self.a == 0_u8;
         self.n = (self.a & 0b_1000_0000_u8) > 0;
         self.v = sign_before != sign_after;
@@ -124,6 +124,20 @@ mod adc_imm_tests {
 
         assert_eq!(0x00_u8, cpu.a);
         assert_eq!(true, cpu.c);
+    }
+
+    #[test]
+    fn test_adc_imm_with_carry_bit() {
+        let mut cpu = CPU::new();
+
+        cpu.adc_imm(0x80_u8);
+        cpu.adc_imm(0x80_u8);
+
+        //Carry should be 1
+        cpu.adc_imm(0x80_u8);
+
+        assert_eq!(0x81, cpu.a);
+        assert_eq!(false, cpu.c);
     }
 
     #[test]
@@ -404,7 +418,7 @@ mod adc_abs_tests {
 
         cpu.adc_abs(0x0, &mem);
 
-        assert_eq!(0x80_u8, cpu.a);
+        assert_eq!(0x81_u8, cpu.a);
         assert_eq!(false, cpu.c);
     }
 
