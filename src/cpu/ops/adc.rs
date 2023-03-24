@@ -22,17 +22,17 @@ use super::super::CPU;
 
 impl CPU {
     pub fn adc_imm(&mut self, imm: u8) -> u8 {
-        let sign_before: u8 = self.a & 0x80;
+        let a: u16 = self.a as u16;
+        let v: u16 = imm as u16;
 
-        let calc: u16 = self.a as u16 + imm as u16 + (if self.c { 1 } else { 0 });
-        self.a = calc as u8;
+        let s: u16 = a + v + self.c as u16;
+        
+        self.a = s as u8;
 
-        let sign_after: u8 = self.a & 0x80;
-
-        self.c = calc > (u8::MAX as u16);
+        self.c = s > (u8::MAX as u16);
         self.z = self.a == 0_u8;
         self.n = (self.a & 0b_1000_0000_u8) > 0;
-        self.v = sign_before != sign_after;
+        self.v = ((a ^ s) & (v ^ s) & 0x80) > 0;
 
         2
     }
@@ -124,19 +124,15 @@ mod adc_imm_tests {
 
         assert_eq!(0x00_u8, cpu.a);
         assert_eq!(true, cpu.c);
-    }
 
-    #[test]
-    fn test_adc_imm_with_carry_bit() {
-        let mut cpu = CPU::new();
-
-        cpu.adc_imm(0x80_u8);
-        cpu.adc_imm(0x80_u8);
-
-        //Carry should be 1
         cpu.adc_imm(0x80_u8);
 
         assert_eq!(0x81, cpu.a);
+        assert_eq!(false, cpu.c);
+
+        cpu.adc_imm(0x01_u8);
+
+        assert_eq!(0x82, cpu.a);
         assert_eq!(false, cpu.c);
     }
 
@@ -173,17 +169,30 @@ mod adc_imm_tests {
     #[test]
     fn test_adc_imm_with_overflow_flag() {
         let mut cpu = CPU::new();
-        cpu.adc_imm(0b_1000_0000_u8);
 
+        cpu.a = 0x7f; //+ve
+        cpu.adc_imm(0x1_u8); //+ve
+
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_imm(0b_0000_0001_u8);
+        cpu.a = 0x80; //-ve
+        cpu.adc_imm(0x80_u8); //-ve
 
+        assert_eq!(false, cpu.n);
+        assert_eq!(true, cpu.v);
+
+        cpu.a = 0x1; //+ve
+        cpu.adc_imm(0xf0_u8); //-ve
+
+        assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
-        cpu.adc_imm(0b_1000_0000_u8);
+        cpu.a = 0xff; //-ve
+        cpu.adc_imm(0x2_u8); //+ve
 
-        assert_eq!(true, cpu.v);
+        assert_eq!(false, cpu.n);
+        assert_eq!(false, cpu.v);
     }
 
     #[test]
@@ -258,17 +267,29 @@ mod adc_zp_tests {
     fn test_adc_zp_overflow_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc_zp(0x00_u8, &[0b_1000_0000_u8]);
+        cpu.a = 0x7f; //+ve
+        cpu.adc_zp(0x00_u8, &[0x1_u8]); //+ve
 
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_zp(0x00_u8, &[0b_0000_0001_u8]);
+        cpu.a = 0x80; //-ve
+        cpu.adc_zp(0x00_u8, &[0x80_u8]); //-ve
 
+        assert_eq!(false, cpu.n);
+        assert_eq!(true, cpu.v);
+
+        cpu.a = 0x1; //+ve
+        cpu.adc_zp(0x00_u8, &[0xf0_u8]); //-ve
+
+        assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
-        cpu.adc_zp(0x00_u8, &[0b_1000_0000_u8]);
+        cpu.a = 0xff; //-ve
+        cpu.adc_zp(0x00_u8, &[0x2_u8]); //+ve
 
-        assert_eq!(true, cpu.v);
+        assert_eq!(false, cpu.n);
+        assert_eq!(false, cpu.v);
     }
 
     #[test]
@@ -356,14 +377,30 @@ mod adc_zpx_tests {
     #[test]
     fn test_adc_zpx_with_overflow_flag() {
         let mut cpu = CPU::new();
+        cpu.x = 0x1;
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        cpu.a = 0x7f; //+ve
+        cpu.adc_zpx(0x00_u8, &[0x0, 0x1_u8]); //+ve
+
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        cpu.a = 0x80; //-ve
+        cpu.adc_zpx(0x00_u8, &[0x0, 0x80_u8]); //-ve
+
+        assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_zpx(0x00_u8, &[0x01_u8]);
+        cpu.a = 0x1; //+ve
+        cpu.adc_zpx(0x00_u8, &[0x0, 0xf0_u8]); //-ve
+
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.v);
+
+        cpu.a = 0xff; //-ve
+        cpu.adc_zpx(0x00_u8, &[0x0, 0x2_u8]); //+ve
+
+        assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
     }
 
@@ -460,19 +497,36 @@ mod adc_abs_tests {
     fn test_adc_abs_overflow_flag() {
         let mut cpu = CPU::new();
         let mut mem = [0; 0x10000];
-        mem[0x0] = 0x80_u8;
-        mem[0x1] = 0x01_u8;
+        cpu.a = 0x7f; //+ve
+        mem[0x0] = 0x1; //+ve
 
         cpu.adc_abs(0x0, &mem);
 
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
+
+        cpu.a = 0x80; //-ve
+        mem[0x0] = 0xff; //-ve
 
         cpu.adc_abs(0x0, &mem);
 
+        assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_abs(0x1, &mem);
+        cpu.a = 0x1; //+ve
+        mem[0x0] = 0xf0; //-ve
 
+        cpu.adc_abs(0x0, &mem);
+
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.v);
+
+        cpu.a = 0xff; //-ve
+        mem[0x0] = 0x2; //+ve
+
+        cpu.adc_abs(0x0, &mem);
+
+        assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
     }
 }
@@ -572,20 +626,37 @@ mod adc_absx_tests {
     fn test_adc_absx_overflow_flag() {
         let mut cpu = CPU::new();
         let mut mem = [0; 0x10000];
-        cpu.x = 0x01_u8;
-        mem[0x1] = 0x80;
 
-        cpu.adc_absx(0x0000_u16, &mem);
+        cpu.a = 0x81; //-ve
+        mem[0x0] = 0x81; //-ve
 
+        cpu.adc_absx(0x0, &mem);
+
+        assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_absx(0x0000_u16, &mem);
+        cpu.a = 0x7f; //+ve
+        mem[0x0] = 0x7f; //+ve
 
+        cpu.adc_absx(0x0, &mem);
+
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        mem[0x1] = 0x01;
-        cpu.adc_absx(0x0000_u16, &mem);
+        cpu.a = 0x1; //+ve
+        mem[0x0] = 0x80; //-ve
 
+        cpu.adc_absx(0x0, &mem);
+
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.v);
+
+        cpu.a = 0xf0; //-ve
+        mem[0x0] = 0x20; //+ve
+
+        cpu.adc_absx(0x0, &mem);
+
+        assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
     }
 }
@@ -685,20 +756,33 @@ mod adc_absy_tests {
     fn test_adc_absy_overflow_flag() {
         let mut cpu = CPU::new();
         let mut mem = [0; 0x10000];
-        cpu.y = 0x01_u8;
-        mem[0x1] = 0x80;
 
-        cpu.adc_absy(0x0000_u16, &mem);
+        cpu.a = 0x7f; //+ve
+        mem[0x0] = 0x7f; //+ve
+        cpu.adc_absy(0x0, &mem);
 
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_absy(0x0000_u16, &mem);
+        cpu.a = 0x81; //-ve
+        mem[0x0] = 0x81; //-ve
+        cpu.adc_absy(0x0, &mem);
 
+        assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
-        mem[0x1] = 0x01;
-        cpu.adc_absy(0x0000_u16, &mem);
+        cpu.a = 0x1; //+ve
+        mem[0x0] = 0xf0; //-ve
+        cpu.adc_absy(0x0, &mem);
 
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.v);
+
+        cpu.a = 0xff; //-ve
+        mem[0x0] = 0x2; //+ve
+        cpu.adc_absy(0x0, &mem);
+
+        assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
     }
 }
@@ -850,24 +934,37 @@ mod adc_indx_tests {
     fn test_adc_indx_overflow_flag() {
         let mut cpu = CPU::new();
         let mut mem = [0; 0x10000];
-        cpu.x = 0x1;
 
         mem[0x0] = 0x77;
         mem[0x1] = 0x88;
 
-        mem[0x8877] = 0x80;
+        cpu.a = 0x7f; //+ve
+        mem[0x8877] = 0x7f; //+ve
 
-        cpu.adc_indx(0xff, &mem);
+        cpu.adc_indx(0x00, &mem);
+
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_indx(0xff, &mem);
+        cpu.a = 0x81; //-ve
+        mem[0x8877] = 0x81; //-ve
+        cpu.adc_indx(0x00, &mem);
 
+        assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
-        mem[0x8877] = 0x01;
+        cpu.a = 0x1; //+ve
+        mem[0x8877] = 0xf0; //-ve
+        cpu.adc_indx(0x00, &mem);
 
-        cpu.adc_indx(0xff, &mem);
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.v);
 
+        cpu.a = 0xff; //-ve
+        mem[0x8877] = 0x2; //+ve
+        cpu.adc_indx(0x00, &mem);
+
+        assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
     }
 }
@@ -981,17 +1078,32 @@ mod adc_indy_tests {
         mem[0x0] = 0x10;
         mem[0x1] = 0x10;
 
-        mem[0x1010] = 0x80;
+        cpu.a = 0x7f; //+ve
+        mem[0x1010] = 0x7f; //+ve
+        cpu.adc_indy(0x0, &mem);
 
-        cpu.adc_indy(0x00, &mem);
+        assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
-        cpu.adc_indy(0x00, &mem);
+        cpu.a = 0x81; //-ve
+        mem[0x1010] = 0x81; //-ve
+        cpu.adc_indy(0x0, &mem);
+
+        assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
-        mem[0x1010] = 0x01;
+        cpu.a = 0x2; //+ve
+        mem[0x1010] = 0xff; //-ve
+        cpu.adc_indy(0x0, &mem);
 
-        cpu.adc_indy(0x00, &mem);
+        assert_eq!(false, cpu.n);
+        assert_eq!(false, cpu.v);
+
+        cpu.a = 0xf0; //-ve
+        mem[0x1010] = 0x1; //+ve
+        cpu.adc_indy(0x0, &mem);
+
+        assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
     }
 }
