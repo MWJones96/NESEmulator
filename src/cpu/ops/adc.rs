@@ -50,11 +50,11 @@ impl CPU {
     }
 
     pub fn adc_absx(&mut self, addr: u16, mem: &[u8]) -> u8 {
-        self._adc_absxy_helper(addr, mem, self.x)
+        _adc_abs_helper(self, addr, mem, self.x)
     }
 
     pub fn adc_absy(&mut self, addr: u16, mem: &[u8]) -> u8 {
-        self._adc_absxy_helper(addr, mem, self.y)
+        _adc_abs_helper(self, addr, mem, self.y)
     }
 
     pub fn adc_indx(&mut self, addr: u8, mem: &[u8]) -> u8 {
@@ -84,20 +84,18 @@ impl CPU {
             2 + self.adc_abs(resolved_addr, mem) 
         }
     }
+}
 
-    fn _adc_absxy_helper(&mut self, addr: u16, mem: &[u8], register: u8) -> u8 {
-        let page_before: u8 = (addr >> 8) as u8;
-
-        let new_addr = addr.wrapping_add(register as u16);
-
-        let page_after: u8 = (new_addr >> 8) as u8;
-        
-        if page_before == page_after { 
-            self.adc_abs(new_addr, mem)
-        } 
-        else {
-            1 + self.adc_abs(new_addr, mem)
-        }
+fn _adc_abs_helper(cpu: &mut CPU, addr: u16, mem: &[u8], register: u8) -> u8 {
+    let page_before: u8 = (addr >> 8) as u8;
+    let resolved_addr = addr.wrapping_add(register as u16);
+    let page_after: u8 = (resolved_addr >> 8) as u8;
+    
+    if page_before == page_after { 
+        cpu.adc_abs(resolved_addr, mem)
+    } 
+    else {
+        1 + cpu.adc_abs(resolved_addr, mem)
     }
 }
 
