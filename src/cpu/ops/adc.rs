@@ -19,6 +19,7 @@
 */
 
 use super::super::CPU;
+use super::super::bus::Bus;
 
 mod adc_imm;
 mod adc_zp;
@@ -29,15 +30,15 @@ mod adc_absy;
 mod adc_indx;
 mod adc_indy;
 
-fn _adc_abs_helper(cpu: &mut CPU, addr: u16, mem: &[u8], register: u8) -> u8 {
+fn _adc_abs_helper(cpu: &mut CPU, addr: u16, bus: &dyn Bus, register: u8) -> u8 {
     let page_before: u8 = (addr >> 8) as u8;
     let resolved_addr = addr.wrapping_add(register as u16);
     let page_after: u8 = (resolved_addr >> 8) as u8;
     
     if page_before == page_after { 
-        cpu.adc_abs(resolved_addr, mem)
+        cpu.adc_abs(resolved_addr, bus)
     } 
     else {
-        1 + cpu.adc_abs(resolved_addr, mem)
+        1 + cpu.adc_abs(resolved_addr, bus)
     }
 }

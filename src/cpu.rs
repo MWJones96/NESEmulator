@@ -1,4 +1,5 @@
 mod ops;
+mod bus;
 
 pub struct CPU {
     pc: u32,

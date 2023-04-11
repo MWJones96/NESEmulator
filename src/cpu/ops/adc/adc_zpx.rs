@@ -1,20 +1,31 @@
+use crate::cpu::bus::Bus;
+
 use super::super::super::CPU;
 
 impl CPU {
-    pub(super) fn adc_zpx(&mut self, addr: u8, mem: &[u8]) -> u8 {
-        1 + self.adc_zp(addr.wrapping_add(self.x), mem)
+    pub(super) fn adc_zpx(&mut self, addr: u8, bus: &dyn Bus) -> u8 {
+        1 + self.adc_zp(addr.wrapping_add(self.x), bus)
     }
 }
 
 #[cfg(test)]
 mod adc_zpx_tests {
+    use mockall::predicate::eq;
+
+    use crate::cpu::bus::MockBus;
+
     use super::*;
 
     #[test]
     fn test_adc_zpx_correct_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(4, cpu.adc_zpx(0x00_u8, &[0x00_u8]));
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+
+        assert_eq!(4, cpu.adc_zpx(0x00_u8, &mock_bus));
     }
 
     #[test]
@@ -22,7 +33,12 @@ mod adc_zpx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0;
 
-        cpu.adc_zpx(0x00_u8, &[0x77_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x77);
+
+        cpu.adc_zpx(0x00_u8, &mock_bus);
 
         assert_eq!(0x77_u8, cpu.a);
     }
@@ -32,7 +48,12 @@ mod adc_zpx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xff_u8;
 
-        cpu.adc_zpx(0x01_u8, &[0x77_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x77);
+
+        cpu.adc_zpx(0x01_u8, &mock_bus);
 
         assert_eq!(0x77_u8, cpu.a);
     }
@@ -41,15 +62,20 @@ mod adc_zpx_tests {
     fn test_adc_zpx_with_carry_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x80);
+
+        cpu.adc_zpx(0x00_u8, &mock_bus);
 
         assert_eq!(false, cpu.c);
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        cpu.adc_zpx(0x00_u8, &mock_bus);
 
         assert_eq!(true, cpu.c);
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        cpu.adc_zpx(0x00_u8, &mock_bus);
 
         assert_eq!(false, cpu.c);
     }
@@ -58,13 +84,23 @@ mod adc_zpx_tests {
     fn test_adc_zpx_with_zero_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc_zpx(0x00_u8, &[0x00_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+
+        cpu.adc_zpx(0x00_u8, &mock_bus);
         assert_eq!(true, cpu.z);
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x80);
+
+        cpu.adc_zpx(0x00_u8, &mock_bus);
         assert_eq!(false, cpu.z);
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        cpu.adc_zpx(0x00_u8, &mock_bus);
         assert_eq!(true, cpu.z);
     }
 
@@ -72,10 +108,15 @@ mod adc_zpx_tests {
     fn test_adc_zpx_with_negative_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x80);
+
+        cpu.adc_zpx(0x00_u8, &mock_bus);
         assert_eq!(true, cpu.n);
 
-        cpu.adc_zpx(0x00_u8, &[0x80_u8]);
+        cpu.adc_zpx(0x00_u8, &mock_bus);
         assert_eq!(false, cpu.n);
     }
 
@@ -85,25 +126,56 @@ mod adc_zpx_tests {
         cpu.x = 0x1;
 
         cpu.a = 0x7f; //+ve
-        cpu.adc_zpx(0x00_u8, &[0x0, 0x1_u8]); //+ve
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+        mock_bus.expect_read()
+            .with(eq(0x1))
+            .return_const(0x1);
+        cpu.adc_zpx(0x00_u8, &mock_bus); //+ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+        mock_bus.expect_read()
+            .with(eq(0x1))
+            .return_const(0x80);
+
         cpu.a = 0x80; //-ve
-        cpu.adc_zpx(0x00_u8, &[0x0, 0x80_u8]); //-ve
+        cpu.adc_zpx(0x00_u8, &mock_bus); //-ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+        mock_bus.expect_read()
+            .with(eq(0x1))
+            .return_const(0xf0);
+
         cpu.a = 0x1; //+ve
-        cpu.adc_zpx(0x00_u8, &[0x0, 0xf0_u8]); //-ve
+        cpu.adc_zpx(0x00_u8, &mock_bus); //-ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+        mock_bus.expect_read()
+            .with(eq(0x1))
+            .return_const(0x2);
+
         cpu.a = 0xff; //-ve
-        cpu.adc_zpx(0x00_u8, &[0x0, 0x2_u8]); //+ve
+        cpu.adc_zpx(0x00_u8, &mock_bus); //+ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
@@ -114,7 +186,15 @@ mod adc_zpx_tests {
         let mut cpu = CPU::new();
         cpu.x = 1;
 
-        cpu.adc_zpx(0x00_u8, &[0x00_u8, 0x10_u8]);
+        let mut mock_bus = MockBus::new();
+        mock_bus.expect_read()
+            .with(eq(0x0))
+            .return_const(0x00);
+        mock_bus.expect_read()
+            .with(eq(0x1))
+            .return_const(0x10);
+
+        cpu.adc_zpx(0x00_u8, &mock_bus);
 
         assert_eq!(0x10_u8, cpu.a);
     }
