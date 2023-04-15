@@ -24,7 +24,7 @@ impl CPU {
             y: 0,
 
             c: false,
-            z: true,
+            z: false,
             n: false,
             v: false
         }
@@ -46,7 +46,7 @@ mod tests {
         assert_eq!(0, cpu.y);
 
         assert_eq!(false, cpu.c);
-        assert_eq!(true, cpu.z);
+        assert_eq!(false, cpu.z);
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
     }
