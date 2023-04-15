@@ -1,4 +1,5 @@
 mod ops;
+mod addr;
 mod bus;
 
 pub struct CPU {
