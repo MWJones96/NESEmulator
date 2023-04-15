@@ -6,6 +6,7 @@ mod zpx;
 mod abs;
 mod absx;
 mod absy;
+mod indx;
 
 impl CPU {
     fn abs_helper(&self, addr: u16, register: u8, bus: &dyn Bus) -> (u8, u8) {

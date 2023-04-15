@@ -1,7 +1,7 @@
 use crate::cpu::{CPU, bus::Bus};
 
 impl CPU {
-    fn abs(&self, addr: u16, bus: &dyn Bus) -> (u8, u8) {
+    pub(super) fn abs(&self, addr: u16, bus: &dyn Bus) -> (u8, u8) {
         (2, bus.read(addr))
     }
 }
