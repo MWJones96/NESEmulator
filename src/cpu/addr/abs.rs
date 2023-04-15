@@ -17,7 +17,6 @@ mod abs_tests {
     fn test_abs_addressing_mode() {
         let mut cpu = CPU::new();
         let mut mock_bus = MockBus::new();
-        cpu.x = 0x2;
 
         mock_bus.expect_read()
             .with(eq(0xffff))
