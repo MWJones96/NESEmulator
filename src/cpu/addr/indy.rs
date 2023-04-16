@@ -1,7 +1,7 @@
 use crate::cpu::{CPU, bus::Bus};
 
 impl CPU {
-    fn indy(&self, addr: u8, bus: &dyn Bus) -> (u8, u8) {
+    pub(in crate::cpu) fn indy(&self, addr: u8, bus: &dyn Bus) -> (u8, u8) {
         let low_byte_addr = addr;
         let high_byte_addr = low_byte_addr.wrapping_add(1);
 

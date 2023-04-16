@@ -1,7 +1,7 @@
 use crate::cpu::CPU;
 
 impl CPU {
-    fn imm(&self, imm: u8) -> (u8, u8) {
+    pub(in crate::cpu) fn imm(&self, imm: u8) -> (u8, u8) {
         (0, imm)
     }
 }

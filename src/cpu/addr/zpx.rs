@@ -1,7 +1,7 @@
 use crate::cpu::{CPU, bus::Bus};
 
 impl CPU {
-    fn zpx(&self, addr: u8, bus: &dyn Bus) -> (u8, u8) {
+    pub (in crate::cpu) fn zpx(&self, addr: u8, bus: &dyn Bus) -> (u8, u8) {
         (2, bus.read(addr.wrapping_add(self.x) as u16))
     }
 }

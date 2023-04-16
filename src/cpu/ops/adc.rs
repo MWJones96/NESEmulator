@@ -19,26 +19,250 @@
 */
 
 use super::super::CPU;
-use super::super::bus::Bus;
 
-mod adc_imm;
-mod adc_zp;
-mod adc_zpx;
-mod adc_abs;
-mod adc_absx;
-mod adc_absy;
-mod adc_indx;
-mod adc_indy;
+impl CPU {
+    fn adc(&mut self, data_and_cycles: (u8, u8)) -> u8 {
+        let (cycles, imm) = data_and_cycles;
 
-fn _adc_abs_helper(cpu: &mut CPU, addr: u16, bus: &dyn Bus, register: u8) -> u8 {
-    let page_before: u8 = (addr >> 8) as u8;
-    let resolved_addr = addr.wrapping_add(register as u16);
-    let page_after: u8 = (resolved_addr >> 8) as u8;
-    
-    if page_before == page_after { 
-        cpu.adc_abs(resolved_addr, bus)
-    } 
-    else {
-        1 + cpu.adc_abs(resolved_addr, bus)
+        let a: u16 = self.a as u16;
+        let v: u16 = imm as u16;
+
+        let s: u16 = a + v + self.c as u16;
+        
+        self.a = s as u8;
+
+        self.c = s > 0xff;
+        self.z = self.a == 0_u8;
+        self.n = (self.a & 0b_1000_0000_u8) > 0;
+        self.v = ((a ^ s) & (v ^ s) & 0x80) > 0;
+
+        2 + cycles
+    }
+}
+
+#[cfg(test)]
+mod adc_tests {
+    use mockall::predicate::eq;
+
+    use crate::cpu::bus::MockBus;
+
+    use super::*;
+
+    #[test]
+    fn test_adc_imm_correct_cycles() {
+        let mut cpu = CPU::new();
+        let cycles: u8 = cpu.adc(cpu.imm(0x0));
+        assert_eq!(2, cycles);
+    }
+
+    #[test]
+    fn test_adc_zp_correct_cycles() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.zp(0x0, &bus));
+        assert_eq!(3, cycles);
+    }
+
+    #[test]
+    fn test_adc_zpx_correct_cycles() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.zpx(0x0, &bus));
+        assert_eq!(4, cycles);
+    }
+
+    #[test]
+    fn test_adc_abs_correct_cycles() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.abs(0x0, &bus));
+        assert_eq!(4, cycles);
+    }
+
+    #[test]
+    fn test_adc_absx_correct_cycles_no_page_cross() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.absx(0x0, &bus));
+        assert_eq!(4, cycles);
+    }
+
+    #[test]
+    fn test_adc_absx_correct_cycles_with_page_cross() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        cpu.x = 0xff;
+        let cycles: u8 = cpu.adc(cpu.absx(0x88, &bus));
+        assert_eq!(5, cycles);
+    }
+
+    #[test]
+    fn test_adc_absy_correct_cycles_no_page_cross() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.absy(0x88, &bus));
+        assert_eq!(4, cycles);
+    }
+
+    #[test]
+    fn test_adc_absy_correct_cycles_with_page_cross() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        cpu.y = 0xff;
+        let cycles: u8 = cpu.adc(cpu.absy(0x88, &bus));
+        assert_eq!(5, cycles);
+    }
+
+    #[test]
+    fn test_adc_indx_correct_cycles() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.indx(0x88, &bus));
+        assert_eq!(6, cycles);
+    }
+
+    #[test]
+    fn test_adc_indy_correct_cycles_no_page_cross() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .return_const(0x0);
+
+        let cycles: u8 = cpu.adc(cpu.indy(0x88, &bus));
+        assert_eq!(5, cycles);
+    }
+
+    #[test]
+    fn test_adc_indy_correct_cycles_with_page_cross() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        bus.expect_read()
+            .with(eq(0x88))
+            .return_const(0x11);
+        bus.expect_read()
+            .with(eq(0x89))
+            .return_const(0x22);
+
+        bus.expect_read()
+            .with(eq(0x2310))
+            .return_const(0x0);
+
+        cpu.y = 0xff;
+        let cycles: u8 = cpu.adc(cpu.indy(0x88, &bus));
+        assert_eq!(6, cycles);
+    }
+
+    #[test]
+    fn test_adc_no_carry() {
+        let mut cpu = CPU::new();
+
+        cpu.adc(cpu.imm(0x01_u8));
+
+        assert_eq!(0x01_u8, cpu.a);
+        assert_eq!(false, cpu.c);
+    }
+
+    #[test]
+    fn test_adc_with_carry() {
+        let mut cpu = CPU::new();
+        cpu.a = 0x80_u8;
+
+        cpu.adc(cpu.imm(0x80_u8));
+
+        assert_eq!(0x00_u8, cpu.a);
+        assert_eq!(true, cpu.c);
+
+        cpu.adc(cpu.imm(0x80_u8));
+
+        assert_eq!(0x81, cpu.a);
+        assert_eq!(false, cpu.c);
+
+        cpu.adc(cpu.imm(0x01_u8));
+
+        assert_eq!(0x82, cpu.a);
+        assert_eq!(false, cpu.c);
+    }
+
+    #[test]
+    fn test_adc_with_carry_zero_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.adc(cpu.imm(0x00_u8));
+
+        assert_eq!(true, cpu.z);
+
+        cpu.adc(cpu.imm(0x80_u8));
+
+        assert_eq!(false, cpu.z);
+
+        cpu.adc(cpu.imm(0x80_u8));
+
+        assert_eq!(true, cpu.z);
+    }
+
+    #[test]
+    fn test_adc_with_negative_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.adc(cpu.imm(0b_0111_1111_u8));
+
+        assert_eq!(false, cpu.n);
+
+        cpu.adc(cpu.imm(0b_0000_0001_u8));
+
+        assert_eq!(true, cpu.n);
+    }
+
+    #[test]
+    fn test_adc_with_overflow_flag() {
+        let mut cpu = CPU::new();
+
+        cpu.a = 0x7f; //+ve
+        cpu.adc(cpu.imm(0x1_u8)); //+ve
+
+        assert_eq!(true, cpu.n);
+        assert_eq!(true, cpu.v);
+
+        cpu.a = 0x80; //-ve
+        cpu.adc(cpu.imm(0x80_u8)); //-ve
+
+        assert_eq!(false, cpu.n);
+        assert_eq!(true, cpu.v);
+
+        cpu.a = 0x1; //+ve
+        cpu.adc(cpu.imm(0xf0_u8)); //-ve
+
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.v);
+
+        cpu.a = 0xff; //-ve
+        cpu.adc(cpu.imm(0x2_u8)); //+ve
+
+        assert_eq!(false, cpu.n);
+        assert_eq!(false, cpu.v);
     }
 }

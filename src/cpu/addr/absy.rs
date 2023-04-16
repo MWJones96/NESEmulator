@@ -1,7 +1,7 @@
 use crate::cpu::{CPU, bus::Bus};
 
 impl CPU {
-    fn absy(&self, addr: u16, bus: &dyn Bus) -> (u8, u8) {
+    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &dyn Bus) -> (u8, u8) {
         self.abs_helper(addr, self.y, bus)
     }
 }
