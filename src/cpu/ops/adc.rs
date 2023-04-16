@@ -21,8 +21,8 @@
 use super::super::CPU;
 
 impl CPU {
-    fn adc(&mut self, data_and_cycles: (u8, u8)) -> u8 {
-        let (cycles, imm) = data_and_cycles;
+    fn adc(&mut self, mode: (u8, u8)) -> u8 {
+        let (cycles, imm) = mode;
 
         let a: u16 = self.a as u16;
         let v: u16 = imm as u16;
