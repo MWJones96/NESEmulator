@@ -22,8 +22,12 @@ use super::super::CPU;
 
 impl CPU {
     fn adc(&mut self, mode: (u8, u8)) -> u8 {
-        let (cycles, imm) = mode;
+        let (addr_cycles, imm) = mode;
+        let adc_cycles = self._adc(imm);
+        adc_cycles + addr_cycles
+    }
 
+    fn _adc(&mut self, imm: u8) -> u8 {
         let a: u16 = self.a as u16;
         let v: u16 = imm as u16;
 
@@ -36,7 +40,7 @@ impl CPU {
         self.n = (self.a & 0b_1000_0000_u8) > 0;
         self.v = ((a ^ s) & (v ^ s) & 0x80) > 0;
 
-        2 + cycles
+        2
     }
 }
 
@@ -180,7 +184,7 @@ mod adc_tests {
     fn test_adc_no_carry() {
         let mut cpu = CPU::new();
 
-        cpu.adc(cpu.imm(0x01_u8));
+        cpu._adc(0x01_u8);
 
         assert_eq!(0x01_u8, cpu.a);
         assert_eq!(false, cpu.c);
@@ -191,17 +195,17 @@ mod adc_tests {
         let mut cpu = CPU::new();
         cpu.a = 0x80_u8;
 
-        cpu.adc(cpu.imm(0x80_u8));
+        cpu._adc(0x80_u8);
 
         assert_eq!(0x00_u8, cpu.a);
         assert_eq!(true, cpu.c);
 
-        cpu.adc(cpu.imm(0x80_u8));
+        cpu._adc(0x80_u8);
 
         assert_eq!(0x81, cpu.a);
         assert_eq!(false, cpu.c);
 
-        cpu.adc(cpu.imm(0x01_u8));
+        cpu._adc(0x01_u8);
 
         assert_eq!(0x82, cpu.a);
         assert_eq!(false, cpu.c);
@@ -211,15 +215,15 @@ mod adc_tests {
     fn test_adc_with_carry_zero_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc(cpu.imm(0x00_u8));
+        cpu._adc(0x00_u8);
 
         assert_eq!(true, cpu.z);
 
-        cpu.adc(cpu.imm(0x80_u8));
+        cpu._adc(0x80_u8);
 
         assert_eq!(false, cpu.z);
 
-        cpu.adc(cpu.imm(0x80_u8));
+        cpu._adc(0x80_u8);
 
         assert_eq!(true, cpu.z);
     }
@@ -228,11 +232,11 @@ mod adc_tests {
     fn test_adc_with_negative_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc(cpu.imm(0b_0111_1111_u8));
+        cpu._adc(0b_0111_1111_u8);
 
         assert_eq!(false, cpu.n);
 
-        cpu.adc(cpu.imm(0b_0000_0001_u8));
+        cpu._adc(0b_0000_0001_u8);
 
         assert_eq!(true, cpu.n);
     }
@@ -242,25 +246,25 @@ mod adc_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x7f; //+ve
-        cpu.adc(cpu.imm(0x1_u8)); //+ve
+        cpu._adc(0x1_u8); //+ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x80; //-ve
-        cpu.adc(cpu.imm(0x80_u8)); //-ve
+        cpu._adc(0x80_u8); //-ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x1; //+ve
-        cpu.adc(cpu.imm(0xf0_u8)); //-ve
+        cpu._adc(0xf0_u8); //-ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
         cpu.a = 0xff; //-ve
-        cpu.adc(cpu.imm(0x2_u8)); //+ve
+        cpu._adc(0x2_u8); //+ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
