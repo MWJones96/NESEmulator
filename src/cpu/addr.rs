@@ -1,5 +1,6 @@
 use super::{CPU, bus::Bus};
 
+mod acc;
 mod imm;
 mod zp;
 mod zpx;
