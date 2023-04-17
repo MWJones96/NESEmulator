@@ -23,12 +23,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
-    fn adc(&mut self, mode: AddrModeResult) -> u8 {
-        let adc_cycles = self._adc(mode.data.unwrap());
-        adc_cycles + mode.cycles
+    fn adc(&mut self, mode: &AddrModeResult) -> u8 {
+        self._adc(mode.data.unwrap());
+        2 + mode.cycles
     }
 
-    fn _adc(&mut self, imm: u8) -> u8 {
+    fn _adc(&mut self, imm: u8) {
         let a: u16 = self.a as u16;
         let v: u16 = imm as u16;
 
@@ -40,8 +40,6 @@ impl CPU {
         self.z = self.a == 0_u8;
         self.n = (self.a & 0b_1000_0000_u8) > 0;
         self.v = ((a ^ s) & (v ^ s) & 0x80) > 0;
-
-        2
     }
 }
 
@@ -56,7 +54,7 @@ mod adc_tests {
     #[test]
     fn test_adc_imm_correct_cycles() {
         let mut cpu = CPU::new();
-        let cycles: u8 = cpu.adc(cpu.imm(0x0));
+        let cycles: u8 = cpu.adc(&cpu.imm(0x0));
         assert_eq!(2, cycles);
     }
 
@@ -66,7 +64,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.zp(0x0, &bus));
+        let cycles: u8 = cpu.adc(&cpu.zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
@@ -76,7 +74,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.zpx(0x0, &bus));
+        let cycles: u8 = cpu.adc(&cpu.zpx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -86,7 +84,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.abs(0x0, &bus));
+        let cycles: u8 = cpu.adc(&cpu.abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -96,7 +94,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.absx(0x0, &bus));
+        let cycles: u8 = cpu.adc(&cpu.absx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -107,7 +105,7 @@ mod adc_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.x = 0xff;
-        let cycles: u8 = cpu.adc(cpu.absx(0x88, &bus));
+        let cycles: u8 = cpu.adc(&cpu.absx(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -117,7 +115,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.adc(&cpu.absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -128,7 +126,7 @@ mod adc_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.adc(cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.adc(&cpu.absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -138,7 +136,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.indx(0x88, &bus));
+        let cycles: u8 = cpu.adc(&cpu.indx(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -148,7 +146,7 @@ mod adc_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc(cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.adc(&cpu.indy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -162,7 +160,7 @@ mod adc_tests {
         bus.expect_read().with(eq(0x2310)).return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.adc(cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.adc(&cpu.indy(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
