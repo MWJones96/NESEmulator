@@ -19,12 +19,19 @@ use crate::cpu::{addr::{AddrModeResult, AddrMode}, bus::Bus};
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus, addr: u16) -> u8 {
+    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) -> u8 {
         let data = self._asl(mode.data);
         match mode.mode {
             AddrMode::ACC => { self.a = data; 2 },
-            AddrMode::ZP => { bus.write(addr, data); 5 }
-            AddrMode::ZPX => { bus.write(addr, data); 6 }
+            AddrMode::ZP => { bus.write(mode.addr.expect(
+                "Missing Address field for 'Zero Page'"
+            ), data); 5 }
+            AddrMode::ZPX => { bus.write(mode.addr.expect(
+                "Missing Address field for 'Zero Page X'"
+            ), data); 6 }
+            AddrMode::ABS => { bus.write(mode.addr.expect(
+                "Missing Address field for 'Absolute'"
+            ), data); 6 }
             _ => panic!("Unimplemented")
         }
     }
@@ -55,7 +62,7 @@ mod asl_tests {
         let mut bus = MockBus::new();
 
         cpu.a = 0x20;
-        assert_eq!(2, cpu.asl(&cpu.acc(), &bus, 0x0));
+        assert_eq!(2, cpu.asl(&cpu.acc(), &bus));
         assert_eq!(0x40, cpu.a);
 
         assert_eq!(false, cpu.c);
@@ -78,7 +85,7 @@ mod asl_tests {
             .times(1)
             .return_const(());
 
-        assert_eq!(5, cpu.asl(&cpu.zp(0x0, &bus), &bus, 0x0));
+        assert_eq!(5, cpu.asl(&cpu.zp(0x0, &bus), &bus));
         
         assert_eq!(true, cpu.c);
         assert_eq!(false, cpu.z);
@@ -101,9 +108,30 @@ mod asl_tests {
             .times(1)
             .return_const(());
 
-        assert_eq!(6, cpu.asl(&cpu.zpx(0x0, &bus), &bus, 0x2));
+        assert_eq!(6, cpu.asl(&cpu.zpx(0x0, &bus), &bus));
 
         assert_eq!(false, cpu.c);
+        assert_eq!(false, cpu.z);
+        assert_eq!(false, cpu.n);
+    }
+
+    #[test]
+    fn test_asl_abs() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        bus.expect_read()
+            .with(eq(0xffff))
+            .times(1)
+            .return_const(0xaa);
+
+        bus.expect_write()
+            .with(eq(0xffff), eq(0x54))
+            .times(1)
+            .return_const(());
+
+        assert_eq!(6, cpu.asl(&cpu.abs(0xffff, &bus), &bus));
+        assert_eq!(true, cpu.c);
         assert_eq!(false, cpu.z);
         assert_eq!(false, cpu.n);
     }
