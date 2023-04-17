@@ -48,7 +48,7 @@ mod indy_tests {
 
         let result = cpu.indy(0xff, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0xbb,
+            data: Some(0xbb),
             cycles: 3,
             mode: crate::cpu::addr::AddrMode::INDY,
             addr: Some(0x8879)
@@ -74,7 +74,7 @@ mod indy_tests {
 
         let result = cpu.indy(0xff, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0xcc,
+            data: Some(0xcc),
             cycles: 4,
             mode: crate::cpu::addr::AddrMode::INDY,
             addr: Some(0x8976)

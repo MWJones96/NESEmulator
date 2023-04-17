@@ -24,7 +24,7 @@ use super::super::CPU;
 
 impl CPU {
     fn adc(&mut self, mode: AddrModeResult) -> u8 {
-        let adc_cycles = self._adc(mode.data);
+        let adc_cycles = self._adc(mode.data.unwrap());
         adc_cycles + mode.cycles
     }
 

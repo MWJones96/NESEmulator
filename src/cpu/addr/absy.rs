@@ -29,7 +29,7 @@ mod absy_tests {
 
         let result = cpu.absy(0x0, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0x88,
+            data: Some(0x88),
             cycles: 2,
             mode: crate::cpu::addr::AddrMode::ABSY,
             addr: Some(0x2)
@@ -49,7 +49,7 @@ mod absy_tests {
 
         let result = cpu.absy(0xffff, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0x88,
+            data: Some(0x88),
             cycles: 3,
             mode: crate::cpu::addr::AddrMode::ABSY,
             addr: Some(0x1)

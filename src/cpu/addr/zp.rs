@@ -6,7 +6,7 @@ impl CPU {
     pub (in crate::cpu) fn zp(&self, addr: u8, bus: &dyn Bus) 
         -> AddrModeResult {
         AddrModeResult { 
-            data: bus.read(addr as u16), 
+            data: Some(bus.read(addr as u16)), 
             cycles: 1, 
             mode: super::AddrMode::ZP,
             addr: Some(addr as u16)
@@ -32,7 +32,7 @@ mod zp_tests {
 
         let result = cpu.zp(0x0, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0x77,
+            data: Some(0x77),
             cycles: 1,
             mode: crate::cpu::addr::AddrMode::ZP,
             addr: Some(0x0)

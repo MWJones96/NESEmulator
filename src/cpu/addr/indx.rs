@@ -44,7 +44,7 @@ mod indx_tests {
         cpu.x = 0x2;
         let result = cpu.indx(0xff, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0xaa,
+            data: Some(0xaa),
             cycles: 4,
             mode: crate::cpu::addr::AddrMode::INDX,
             addr: Some(0x8877)

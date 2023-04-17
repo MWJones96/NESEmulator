@@ -19,7 +19,7 @@ use super::super::CPU;
 
 impl CPU {
     pub(super) fn and(&mut self, mode: AddrModeResult) -> u8 {        
-        self.a &= mode.data;
+        self.a &= mode.data.unwrap();
 
         self.z = self.a == 0;
         self.n = (self.a & 0x80) > 0;

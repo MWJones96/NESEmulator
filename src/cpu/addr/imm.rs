@@ -5,7 +5,7 @@ use super::AddrModeResult;
 impl CPU {
     pub(in crate::cpu) fn imm(&self, imm: u8) -> AddrModeResult {
         AddrModeResult {
-            data: imm,
+            data: Some(imm),
             cycles: 0,
             mode: super::AddrMode::IMM,
             addr: None
@@ -25,7 +25,7 @@ mod imm_tests {
         let imm = cpu.imm(0x88);
 
         assert_eq!(AddrModeResult {
-            data: 0x88,
+            data: Some(0x88),
             cycles: 0,
             mode: crate::cpu::addr::AddrMode::IMM,
             addr: None

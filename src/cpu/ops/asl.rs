@@ -20,21 +20,13 @@ use super::super::CPU;
 
 impl CPU {
     pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) -> u8 {
-        let data = self._asl(mode.data);
+        let data = self._asl(mode.data.unwrap());
         match mode.mode {
             AddrMode::ACC => { self.a = data; 2 },
-            AddrMode::ZP => { bus.write(mode.addr.expect(
-                "Missing Address field for 'Zero Page'"
-            ), data); 5 }
-            AddrMode::ZPX => { bus.write(mode.addr.expect(
-                "Missing Address field for 'Zero Page X'"
-            ), data); 6 }
-            AddrMode::ABS => { bus.write(mode.addr.expect(
-                "Missing Address field for 'Absolute'"
-            ), data); 6 }
-            AddrMode::ABSX => { bus.write(mode.addr.expect(
-                "Missing Address field for 'Absolute X'"
-            ), data); 7 }
+            AddrMode::ZP => { bus.write(mode.addr.unwrap(), data); 5 }
+            AddrMode::ZPX => { bus.write(mode.addr.unwrap(), data); 6 }
+            AddrMode::ABS => { bus.write(mode.addr.unwrap(), data); 6 }
+            AddrMode::ABSX => { bus.write(mode.addr.unwrap(), data); 7 }
             _ => panic!("Unimplemented")
         }
     }

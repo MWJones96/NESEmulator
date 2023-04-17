@@ -7,7 +7,7 @@ impl CPU {
         -> AddrModeResult {
             let resolved_addr = addr.wrapping_add(self.x) as u16;
         AddrModeResult {
-            data: bus.read(resolved_addr),
+            data: Some(bus.read(resolved_addr)),
             cycles: 2,
             mode: super::AddrMode::ZPX,
             addr: Some(resolved_addr)
@@ -34,7 +34,7 @@ mod zpx_tests {
 
         let result = cpu.zpx(0xff, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0x77,
+            data: Some(0x77),
             cycles: 2,
             mode: crate::cpu::addr::AddrMode::ZPX,
             addr: Some(0x1)

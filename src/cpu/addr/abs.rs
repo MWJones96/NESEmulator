@@ -6,7 +6,7 @@ impl CPU {
     pub(in crate::cpu) fn abs(&self, addr: u16, bus: &dyn Bus) 
         -> AddrModeResult {
         AddrModeResult {
-            data: bus.read(addr),
+            data: Some(bus.read(addr)),
             cycles: 2,
             mode: super::AddrMode::ABS,
             addr: Some(addr)
@@ -32,7 +32,7 @@ mod abs_tests {
 
         let result = cpu.abs(0xffff, &mock_bus);
         assert_eq!(AddrModeResult {
-            data: 0x88,
+            data: Some(0x88),
             cycles: 2,
             mode: crate::cpu::addr::AddrMode::ABS,
             addr: Some(0xffff)

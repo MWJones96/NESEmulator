@@ -5,7 +5,7 @@ use super::AddrModeResult;
 impl CPU {
     pub(in crate::cpu) fn acc(&self) -> AddrModeResult {
         AddrModeResult {
-            data: self.a,
+            data: Some(self.a),
             cycles: 0,
             mode: super::AddrMode::ACC,
             addr: None
@@ -25,7 +25,7 @@ mod acc_tests {
         cpu.a = 0xcc;
 
         assert_eq!(AddrModeResult {
-            data: 0xcc,
+            data: Some(0xcc),
             cycles: 0,
             mode: crate::cpu::addr::AddrMode::ACC,
             addr: None
