@@ -1,7 +1,10 @@
 use crate::cpu::{CPU, bus::Bus};
 
+use super::{AddrMode, AddrModeResult};
+
 impl CPU {
-    pub(in crate::cpu) fn indy(&self, addr: u8, bus: &dyn Bus) -> (u8, u8) {
+    pub(in crate::cpu) fn indy(&self, addr: u8, bus: &dyn Bus) 
+        -> AddrModeResult {
         let low_byte_addr = addr;
         let high_byte_addr = low_byte_addr.wrapping_add(1);
 
@@ -12,8 +15,10 @@ impl CPU {
         let resolved_addr = resolved_addr + self.y as u16;
         let page_after = (resolved_addr >> 8) as u8;
         
-        let (cycles, data) = self.abs(resolved_addr, bus);
-        (cycles + 1 + ((page_before != page_after) as u8), data)
+        let mut result = self.abs(resolved_addr, bus);
+        result.cycles += 1 + ((page_before != page_after) as u8);
+        result.mode = AddrMode::INDY;
+        result
     }
 }
 
@@ -21,7 +26,7 @@ impl CPU {
 mod indy_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::{bus::MockBus, addr::AddrModeResult};
     use super::*;
 
     #[test]
@@ -42,7 +47,11 @@ mod indy_tests {
             .return_const(0xbb);
 
         let result = cpu.indy(0xff, &mock_bus);
-        assert_eq!((3, 0xbb), result);
+        assert_eq!(AddrModeResult {
+            data: 0xbb,
+            cycles: 3,
+            mode: crate::cpu::addr::AddrMode::INDY
+        }, result);
     }
 
     #[test]
@@ -63,6 +72,10 @@ mod indy_tests {
             .return_const(0xcc);
 
         let result = cpu.indy(0xff, &mock_bus);
-        assert_eq!((4, 0xcc), result);
+        assert_eq!(AddrModeResult {
+            data: 0xcc,
+            cycles: 4,
+            mode: crate::cpu::addr::AddrMode::INDY
+        }, result);
     }
 }

@@ -1,19 +1,32 @@
 use crate::cpu::CPU;
 
+use super::AddrModeResult;
+
 impl CPU {
-    pub(in crate::cpu) fn imm(&self, imm: u8) -> (u8, u8) {
-        (0, imm)
+    pub(in crate::cpu) fn imm(&self, imm: u8) -> AddrModeResult {
+        AddrModeResult {
+            data: imm,
+            cycles: 0,
+            mode: super::AddrMode::IMM
+        }
     }
 }
 
 #[cfg(test)]
 mod imm_tests {
+    use crate::cpu::addr::AddrModeResult;
+
     use super::*;
 
     #[test]
     fn test_imm_addressing_mode() {
         let cpu = CPU::new();
         let imm = cpu.imm(0x88);
-        assert_eq!((0, 0x88), imm);
+
+        assert_eq!(AddrModeResult {
+            data: 0x88,
+            cycles: 0,
+            mode: crate::cpu::addr::AddrMode::IMM
+        }, imm);
     }
 }

@@ -27,8 +27,8 @@ impl CPU {
     }
 
     pub (in crate::cpu) fn asl_zp(&mut self, addr: u8, bus: &dyn Bus) -> u8 {
-        let (_, data) = self.zp(addr, bus);
-        let data = self._asl(data);
+        let result = self.zp(addr, bus);
+        let data = self._asl(result.data);
         bus.write(addr as u16, data);
         
         5

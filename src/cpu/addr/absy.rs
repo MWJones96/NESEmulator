@@ -1,8 +1,11 @@
 use crate::cpu::{CPU, bus::Bus};
 
+use super::AddrModeResult;
+
 impl CPU {
-    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &dyn Bus) -> (u8, u8) {
-        self.abs_helper(addr, self.y, bus)
+    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &dyn Bus) 
+        -> AddrModeResult {
+        self.abs_helper(addr, self.y, super::AddrMode::ABSY, bus)
     }
 }
 
@@ -10,7 +13,7 @@ impl CPU {
 mod absy_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::{bus::MockBus, addr::AddrModeResult};
     use super::*;
 
     #[test]
@@ -25,7 +28,11 @@ mod absy_tests {
             .return_const(0x88);
 
         let result = cpu.absy(0x0, &mock_bus);
-        assert_eq!((2, 0x88), result);
+        assert_eq!(AddrModeResult {
+            data: 0x88,
+            cycles: 2,
+            mode: crate::cpu::addr::AddrMode::ABSY
+        }, result);
     }
 
     #[test]
@@ -39,7 +46,11 @@ mod absy_tests {
             .with(eq(0x1))
             .return_const(0x88);
 
-            let result = cpu.absy(0xffff, &mock_bus);
-            assert_eq!((3, 0x88), result);
+        let result = cpu.absy(0xffff, &mock_bus);
+        assert_eq!(AddrModeResult {
+            data: 0x88,
+            cycles: 3,
+            mode: crate::cpu::addr::AddrMode::ABSY
+        }, result);
     }
 }

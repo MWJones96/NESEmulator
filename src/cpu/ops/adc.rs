@@ -18,13 +18,14 @@
     The zero flag is set if the accumulator result is 0, otherwise the zero flag is reset.
 */
 
+use crate::cpu::addr::AddrModeResult;
+
 use super::super::CPU;
 
 impl CPU {
-    fn adc(&mut self, mode: (u8, u8)) -> u8 {
-        let (addr_cycles, imm) = mode;
-        let adc_cycles = self._adc(imm);
-        adc_cycles + addr_cycles
+    fn adc(&mut self, mode: AddrModeResult) -> u8 {
+        let adc_cycles = self._adc(mode.data);
+        adc_cycles + mode.cycles
     }
 
     fn _adc(&mut self, imm: u8) -> u8 {

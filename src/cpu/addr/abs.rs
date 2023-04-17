@@ -1,8 +1,15 @@
 use crate::cpu::{CPU, bus::Bus};
 
+use super::AddrModeResult;
+
 impl CPU {
-    pub(in crate::cpu) fn abs(&self, addr: u16, bus: &dyn Bus) -> (u8, u8) {
-        (2, bus.read(addr))
+    pub(in crate::cpu) fn abs(&self, addr: u16, bus: &dyn Bus) 
+        -> AddrModeResult {
+        AddrModeResult {
+            data: bus.read(addr),
+            cycles: 2,
+            mode: super::AddrMode::ABS
+        }
     }
 }
 
@@ -23,6 +30,10 @@ mod abs_tests {
             .return_const(0x88);
 
         let result = cpu.abs(0xffff, &mock_bus);
-        assert_eq!((2, 0x88), result);
+        assert_eq!(AddrModeResult {
+            data: 0x88,
+            cycles: 2,
+            mode: crate::cpu::addr::AddrMode::ABS
+        }, result);
     }
 }
