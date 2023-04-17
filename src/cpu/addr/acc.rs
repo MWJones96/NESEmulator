@@ -8,7 +8,7 @@ impl CPU {
             data: Some(self.a),
             cycles: 0,
             mode: super::AddrMode::ACC,
-            addr: None
+            addr: None,
         }
     }
 }
@@ -24,11 +24,14 @@ mod acc_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xcc;
 
-        assert_eq!(AddrModeResult {
-            data: Some(0xcc),
-            cycles: 0,
-            mode: crate::cpu::addr::AddrMode::ACC,
-            addr: None
-        }, cpu.acc());
+        assert_eq!(
+            AddrModeResult {
+                data: Some(0xcc),
+                cycles: 0,
+                mode: crate::cpu::addr::AddrMode::ACC,
+                addr: None
+            },
+            cpu.acc()
+        );
     }
 }

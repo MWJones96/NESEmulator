@@ -4,10 +4,10 @@
 
     This instruction could also be called "Branch on Equal."
 
-    It takes a conditional branch whenever the Z flag is on or 
+    It takes a conditional branch whenever the Z flag is on or
     the previ­ous result is equal to 0.
 
-    BEQ does not affect any of the flags or registers other than 
+    BEQ does not affect any of the flags or registers other than
     the program counter and only then when the Z flag is set.
 */
 
@@ -18,9 +18,7 @@ use super::super::CPU;
 impl CPU {
     pub(in crate::cpu) fn beq(&mut self, mode: &AddrModeResult) -> u8 {
         match self.z {
-            false => {
-                2 + mode.cycles
-            },
+            false => 2 + mode.cycles,
             true => {
                 self.pc = mode.addr.unwrap();
                 2 + 1 + mode.cycles

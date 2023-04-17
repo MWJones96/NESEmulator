@@ -3,18 +3,21 @@
 
     Operation: C ← /M7...M0/ ← 0
 
-    The shift left instruction shifts either the accumulator or the address 
-    memory location 1 bit to the left, with the bit 0 always being set to 0 
-    and the the input bit 7 being stored in the carry flag. ASL either 
-    shifts the accumulator left 1 bit or is a read/modify/write instruction 
+    The shift left instruction shifts either the accumulator or the address
+    memory location 1 bit to the left, with the bit 0 always being set to 0
+    and the the input bit 7 being stored in the carry flag. ASL either
+    shifts the accumulator left 1 bit or is a read/modify/write instruction
     that affects only memory.
 
-    The instruction does not affect the overflow bit, sets N equal to the 
-    result bit 7 (bit 6 in the input), sets Z flag if the result is equal 
+    The instruction does not affect the overflow bit, sets N equal to the
+    result bit 7 (bit 6 in the input), sets Z flag if the result is equal
     to 0, otherwise resets Z and stores the input bit 7 in the carry flag.
 */
 
-use crate::cpu::{addr::{AddrModeResult, AddrMode}, bus::Bus};
+use crate::cpu::{
+    addr::{AddrMode, AddrModeResult},
+    bus::Bus,
+};
 
 use super::super::CPU;
 
@@ -22,12 +25,27 @@ impl CPU {
     pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) -> u8 {
         let data = self._asl(mode.data.unwrap());
         match mode.mode {
-            AddrMode::ACC => { self.a = data; 2 },
-            AddrMode::ZP => { bus.write(mode.addr.unwrap(), data); 5 }
-            AddrMode::ZPX => { bus.write(mode.addr.unwrap(), data); 6 }
-            AddrMode::ABS => { bus.write(mode.addr.unwrap(), data); 6 }
-            AddrMode::ABSX => { bus.write(mode.addr.unwrap(), data); 7 }
-            _ => panic!("Unimplemented")
+            AddrMode::ACC => {
+                self.a = data;
+                2
+            }
+            AddrMode::ZP => {
+                bus.write(mode.addr.unwrap(), data);
+                5
+            }
+            AddrMode::ZPX => {
+                bus.write(mode.addr.unwrap(), data);
+                6
+            }
+            AddrMode::ABS => {
+                bus.write(mode.addr.unwrap(), data);
+                6
+            }
+            AddrMode::ABSX => {
+                bus.write(mode.addr.unwrap(), data);
+                7
+            }
+            _ => panic!("Unimplemented"),
         }
     }
 
@@ -40,7 +58,6 @@ impl CPU {
 
         return calc as u8;
     }
-
 }
 
 #[cfg(test)]
@@ -70,10 +87,7 @@ mod asl_tests {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .with(eq(0x0))
-            .times(1)
-            .return_const(0xff);
+        bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
         bus.expect_write()
             .with(eq(0x0), eq(0xfe))
@@ -81,7 +95,7 @@ mod asl_tests {
             .return_const(());
 
         assert_eq!(5, cpu.asl(&cpu.zp(0x0, &bus), &bus));
-        
+
         assert_eq!(true, cpu.c);
         assert_eq!(false, cpu.z);
         assert_eq!(true, cpu.n);
@@ -93,10 +107,7 @@ mod asl_tests {
         let mut bus = MockBus::new();
 
         cpu.x = 0x2;
-        bus.expect_read()
-            .with(eq(0x2))
-            .times(1)
-            .return_const(0x1);
+        bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
 
         bus.expect_write()
             .with(eq(0x2), eq(0x2))
@@ -138,10 +149,7 @@ mod asl_tests {
 
         cpu.x = 0x2;
 
-        bus.expect_read()
-            .with(eq(0x1))
-            .times(1)
-            .return_const(0x88);
+        bus.expect_read().with(eq(0x1)).times(1).return_const(0x88);
 
         bus.expect_write()
             .with(eq(0x1), eq(0x10))
@@ -153,7 +161,7 @@ mod asl_tests {
         assert_eq!(false, cpu.z);
         assert_eq!(false, cpu.n);
     }
-    
+
     #[test]
     fn test_asl_shift() {
         let mut cpu = CPU::new();

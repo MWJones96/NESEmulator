@@ -1,10 +1,9 @@
-use crate::cpu::{CPU, bus::Bus};
+use crate::cpu::{bus::Bus, CPU};
 
 use super::AddrModeResult;
 
 impl CPU {
-    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &dyn Bus) 
-        -> AddrModeResult {
+    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
         self.abs_helper(addr, self.y, super::AddrMode::ABSY, bus)
     }
 }
@@ -13,8 +12,8 @@ impl CPU {
 mod absy_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::{bus::MockBus, addr::AddrModeResult};
     use super::*;
+    use crate::cpu::{addr::AddrModeResult, bus::MockBus};
 
     #[test]
     fn test_absy_addressing_mode_no_page_cross() {
@@ -23,17 +22,18 @@ mod absy_tests {
 
         cpu.y = 0x2;
 
-        mock_bus.expect_read()
-            .with(eq(0x2))
-            .return_const(0x88);
+        mock_bus.expect_read().with(eq(0x2)).return_const(0x88);
 
         let result = cpu.absy(0x0, &mock_bus);
-        assert_eq!(AddrModeResult {
-            data: Some(0x88),
-            cycles: 2,
-            mode: crate::cpu::addr::AddrMode::ABSY,
-            addr: Some(0x2)
-        }, result);
+        assert_eq!(
+            AddrModeResult {
+                data: Some(0x88),
+                cycles: 2,
+                mode: crate::cpu::addr::AddrMode::ABSY,
+                addr: Some(0x2)
+            },
+            result
+        );
     }
 
     #[test]
@@ -43,16 +43,17 @@ mod absy_tests {
 
         cpu.y = 0x2;
 
-        mock_bus.expect_read()
-            .with(eq(0x1))
-            .return_const(0x88);
+        mock_bus.expect_read().with(eq(0x1)).return_const(0x88);
 
         let result = cpu.absy(0xffff, &mock_bus);
-        assert_eq!(AddrModeResult {
-            data: Some(0x88),
-            cycles: 3,
-            mode: crate::cpu::addr::AddrMode::ABSY,
-            addr: Some(0x1)
-        }, result);
+        assert_eq!(
+            AddrModeResult {
+                data: Some(0x88),
+                cycles: 3,
+                mode: crate::cpu::addr::AddrMode::ABSY,
+                addr: Some(0x1)
+            },
+            result
+        );
     }
 }

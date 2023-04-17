@@ -8,11 +8,11 @@ impl CPU {
         let resolved_addr = self.pc.wrapping_add((offset as i8) as u16);
         let page_after = (resolved_addr >> 8) as u8;
 
-        AddrModeResult { 
-            data: None, 
-            cycles: (page_before != page_after) as u8, 
-            mode: super::AddrMode::REL, 
-            addr: Some(resolved_addr)
+        AddrModeResult {
+            data: None,
+            cycles: (page_before != page_after) as u8,
+            mode: super::AddrMode::REL,
+            addr: Some(resolved_addr),
         }
     }
 }
@@ -27,12 +27,15 @@ mod rel_tests {
 
         cpu.pc = 0x0;
         let result = cpu.rel(0x1);
-        assert_eq!(AddrModeResult {
-            data: None,
-            cycles: 0,
-            mode: crate::cpu::addr::AddrMode::REL,
-            addr: Some(0x1)
-        }, result);
+        assert_eq!(
+            AddrModeResult {
+                data: None,
+                cycles: 0,
+                mode: crate::cpu::addr::AddrMode::REL,
+                addr: Some(0x1)
+            },
+            result
+        );
     }
 
     #[test]
@@ -41,12 +44,15 @@ mod rel_tests {
 
         cpu.pc = 0x1234;
         let result = cpu.rel(0xff);
-        assert_eq!(AddrModeResult {
-            data: None,
-            cycles: 0,
-            mode: crate::cpu::addr::AddrMode::REL,
-            addr: Some(0x1233)
-        }, result);
+        assert_eq!(
+            AddrModeResult {
+                data: None,
+                cycles: 0,
+                mode: crate::cpu::addr::AddrMode::REL,
+                addr: Some(0x1233)
+            },
+            result
+        );
     }
 
     #[test]
@@ -55,12 +61,15 @@ mod rel_tests {
 
         cpu.pc = 0xffff;
         let result = cpu.rel(0x2);
-        assert_eq!(AddrModeResult {
-            data: None,
-            cycles: 1,
-            mode: crate::cpu::addr::AddrMode::REL,
-            addr: Some(0x1)
-        }, result);
+        assert_eq!(
+            AddrModeResult {
+                data: None,
+                cycles: 1,
+                mode: crate::cpu::addr::AddrMode::REL,
+                addr: Some(0x1)
+            },
+            result
+        );
     }
 
     #[test]
@@ -69,11 +78,14 @@ mod rel_tests {
 
         cpu.pc = 0x0;
         let result = cpu.rel(0xfe);
-        assert_eq!(AddrModeResult {
-            data: None,
-            cycles: 1,
-            mode: crate::cpu::addr::AddrMode::REL,
-            addr: Some(0xfffe)
-        }, result);
+        assert_eq!(
+            AddrModeResult {
+                data: None,
+                cycles: 1,
+                mode: crate::cpu::addr::AddrMode::REL,
+                addr: Some(0xfffe)
+            },
+            result
+        );
     }
 }

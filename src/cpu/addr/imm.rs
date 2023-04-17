@@ -8,7 +8,7 @@ impl CPU {
             data: Some(imm),
             cycles: 0,
             mode: super::AddrMode::IMM,
-            addr: None
+            addr: None,
         }
     }
 }
@@ -24,11 +24,14 @@ mod imm_tests {
         let cpu = CPU::new();
         let imm = cpu.imm(0x88);
 
-        assert_eq!(AddrModeResult {
-            data: Some(0x88),
-            cycles: 0,
-            mode: crate::cpu::addr::AddrMode::IMM,
-            addr: None
-        }, imm);
+        assert_eq!(
+            AddrModeResult {
+                data: Some(0x88),
+                cycles: 0,
+                mode: crate::cpu::addr::AddrMode::IMM,
+                addr: None
+            },
+            imm
+        );
     }
 }

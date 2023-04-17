@@ -1,6 +1,6 @@
-mod ops;
 mod addr;
 mod bus;
+mod ops;
 
 pub struct CPU {
     pc: u16,
@@ -12,7 +12,7 @@ pub struct CPU {
     c: bool,
     z: bool,
     n: bool,
-    v: bool
+    v: bool,
 }
 
 impl CPU {
@@ -27,7 +27,7 @@ impl CPU {
             c: false,
             z: false,
             n: false,
-            v: false
+            v: false,
         }
     }
 }

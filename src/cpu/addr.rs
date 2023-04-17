@@ -1,15 +1,15 @@
-use super::{CPU, bus::Bus};
+use super::{bus::Bus, CPU};
 
-mod acc;
-mod imm;
-mod zp;
-mod zpx;
 mod abs;
 mod absx;
 mod absy;
+mod acc;
+mod imm;
 mod indx;
 mod indy;
 mod rel;
+mod zp;
+mod zpx;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(in crate::cpu) enum AddrMode {
@@ -22,7 +22,7 @@ pub(in crate::cpu) enum AddrMode {
     ABSY,
     INDX,
     INDY,
-    REL
+    REL,
 }
 
 #[derive(Debug, PartialEq)]
@@ -35,8 +35,7 @@ pub(in crate::cpu) struct AddrModeResult {
 }
 
 impl CPU {
-    fn abs_helper(&self, addr: u16, register: u8, mode: AddrMode, bus: &dyn Bus) 
-        -> AddrModeResult {
+    fn abs_helper(&self, addr: u16, register: u8, mode: AddrMode, bus: &dyn Bus) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(register as u16);
         let page_after: u8 = (resolved_addr >> 8) as u8;
@@ -45,7 +44,7 @@ impl CPU {
             data: Some(bus.read(resolved_addr)),
             cycles: 2 + ((page_before != page_after) as u8),
             mode: mode,
-            addr: Some(resolved_addr)
+            addr: Some(resolved_addr),
         }
     }
 }

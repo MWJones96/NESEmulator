@@ -2,11 +2,11 @@
     BCC - Branch on Carry Clear
     Operation: Branch on C = 0
 
-    This instruction tests the state of the carry bit and takes 
+    This instruction tests the state of the carry bit and takes
     a conditional branch if the carry bit is reset.
 
-    It affects no flags or registers other than the program counter 
-    and then only if the C flag is not on. 
+    It affects no flags or registers other than the program counter
+    and then only if the C flag is not on.
 */
 
 use crate::cpu::addr::AddrModeResult;
@@ -16,9 +16,7 @@ use super::super::CPU;
 impl CPU {
     pub(in crate::cpu) fn bcc(&mut self, mode: &AddrModeResult) -> u8 {
         match self.c {
-            true => {
-                2 + mode.cycles
-            },
+            true => 2 + mode.cycles,
             false => {
                 self.pc = mode.addr.unwrap();
                 2 + 1 + mode.cycles

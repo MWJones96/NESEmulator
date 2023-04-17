@@ -3,13 +3,13 @@
 
     Operation: A ∧ M → A
 
-    The AND instruction transfer the accumulator and memory to the adder 
-    which performs a bit-by-bit AND operation and stores the result back 
+    The AND instruction transfer the accumulator and memory to the adder
+    which performs a bit-by-bit AND operation and stores the result back
     in the accumulator.
 
-    This instruction affects the accumulator; sets the zero flag if the 
-    result in the accumulator is 0, otherwise resets the zero flag; 
-    sets the negative flag if the result in the accumulator has bit 7 on, 
+    This instruction affects the accumulator; sets the zero flag if the
+    result in the accumulator is 0, otherwise resets the zero flag;
+    sets the negative flag if the result in the accumulator has bit 7 on,
     otherwise resets the negative flag.
 */
 
@@ -18,12 +18,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
-    pub(super) fn and(&mut self, mode: AddrModeResult) -> u8 {        
+    pub(super) fn and(&mut self, mode: AddrModeResult) -> u8 {
         self.a &= mode.data.unwrap();
 
         self.z = self.a == 0;
         self.n = (self.a & 0x80) > 0;
-        
+
         2 + mode.cycles
     }
 }
@@ -46,8 +46,7 @@ mod and_tests {
     fn test_and_zp_correct_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.and(cpu.zp(0xff, &bus)));
     }
@@ -56,8 +55,7 @@ mod and_tests {
     fn test_and_zpx_correct_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.and(cpu.zpx(0xff, &bus)));
     }
@@ -66,8 +64,7 @@ mod and_tests {
     fn test_and_abs_correct_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.and(cpu.abs(0xff, &bus)));
     }
@@ -76,8 +73,7 @@ mod and_tests {
     fn test_and_absx_correct_cycles_no_page_cross() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.and(cpu.absx(0xff, &bus)));
     }
@@ -86,8 +82,7 @@ mod and_tests {
     fn test_and_absx_correct_cycles_with_page_cross() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         cpu.x = 0xff;
         assert_eq!(5, cpu.and(cpu.absx(0xff, &bus)));
@@ -97,8 +92,7 @@ mod and_tests {
     fn test_and_absy_correct_cycles_no_page_cross() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.and(cpu.absy(0xff, &bus)));
     }
@@ -107,8 +101,7 @@ mod and_tests {
     fn test_and_absy_correct_cycles_with_page_cross() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
         assert_eq!(5, cpu.and(cpu.absy(0xff, &bus)));
@@ -118,8 +111,7 @@ mod and_tests {
     fn test_and_indx_correct_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.and(cpu.indx(0xff, &bus)));
     }
@@ -128,8 +120,7 @@ mod and_tests {
     fn test_and_indy_correct_cycles_no_page_cross() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.and(cpu.indy(0xff, &bus)));
     }
@@ -138,16 +129,10 @@ mod and_tests {
     fn test_and_indy_correct_cycles_with_page_cross() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read()
-            .with(eq(0x88))
-            .return_const(0x11);
-        bus.expect_read()
-            .with(eq(0x89))
-            .return_const(0x22);
+        bus.expect_read().with(eq(0x88)).return_const(0x11);
+        bus.expect_read().with(eq(0x89)).return_const(0x22);
 
-        bus.expect_read()
-            .with(eq(0x2310))
-            .return_const(0x0);
+        bus.expect_read().with(eq(0x2310)).return_const(0x0);
 
         cpu.y = 0xff;
         assert_eq!(6, cpu.and(cpu.indy(0x88, &bus)));
