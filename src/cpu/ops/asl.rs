@@ -32,6 +32,9 @@ impl CPU {
             AddrMode::ABS => { bus.write(mode.addr.expect(
                 "Missing Address field for 'Absolute'"
             ), data); 6 }
+            AddrMode::ABSX => { bus.write(mode.addr.expect(
+                "Missing Address field for 'Absolute X'"
+            ), data); 7 }
             _ => panic!("Unimplemented")
         }
     }
@@ -131,6 +134,29 @@ mod asl_tests {
             .return_const(());
 
         assert_eq!(6, cpu.asl(&cpu.abs(0xffff, &bus), &bus));
+        assert_eq!(true, cpu.c);
+        assert_eq!(false, cpu.z);
+        assert_eq!(false, cpu.n);
+    }
+
+    #[test]
+    fn test_asl_absx() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        cpu.x = 0x2;
+
+        bus.expect_read()
+            .with(eq(0x1))
+            .times(1)
+            .return_const(0x88);
+
+        bus.expect_write()
+            .with(eq(0x1), eq(0x10))
+            .times(1)
+            .return_const(());
+
+        assert_eq!(7, cpu.asl(&cpu.absx(0xffff, &bus), &bus));
         assert_eq!(true, cpu.c);
         assert_eq!(false, cpu.z);
         assert_eq!(false, cpu.n);
