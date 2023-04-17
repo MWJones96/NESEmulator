@@ -14,24 +14,19 @@
     to 0, otherwise resets Z and stores the input bit 7 in the carry flag.
 */
 
-use crate::cpu::bus::Bus;
+use crate::cpu::{addr::{AddrModeResult, AddrMode}, bus::Bus};
 
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn asl_acc(&mut self) -> u8 {
-        let data = self._asl(self.a);
-        self.a = data;
-        
-        2
-    }
-
-    pub (in crate::cpu) fn asl_zp(&mut self, addr: u8, bus: &dyn Bus) -> u8 {
-        let result = self.zp(addr, bus);
-        let data = self._asl(result.data);
-        bus.write(addr as u16, data);
-        
-        5
+    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus, addr: u16) -> u8 {
+        let data = self._asl(mode.data);
+        match mode.mode {
+            AddrMode::ACC => { self.a = data; 2 },
+            AddrMode::ZP => { bus.write(addr, data); 5 }
+            AddrMode::ZPX => { bus.write(addr, data); 6 }
+            _ => panic!("Unimplemented")
+        }
     }
 
     fn _asl(&mut self, data: u8) -> u8 {
@@ -47,7 +42,7 @@ impl CPU {
 }
 
 #[cfg(test)]
-mod asl_acc_tests {
+mod asl_tests {
     use mockall::predicate::eq;
 
     use crate::cpu::bus::MockBus;
@@ -55,16 +50,21 @@ mod asl_acc_tests {
     use super::*;
 
     #[test]
-    fn test_asl_acc_correct_num_of_cycles() {
+    fn test_asl_acc() {
         let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x20;
-        assert_eq!(2, cpu.asl_acc());
+        assert_eq!(2, cpu.asl(&cpu.acc(), &bus, 0x0));
         assert_eq!(0x40, cpu.a);
+
+        assert_eq!(false, cpu.c);
+        assert_eq!(false, cpu.z);
+        assert_eq!(false, cpu.n);
     }
 
     #[test]
-    fn test_asl_zp_correct_number_of_cycles() {
+    fn test_asl_zp() {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
 
@@ -78,9 +78,36 @@ mod asl_acc_tests {
             .times(1)
             .return_const(());
 
-        assert_eq!(5, cpu.asl_zp(0x0, &bus));
+        assert_eq!(5, cpu.asl(&cpu.zp(0x0, &bus), &bus, 0x0));
+        
+        assert_eq!(true, cpu.c);
+        assert_eq!(false, cpu.z);
+        assert_eq!(true, cpu.n);
     }
 
+    #[test]
+    fn test_asl_zpx() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        cpu.x = 0x2;
+        bus.expect_read()
+            .with(eq(0x2))
+            .times(1)
+            .return_const(0x1);
+
+        bus.expect_write()
+            .with(eq(0x2), eq(0x2))
+            .times(1)
+            .return_const(());
+
+        assert_eq!(6, cpu.asl(&cpu.zpx(0x0, &bus), &bus, 0x2));
+
+        assert_eq!(false, cpu.c);
+        assert_eq!(false, cpu.z);
+        assert_eq!(false, cpu.n);
+    }
+    
     #[test]
     fn test_asl_shift() {
         let mut cpu = CPU::new();
