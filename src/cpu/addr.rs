@@ -9,6 +9,7 @@ mod absx;
 mod absy;
 mod indx;
 mod indy;
+mod rel;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(in crate::cpu) enum AddrMode {
@@ -20,7 +21,8 @@ pub(in crate::cpu) enum AddrMode {
     ABSX,
     ABSY,
     INDX,
-    INDY
+    INDY,
+    REL
 }
 
 #[derive(Debug, PartialEq)]

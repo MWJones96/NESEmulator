@@ -3,7 +3,7 @@ mod addr;
 mod bus;
 
 pub struct CPU {
-    pc: u32,
+    pc: u16,
 
     a: u8,
     x: u8,
