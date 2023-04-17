@@ -3,3 +3,4 @@ mod and;
 mod asl;
 mod bcc;
 mod bcs;
+mod beq;
