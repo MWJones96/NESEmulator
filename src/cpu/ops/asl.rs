@@ -54,7 +54,7 @@ mod asl_tests {
     #[test]
     fn test_asl_acc() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let bus = MockBus::new();
 
         cpu.a = 0x20;
         assert_eq!(2, cpu.asl(&cpu.acc(), &bus));
