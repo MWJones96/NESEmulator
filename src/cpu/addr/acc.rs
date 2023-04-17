@@ -7,7 +7,8 @@ impl CPU {
         AddrModeResult {
             data: self.a,
             cycles: 0,
-            mode: super::AddrMode::ACC
+            mode: super::AddrMode::ACC,
+            addr: None
         }
     }
 }
@@ -26,7 +27,8 @@ mod acc_tests {
         assert_eq!(AddrModeResult {
             data: 0xcc,
             cycles: 0,
-            mode: crate::cpu::addr::AddrMode::ACC
+            mode: crate::cpu::addr::AddrMode::ACC,
+            addr: None
         }, cpu.acc());
     }
 }

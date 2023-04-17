@@ -8,7 +8,8 @@ impl CPU {
         AddrModeResult {
             data: bus.read(addr),
             cycles: 2,
-            mode: super::AddrMode::ABS
+            mode: super::AddrMode::ABS,
+            addr: Some(addr)
         }
     }
 }
@@ -33,7 +34,8 @@ mod abs_tests {
         assert_eq!(AddrModeResult {
             data: 0x88,
             cycles: 2,
-            mode: crate::cpu::addr::AddrMode::ABS
+            mode: crate::cpu::addr::AddrMode::ABS,
+            addr: Some(0xffff)
         }, result);
     }
 }

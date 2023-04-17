@@ -8,7 +8,8 @@ impl CPU {
         AddrModeResult { 
             data: bus.read(addr as u16), 
             cycles: 1, 
-            mode: super::AddrMode::ZP 
+            mode: super::AddrMode::ZP,
+            addr: Some(addr as u16)
         }
     }
 }
@@ -33,7 +34,8 @@ mod zp_tests {
         assert_eq!(AddrModeResult {
             data: 0x77,
             cycles: 1,
-            mode: crate::cpu::addr::AddrMode::ZP
+            mode: crate::cpu::addr::AddrMode::ZP,
+            addr: Some(0x0)
         }, result);
     }
 }

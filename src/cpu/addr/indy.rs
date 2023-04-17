@@ -50,7 +50,8 @@ mod indy_tests {
         assert_eq!(AddrModeResult {
             data: 0xbb,
             cycles: 3,
-            mode: crate::cpu::addr::AddrMode::INDY
+            mode: crate::cpu::addr::AddrMode::INDY,
+            addr: Some(0x8879)
         }, result);
     }
 
@@ -75,7 +76,8 @@ mod indy_tests {
         assert_eq!(AddrModeResult {
             data: 0xcc,
             cycles: 4,
-            mode: crate::cpu::addr::AddrMode::INDY
+            mode: crate::cpu::addr::AddrMode::INDY,
+            addr: Some(0x8976)
         }, result);
     }
 }

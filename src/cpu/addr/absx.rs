@@ -31,7 +31,8 @@ mod absx_tests {
         assert_eq!(AddrModeResult {
             data: 0x88,
             cycles: 2,
-            mode: crate::cpu::addr::AddrMode::ABSX
+            mode: crate::cpu::addr::AddrMode::ABSX,
+            addr: Some(0x2)
         }, result);
     }
 
@@ -50,7 +51,8 @@ mod absx_tests {
         assert_eq!(AddrModeResult {
             data: 0x88,
             cycles: 3,
-            mode: AddrMode::ABSX
+            mode: AddrMode::ABSX,
+            addr: Some(0x1)
         }, result);
     }
 }

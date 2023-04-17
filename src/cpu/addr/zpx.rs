@@ -5,10 +5,12 @@ use super::AddrModeResult;
 impl CPU {
     pub (in crate::cpu) fn zpx(&self, addr: u8, bus: &dyn Bus) 
         -> AddrModeResult {
+            let resolved_addr = addr.wrapping_add(self.x) as u16;
         AddrModeResult {
-            data: bus.read(addr.wrapping_add(self.x) as u16),
+            data: bus.read(resolved_addr),
             cycles: 2,
-            mode: super::AddrMode::ZPX
+            mode: super::AddrMode::ZPX,
+            addr: Some(resolved_addr)
         }
     }
 }
@@ -34,7 +36,8 @@ mod zpx_tests {
         assert_eq!(AddrModeResult {
             data: 0x77,
             cycles: 2,
-            mode: crate::cpu::addr::AddrMode::ZPX
+            mode: crate::cpu::addr::AddrMode::ZPX,
+            addr: Some(0x1)
         }, result);
     }
 }

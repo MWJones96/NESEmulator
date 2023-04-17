@@ -27,7 +27,9 @@ pub(in crate::cpu) enum AddrMode {
 pub(in crate::cpu) struct AddrModeResult {
     pub data: u8,
     pub cycles: u8,
-    pub mode: AddrMode
+    pub mode: AddrMode,
+    //Address where the data came from (does not apply for ACC and IMM modes)
+    pub addr: Option<u16>,
 }
 
 impl CPU {
@@ -40,7 +42,8 @@ impl CPU {
         AddrModeResult {
             data: bus.read(resolved_addr),
             cycles: 2 + ((page_before != page_after) as u8),
-            mode
+            mode: mode,
+            addr: Some(resolved_addr)
         }
     }
 }

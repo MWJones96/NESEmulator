@@ -7,7 +7,8 @@ impl CPU {
         AddrModeResult {
             data: imm,
             cycles: 0,
-            mode: super::AddrMode::IMM
+            mode: super::AddrMode::IMM,
+            addr: None
         }
     }
 }
@@ -26,7 +27,8 @@ mod imm_tests {
         assert_eq!(AddrModeResult {
             data: 0x88,
             cycles: 0,
-            mode: crate::cpu::addr::AddrMode::IMM
+            mode: crate::cpu::addr::AddrMode::IMM,
+            addr: None
         }, imm);
     }
 }

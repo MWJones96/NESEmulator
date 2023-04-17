@@ -46,7 +46,8 @@ mod indx_tests {
         assert_eq!(AddrModeResult {
             data: 0xaa,
             cycles: 4,
-            mode: crate::cpu::addr::AddrMode::INDX
+            mode: crate::cpu::addr::AddrMode::INDX,
+            addr: Some(0x8877)
         }, result);
     }
 }
