@@ -35,8 +35,8 @@ impl CPU {
         self.sp -= 1;
         self.b = false;
 
-        self.pc = ((bus.read(CPU::INTERRUPT_VECTOR) as u16) << 8) 
-            | bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16;
+        self.pc = (bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16) << 8
+            | bus.read(CPU::INTERRUPT_VECTOR) as u16;
 
         7
     }
