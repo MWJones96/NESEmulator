@@ -17,13 +17,7 @@ use super::super::CPU;
 
 impl CPU {
     pub(in crate::cpu) fn beq(&mut self, mode: &AddrModeResult) -> u8 {
-        match self.z {
-            false => 2 + mode.cycles,
-            true => {
-                self.pc = mode.addr.unwrap();
-                2 + 1 + mode.cycles
-            }
-        }
+        self.branch_helper(self.z, mode)
     }
 }
 
