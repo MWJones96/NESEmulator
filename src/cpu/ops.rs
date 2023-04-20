@@ -14,6 +14,7 @@ mod brk;
 mod bvc;
 mod bvs;
 mod clc;
+mod cld;
 
 impl CPU {
     fn branch_helper(&mut self, condition: bool, mode: &AddrModeResult) -> u8 {
