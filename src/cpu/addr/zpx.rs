@@ -5,7 +5,7 @@ use super::AddrModeResult;
 impl CPU {
     pub(in crate::cpu) fn zpx(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.x) as u16;
-        
+
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 2,
