@@ -10,10 +10,12 @@ impl CPU {
         let resolved_addr = (((bus.read(high_byte_addr as u16) as u16) << 8) as u16)
             | bus.read(low_byte_addr as u16) as u16;
 
-        let mut result = self.abs(resolved_addr, bus);
-        result.cycles += 2;
-        result.mode = AddrMode::INDX;
-        result
+        AddrModeResult {
+            data: Some(bus.read(resolved_addr)),
+            cycles: 4,
+            mode: AddrMode::INDX,
+            addr: Some(resolved_addr),
+        }
     }
 }
 

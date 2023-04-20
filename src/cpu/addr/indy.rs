@@ -14,10 +14,12 @@ impl CPU {
         let resolved_addr = resolved_addr + self.y as u16;
         let page_after = (resolved_addr >> 8) as u8;
 
-        let mut result = self.abs(resolved_addr, bus);
-        result.cycles += 1 + ((page_before != page_after) as u8);
-        result.mode = AddrMode::INDY;
-        result
+        AddrModeResult {
+            data: Some(bus.read(resolved_addr)),
+            cycles: 3 + ((page_before != page_after) as u8),
+            mode: AddrMode::INDY,
+            addr: Some(resolved_addr),
+        }
     }
 }
 
