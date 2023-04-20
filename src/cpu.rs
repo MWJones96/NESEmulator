@@ -21,10 +21,12 @@ pub struct CPU {
 }
 
 impl CPU {
+    const INTERRUPT_VECTOR: u16 = 0xfffe;
+
     pub fn new() -> Self {
         Self {
             pc: 0,
-            sp: 0,
+            sp: 0xff,
 
             a: 0,
             x: 0,
@@ -62,7 +64,7 @@ mod cpu_tests {
         let cpu = CPU::new();
 
         assert_eq!(0, cpu.pc);
-        assert_eq!(0, cpu.sp);
+        assert_eq!(0xff, cpu.sp);
 
         assert_eq!(0, cpu.a);
         assert_eq!(0, cpu.x);
