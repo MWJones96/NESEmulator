@@ -9,6 +9,7 @@ mod beq;
 mod bit;
 mod bmi;
 mod bne;
+mod bpl;
 
 impl CPU {
     fn branch_helper(&mut self, condition: bool, mode: &AddrModeResult) -> u8 {
