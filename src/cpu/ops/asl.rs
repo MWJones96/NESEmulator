@@ -24,28 +24,19 @@ use super::super::CPU;
 impl CPU {
     pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) -> u8 {
         let data = self._asl(mode.data.unwrap());
+
         match mode.mode {
             AddrMode::ACC => {
                 self.a = data;
                 2
             }
-            AddrMode::ZP => {
+            _ => {
                 bus.write(mode.addr.unwrap(), data);
-                5
+                match mode.mode {
+                    AddrMode::ABSX => 7,
+                    _ => 4 + mode.cycles,
+                }
             }
-            AddrMode::ZPX => {
-                bus.write(mode.addr.unwrap(), data);
-                6
-            }
-            AddrMode::ABS => {
-                bus.write(mode.addr.unwrap(), data);
-                6
-            }
-            AddrMode::ABSX => {
-                bus.write(mode.addr.unwrap(), data);
-                7
-            }
-            _ => panic!("Unimplemented"),
         }
     }
 

@@ -13,8 +13,6 @@
     flag is set, other­wise it is reset.
 */
 
-use core::panic;
-
 use crate::cpu::{addr::AddrMode, addr::AddrModeResult, bus::Bus, CPU};
 
 impl CPU {
@@ -26,11 +24,8 @@ impl CPU {
         self.z = result == 0;
 
         match mode.mode {
-            AddrMode::ZP => 5,
-            AddrMode::ZPX => 6,
-            AddrMode::ABS => 6,
             AddrMode::ABSX => 7,
-            _ => panic!("Unimplemented"),
+            _ => 4 + mode.cycles,
         }
     }
 }

@@ -30,11 +30,8 @@ impl CPU {
         self.z = data == 0;
 
         match mode.mode {
-            AddrMode::ZP => 5,
-            AddrMode::ZPX => 6,
-            AddrMode::ABS => 6,
             AddrMode::ABSX => 7,
-            _ => panic!("Unimplemented"),
+            _ => 4 + mode.cycles,
         }
     }
 }

@@ -25,18 +25,16 @@ impl CPU {
         let pc_lsb = (self.pc & 0xff) as u8;
         let pc_msb = (self.pc >> 8) as u8;
 
-        bus.write(0x100 + self.sp as u16, pc_msb);
-        self.sp -= 1;
-        bus.write(0x100 + self.sp as u16, pc_lsb);
-        self.sp -= 1;
+        bus.write(0x100 + (self.sp - 0) as u16, pc_msb);
+        bus.write(0x100 + (self.sp - 1) as u16, pc_lsb);
 
         self.b = true;
-        bus.write(0x100 + self.sp as u16, self.get_status_byte());
-        self.sp -= 1;
+        bus.write(0x100 + (self.sp - 2) as u16, self.get_status_byte());
         self.b = false;
 
         self.pc = (bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16) << 8
             | bus.read(CPU::INTERRUPT_VECTOR) as u16;
+        self.sp -= 3;
 
         7
     }
