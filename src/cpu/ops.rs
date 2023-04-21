@@ -37,3 +37,4 @@ mod dex;
 mod dey;
 mod eor;
 mod inc;
+mod inx;
