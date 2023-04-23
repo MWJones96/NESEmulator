@@ -27,10 +27,10 @@ impl CPU {
 
         bus.write(0x100 + (self.sp - 0) as u16, pc_msb);
         bus.write(0x100 + (self.sp - 1) as u16, pc_lsb);
-
-        self.b = true;
-        bus.write(0x100 + (self.sp - 2) as u16, self.get_status_byte());
-        self.b = false;
+        bus.write(
+            0x100 + (self.sp - 2) as u16,
+            self.get_status_byte() | 0b0001_0000,
+        );
 
         self.pc = (bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16) << 8
             | bus.read(CPU::INTERRUPT_VECTOR) as u16;
@@ -100,7 +100,7 @@ mod brk_tests {
         cpu.z = true;
 
         bus.expect_write()
-            .with(eq(0x1fd), eq(0b0001_0111))
+            .with(eq(0x1fd), eq(0b0011_0111))
             .times(1)
             .return_const(());
 
@@ -134,6 +134,6 @@ mod brk_tests {
 
         assert_eq!(0x4020, cpu.pc);
         assert_eq!(true, cpu.i);
-        assert_eq!(0b0000_0100, cpu.get_status_byte());
+        assert_eq!(0b0010_0100, cpu.get_status_byte());
     }
 }
