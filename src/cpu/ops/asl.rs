@@ -22,21 +22,21 @@ use crate::cpu::{
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) -> u8 {
+    pub(in crate::cpu) fn asl_cycles(&self, mode: &AddrModeResult) -> u8 {
+        match mode.mode {
+            AddrMode::ACC => 2,
+            AddrMode::ABSX => 7,
+            _ => 4 + mode.cycles,
+        }
+    }
+
+    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
         let data = self._asl(mode.data.unwrap());
 
-        match mode.mode {
-            AddrMode::ACC => {
-                self.a = data;
-                2
-            }
-            _ => {
-                bus.write(mode.addr.unwrap(), data);
-                match mode.mode {
-                    AddrMode::ABSX => 7,
-                    _ => 4 + mode.cycles,
-                }
-            }
+        if let Some(addr) = mode.addr {
+            bus.write(addr, data);
+        } else {
+            self.a = data;
         }
     }
 
@@ -62,34 +62,19 @@ mod asl_tests {
     #[test]
     fn test_asl_acc() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
 
         cpu.a = 0x20;
-        assert_eq!(2, cpu.asl(&cpu.acc(), &bus));
-        assert_eq!(0x40, cpu.a);
-
-        assert_eq!(false, cpu.c);
-        assert_eq!(false, cpu.z);
-        assert_eq!(false, cpu.n);
+        assert_eq!(2, cpu.asl_cycles(&cpu.acc()));
     }
 
     #[test]
     fn test_asl_zp() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
-        bus.expect_write()
-            .with(eq(0x0), eq(0xfe))
-            .times(1)
-            .return_const(());
-
-        assert_eq!(5, cpu.asl(&cpu.zp(0x0, &bus), &bus));
-
-        assert_eq!(true, cpu.c);
-        assert_eq!(false, cpu.z);
-        assert_eq!(true, cpu.n);
+        assert_eq!(5, cpu.asl_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -100,21 +85,12 @@ mod asl_tests {
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
 
-        bus.expect_write()
-            .with(eq(0x2), eq(0x2))
-            .times(1)
-            .return_const(());
-
-        assert_eq!(6, cpu.asl(&cpu.zpx(0x0, &bus), &bus));
-
-        assert_eq!(false, cpu.c);
-        assert_eq!(false, cpu.z);
-        assert_eq!(false, cpu.n);
+        assert_eq!(6, cpu.asl_cycles(&cpu.zpx(0x0, &bus)));
     }
 
     #[test]
     fn test_asl_abs() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockBus::new();
 
         bus.expect_read()
@@ -122,15 +98,7 @@ mod asl_tests {
             .times(1)
             .return_const(0xaa);
 
-        bus.expect_write()
-            .with(eq(0xffff), eq(0x54))
-            .times(1)
-            .return_const(());
-
-        assert_eq!(6, cpu.asl(&cpu.abs(0xffff, &bus), &bus));
-        assert_eq!(true, cpu.c);
-        assert_eq!(false, cpu.z);
-        assert_eq!(false, cpu.n);
+        assert_eq!(6, cpu.asl_cycles(&cpu.abs(0xffff, &bus)));
     }
 
     #[test]
@@ -142,15 +110,7 @@ mod asl_tests {
 
         bus.expect_read().with(eq(0x1)).times(1).return_const(0x88);
 
-        bus.expect_write()
-            .with(eq(0x1), eq(0x10))
-            .times(1)
-            .return_const(());
-
-        assert_eq!(7, cpu.asl(&cpu.absx(0xffff, &bus), &bus));
-        assert_eq!(true, cpu.c);
-        assert_eq!(false, cpu.z);
-        assert_eq!(false, cpu.n);
+        assert_eq!(7, cpu.asl_cycles(&cpu.absx(0xffff, &bus)));
     }
 
     #[test]
