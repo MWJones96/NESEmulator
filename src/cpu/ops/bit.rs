@@ -18,12 +18,13 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
-    fn bit(&mut self, mode: &AddrModeResult) -> u8 {
-        self._bit(mode.data.unwrap());
+    pub(in crate::cpu) fn bit_cycles(&mut self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    fn _bit(&mut self, data: u8) {
+    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult) {
+        let data = mode.data.unwrap();
+
         self.n = (data & 0b1000_0000) > 0;
         self.v = (data & 0b0100_0000) > 0;
         self.z = (self.a & data) == 0;
@@ -45,7 +46,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        assert_eq!(3, cpu.bit(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.bit_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -55,7 +56,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        assert_eq!(4, cpu.bit(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.bit_cycles(&cpu.abs(0x0, &bus)));
     }
 
     #[test]
