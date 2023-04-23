@@ -5,7 +5,12 @@ use super::AddrModeResult;
 impl CPU {
     pub(in crate::cpu) fn rel(&self, offset: u8) -> AddrModeResult {
         let page_before = (self.pc >> 8) as u8;
-        let resolved_addr = self.pc.wrapping_add((offset as i8) as u16);
+        let resolved_offset = if (offset & 0x80) > 0 {
+            (offset as u16) | 0xff00
+        } else {
+            offset as u16
+        };
+        let resolved_addr = self.pc.wrapping_add(resolved_offset);
         let page_after = (resolved_addr >> 8) as u8;
 
         AddrModeResult {
