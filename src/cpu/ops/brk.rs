@@ -19,7 +19,11 @@ use crate::cpu::bus::Bus;
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn brk(&mut self, _reason: u8, bus: &dyn Bus) -> u8 {
+    pub(in crate::cpu) fn brk_cycles(&self) -> u8 {
+        7
+    }
+
+    pub(in crate::cpu) fn brk(&mut self, _reason: u8, bus: &dyn Bus) {
         self.i = true;
 
         let pc_lsb = (self.pc & 0xff) as u8;
@@ -37,8 +41,6 @@ impl CPU {
         self.pc = (bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16) << 8
             | bus.read(CPU::INTERRUPT_VECTOR) as u16;
         self.sp = self.sp.wrapping_sub(3);
-
-        7
     }
 }
 
@@ -52,12 +54,12 @@ mod brk_tests {
 
     #[test]
     fn test_brk_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockBus::new();
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.brk(0x0, &bus));
+        assert_eq!(7, cpu.brk_cycles());
     }
 
     #[test]
