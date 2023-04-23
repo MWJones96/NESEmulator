@@ -31,23 +31,17 @@ impl CPU {
     }
 
     pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
-        let data = self._asl(mode.data.unwrap());
+        let data: u16 = (mode.data.unwrap() as u16) << 1;
+
+        self.c = data > (u8::MAX as u16);
+        self.z = (data as u8) == 0;
+        self.n = ((data as u8) & 0x80) > 0;
 
         if let Some(addr) = mode.addr {
-            bus.write(addr, data);
+            bus.write(addr, data as u8);
         } else {
-            self.a = data;
+            self.a = data as u8;
         }
-    }
-
-    fn _asl(&mut self, data: u8) -> u8 {
-        let calc: u16 = (data as u16) << 1;
-
-        self.c = calc > (u8::MAX as u16);
-        self.z = (calc as u8) == 0;
-        self.n = ((calc as u8) & 0x80) > 0;
-
-        return calc as u8;
     }
 }
 
@@ -116,44 +110,66 @@ mod asl_tests {
     #[test]
     fn test_asl_shift() {
         let mut cpu = CPU::new();
+        let bus = MockBus::new();
 
-        assert_eq!(0x2, cpu._asl(0x1));
-        assert_eq!(0xfe, cpu._asl(0xff));
-        assert_eq!(0x0, cpu._asl(0x0));
+        cpu.a = 0x1;
+        cpu.asl(&cpu.acc(), &bus);
+        assert_eq!(0x2, cpu.a);
+
+        cpu.a = 0xff;
+        cpu.asl(&cpu.acc(), &bus);
+        assert_eq!(0xfe, cpu.a);
+
+
+        cpu.a = 0x00;
+        cpu.asl(&cpu.acc(), &bus);
+        assert_eq!(0x00, cpu.a);
+
         cpu.c = true;
-        assert_eq!(0x0, cpu._asl(0x0));
+        cpu.a = 0x00;
+        cpu.asl(&cpu.acc(), &bus);
+        assert_eq!(0x00, cpu.a);
     }
 
     #[test]
     fn test_asl_carry_flag() {
         let mut cpu = CPU::new();
+        let bus = MockBus::new();
 
-        cpu._asl(0xC0);
+        cpu.a = 0xc0;
+        cpu.asl(&cpu.acc(), &bus);
         assert_eq!(true, cpu.c);
 
-        cpu._asl(0x1);
+        cpu.a = 0x1;
+        cpu.asl(&cpu.acc(), &bus);
         assert_eq!(false, cpu.c);
     }
 
     #[test]
     fn test_asl_acc_zero_flag() {
         let mut cpu = CPU::new();
+        let bus = MockBus::new();
 
-        cpu._asl(0x80);
+        cpu.a = 0x80;
+        cpu.asl(&cpu.acc(), &bus);
         assert_eq!(true, cpu.z);
 
-        cpu._asl(0x40);
+        cpu.a = 0x40;
+        cpu.asl(&cpu.acc(), &bus);
         assert_eq!(false, cpu.z);
     }
 
     #[test]
     fn test_asl_acc_negative_flag() {
         let mut cpu = CPU::new();
+        let bus = MockBus::new();
 
-        cpu._asl(0x40);
+        cpu.a = 0x40;
+        cpu.asl(&cpu.acc(), &bus);
         assert_eq!(true, cpu.n);
 
-        cpu._asl(0x80);
+        cpu.a = 0x80;
+        cpu.asl(&cpu.acc(), &bus);
         assert_eq!(false, cpu.n);
     }
 }
