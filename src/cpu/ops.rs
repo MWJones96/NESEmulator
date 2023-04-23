@@ -1,17 +1,3 @@
-use super::{addr::AddrModeResult, CPU};
-
-impl CPU {
-    fn branch_helper(&mut self, condition: bool, mode: &AddrModeResult) -> u8 {
-        match condition {
-            true => {
-                self.pc = mode.addr.unwrap();
-                2 + 1 + mode.cycles
-            }
-            false => 2 + mode.cycles,
-        }
-    }
-}
-
 mod adc;
 mod and;
 mod asl;

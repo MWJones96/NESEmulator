@@ -21,11 +21,17 @@ use super::super::CPU;
 
 impl CPU {
     pub(in crate::cpu) fn bpl_cycles(&self, mode: &AddrModeResult) -> u8 {
-        if !self.n { 2 + 1 + mode.cycles } else { 2 + mode.cycles }
+        if !self.n {
+            2 + 1 + mode.cycles
+        } else {
+            2 + mode.cycles
+        }
     }
 
     pub(in crate::cpu) fn bpl(&mut self, mode: &AddrModeResult) {
-        if !self.n { self.pc = mode.addr.unwrap(); }
+        if !self.n {
+            self.pc = mode.addr.unwrap();
+        }
     }
 }
 

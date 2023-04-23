@@ -15,11 +15,17 @@ use super::super::CPU;
 
 impl CPU {
     pub(in crate::cpu) fn bcc_cycles(&self, mode: &AddrModeResult) -> u8 {
-        if !self.c { 2 + 1 + mode.cycles } else { 2 + mode.cycles }
+        if !self.c {
+            2 + 1 + mode.cycles
+        } else {
+            2 + mode.cycles
+        }
     }
 
     pub(in crate::cpu) fn bcc(&mut self, mode: &AddrModeResult) {
-        if !self.c { self.pc = mode.addr.unwrap(); }
+        if !self.c {
+            self.pc = mode.addr.unwrap();
+        }
     }
 }
 

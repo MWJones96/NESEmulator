@@ -16,8 +16,18 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn beq(&mut self, mode: &AddrModeResult) -> u8 {
-        self.branch_helper(self.z, mode)
+    pub(in crate::cpu) fn beq_cycles(&self, mode: &AddrModeResult) -> u8 {
+        if self.z {
+            2 + 1 + mode.cycles
+        } else {
+            2 + mode.cycles
+        }
+    }
+
+    pub(in crate::cpu) fn beq(&mut self, mode: &AddrModeResult) {
+        if self.z {
+            self.pc = mode.addr.unwrap();
+        }
     }
 }
 
@@ -27,41 +37,72 @@ mod beq_tests {
 
     #[test]
     fn test_beq_no_branch_no_page_cross() {
-        let mut cpu = CPU::new();
-        cpu.pc = 0x1234;
-        cpu.z = false;
-
-        assert_eq!(2, cpu.beq(&cpu.rel(0x1)));
-        assert_eq!(0x1234, cpu.pc);
+        let cpu = CPU::new();
+        assert_eq!(2, cpu.beq_cycles(&cpu.rel(0x1)));
     }
 
     #[test]
     fn test_beq_no_branch_with_page_cross() {
         let mut cpu = CPU::new();
-        cpu.pc = 0x12ff;
-        cpu.z = false;
+        cpu.pc = 0x1234;
 
-        assert_eq!(3, cpu.beq(&cpu.rel(0xa)));
-        assert_eq!(0x12ff, cpu.pc);
+        assert_eq!(3, cpu.beq_cycles(&cpu.rel(0xaa)));
     }
 
     #[test]
     fn test_beq_with_branch_no_page_cross() {
         let mut cpu = CPU::new();
-        cpu.pc = 0x81;
         cpu.z = true;
 
-        assert_eq!(3, cpu.beq(&cpu.rel(0x80)));
-        assert_eq!(0x1, cpu.pc);
+        assert_eq!(3, cpu.beq_cycles(&cpu.rel(0x7f)));
     }
 
     #[test]
     fn test_beq_with_branch_and_page_cross() {
         let mut cpu = CPU::new();
+        cpu.z = true;
+        cpu.pc = 0x12ff;
+
+        assert_eq!(4, cpu.beq_cycles(&cpu.rel(0x7f)));
+    }
+
+    #[test]
+    fn test_beq_pc_no_branch_no_page_cross() {
+        let mut cpu = CPU::new();
+
+        cpu.pc = 0x1234;
+        cpu.z = false;
+        cpu.beq(&cpu.rel(0x1));
+        assert_eq!(0x1234, cpu.pc);
+    }
+
+    #[test]
+    fn test_beq_pc_no_branch_with_page_cross() {
+        let mut cpu = CPU::new();
+
+        cpu.pc = 0x12ff;
+        cpu.z = false;
+        cpu.beq(&cpu.rel(0xa));
+        assert_eq!(0x12ff, cpu.pc);
+    }
+
+    #[test]
+    fn test_beq_pc_with_branch_no_page_cross() {
+        let mut cpu = CPU::new();
+        cpu.pc = 0x81;
+        cpu.z = true;
+
+        cpu.beq(&cpu.rel(0x80));
+        assert_eq!(0x1, cpu.pc);
+    }
+
+    #[test]
+    fn test_beq_pc_with_branch_and_page_cross() {
+        let mut cpu = CPU::new();
         cpu.pc = 0x8081;
         cpu.z = true;
 
-        assert_eq!(4, cpu.beq(&cpu.rel(0x7f)));
+        cpu.beq(&cpu.rel(0x7f));
         assert_eq!(0x8100, cpu.pc);
     }
 }

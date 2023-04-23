@@ -120,7 +120,6 @@ mod asl_tests {
         cpu.asl(&cpu.acc(), &bus);
         assert_eq!(0xfe, cpu.a);
 
-
         cpu.a = 0x00;
         cpu.asl(&cpu.acc(), &bus);
         assert_eq!(0x00, cpu.a);
