@@ -25,16 +25,18 @@ impl CPU {
         let pc_lsb = (self.pc & 0xff) as u8;
         let pc_msb = (self.pc >> 8) as u8;
 
-        bus.write(0x100 + (self.sp - 0) as u16, pc_msb);
-        bus.write(0x100 + (self.sp - 1) as u16, pc_lsb);
+        const B: u8 = 0x10;
+
+        bus.write(0x100 + (self.sp.wrapping_sub(0)) as u16, pc_msb);
+        bus.write(0x100 + (self.sp.wrapping_sub(1)) as u16, pc_lsb);
         bus.write(
-            0x100 + (self.sp - 2) as u16,
-            self.get_status_byte() | 0b0001_0000,
+            0x100 + (self.sp.wrapping_sub(2)) as u16,
+            self.get_status_byte() | B,
         );
 
         self.pc = (bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16) << 8
             | bus.read(CPU::INTERRUPT_VECTOR) as u16;
-        self.sp -= 3;
+        self.sp = self.sp.wrapping_sub(3);
 
         7
     }
@@ -135,5 +137,33 @@ mod brk_tests {
         assert_eq!(0x4020, cpu.pc);
         assert_eq!(true, cpu.i);
         assert_eq!(0b0010_0100, cpu.get_status_byte());
+    }
+
+    #[test]
+    fn test_push_onto_full_stack_underflow() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+        cpu.sp = 0x0;
+
+        bus.expect_read().return_const(0x0);
+
+        bus.expect_write()
+            .with(eq(0x100), eq(0x0))
+            .times(1)
+            .return_const(());
+
+        bus.expect_write()
+            .with(eq(0x1ff), eq(0x0))
+            .times(1)
+            .return_const(());
+
+        bus.expect_write()
+            .with(eq(0x1fe), eq(0b0011_0100))
+            .times(1)
+            .return_const(());
+
+        cpu.brk(0x0, &bus);
+
+        assert_eq!(0xfd, cpu.sp);
     }
 }
