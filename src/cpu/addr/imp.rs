@@ -3,7 +3,7 @@ use crate::cpu::CPU;
 use super::{AddrMode, AddrModeResult};
 
 impl CPU {
-    fn imp(&self) -> AddrModeResult {
+    pub(in crate::cpu) fn imp(&self) -> AddrModeResult {
         AddrModeResult {
             data: None,
             cycles: 0,

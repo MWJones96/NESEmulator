@@ -11,14 +11,16 @@
     and no flags other than the carry flag which is reset.
 */
 
+use crate::cpu::addr::AddrModeResult;
+
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn clc_cycles(&mut self) -> u8 {
+    pub(in crate::cpu) fn clc_cycles(&mut self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn clc(&mut self) {
+    pub(in crate::cpu) fn clc(&mut self, _mode: &AddrModeResult) {
         self.c = false;
     }
 }
@@ -31,7 +33,7 @@ mod clc_tests {
     fn test_clc_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.clc_cycles());
+        assert_eq!(2, cpu.clc_cycles(&cpu.imp()));
     }
 
     #[test]
@@ -39,10 +41,10 @@ mod clc_tests {
         let mut cpu = CPU::new();
         cpu.c = true;
 
-        cpu.clc();
+        cpu.clc(&cpu.imp());
         assert_eq!(false, cpu.c);
 
-        cpu.clc();
+        cpu.clc(&cpu.imp());
         assert_eq!(false, cpu.c);
     }
 }

@@ -11,14 +11,16 @@
     to a 0.
 */
 
+use crate::cpu::addr::AddrModeResult;
+
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn cld_cycles(&mut self) -> u8 {
+    pub(in crate::cpu) fn cld_cycles(&mut self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn cld(&mut self) {
+    pub(in crate::cpu) fn cld(&mut self, _mode: &AddrModeResult) {
         self.d = false;
     }
 }
@@ -31,7 +33,7 @@ mod cld_tests {
     fn test_cld_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.cld_cycles());
+        assert_eq!(2, cpu.cld_cycles(&cpu.imp()));
     }
 
     #[test]
@@ -39,10 +41,10 @@ mod cld_tests {
         let mut cpu = CPU::new();
         cpu.d = true;
 
-        cpu.cld();
+        cpu.cld(&cpu.imp());
         assert_eq!(false, cpu.d);
 
-        cpu.cld();
+        cpu.cld(&cpu.imp());
         assert_eq!(false, cpu.d);
     }
 }

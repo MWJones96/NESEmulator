@@ -14,16 +14,16 @@
     changes no values in either the registers or the flags.
 */
 
-use crate::cpu::bus::Bus;
+use crate::cpu::{addr::AddrModeResult, bus::Bus};
 
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn brk_cycles(&self) -> u8 {
+    pub(in crate::cpu) fn brk_cycles(&self, _mode: &AddrModeResult) -> u8 {
         7
     }
 
-    pub(in crate::cpu) fn brk(&mut self, _reason: u8, bus: &dyn Bus) {
+    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, _reason: u8, bus: &dyn Bus) {
         self.i = true;
 
         let pc_lsb = (self.pc & 0xff) as u8;
@@ -59,7 +59,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.brk_cycles());
+        assert_eq!(7, cpu.brk_cycles(&cpu.imp()));
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(0x0, &bus);
+        cpu.brk(&cpu.imp(), 0x0, &bus);
 
         assert_eq!(true, cpu.i);
     }
@@ -93,7 +93,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(0x0, &bus);
+        cpu.brk(&cpu.imp(), 0x0, &bus);
     }
 
     #[test]
@@ -112,7 +112,7 @@ mod brk_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(0x0, &bus);
+        cpu.brk(&cpu.imp(), 0x0, &bus);
 
         assert_eq!(0xfc, cpu.sp);
     }
@@ -134,7 +134,7 @@ mod brk_tests {
             .times(1)
             .return_const(0x40);
 
-        cpu.brk(0x0, &bus);
+        cpu.brk(&cpu.imp(), 0x0, &bus);
 
         assert_eq!(0x4020, cpu.pc);
         assert_eq!(true, cpu.i);
@@ -164,7 +164,7 @@ mod brk_tests {
             .times(1)
             .return_const(());
 
-        cpu.brk(0x0, &bus);
+        cpu.brk(&cpu.imp(), 0x0, &bus);
 
         assert_eq!(0xfd, cpu.sp);
     }
