@@ -39,3 +39,4 @@ mod pla;
 mod plp;
 mod rol;
 mod ror;
+mod rti;
