@@ -1,10 +1,10 @@
-/* 
+/*
     JMP - JMP Indirect
     Operation: [PC + 1] → PCL, [PC + 2] → PCH
 
     This instruction establishes a new value for the program counter.
 
-    It affects only the program counter in the microprocessor and 
+    It affects only the program counter in the microprocessor and
     affects no flags in the status register.
 */
 
