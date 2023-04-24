@@ -17,13 +17,15 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
-    pub(in crate::cpu) fn eor(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn eor_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+        2 + mode.cycles
+    }
+
+    pub(in crate::cpu) fn eor(&mut self, mode: &AddrModeResult) {
         self.a = self.a ^ mode.data.unwrap();
 
         self.n = (self.a & 0x80) > 0;
         self.z = self.a == 0;
-
-        2 + mode.cycles
     }
 }
 
@@ -36,7 +38,7 @@ mod eor_tests {
     #[test]
     fn test_eor_imm_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        assert_eq!(2, cpu.eor(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.eor_cycles(&cpu.imm(0x0)));
     }
 
     #[test]
@@ -46,7 +48,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.eor(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.eor_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -56,7 +58,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.eor(&cpu.zpx(0x0, &bus)));
+        assert_eq!(4, cpu.eor_cycles(&cpu.zpx(0x0, &bus)));
     }
 
     #[test]
@@ -66,7 +68,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.eor(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.eor_cycles(&cpu.abs(0x0, &bus)));
     }
 
     #[test]
@@ -76,7 +78,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.eor(&cpu.absx(0x0, &bus)));
+        assert_eq!(4, cpu.eor_cycles(&cpu.absx(0x0, &bus)));
     }
 
     #[test]
@@ -87,7 +89,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.eor(&cpu.absx(0x1234, &bus)));
+        assert_eq!(5, cpu.eor_cycles(&cpu.absx(0x1234, &bus)));
     }
 
     #[test]
@@ -97,7 +99,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.eor(&cpu.absy(0x0, &bus)));
+        assert_eq!(4, cpu.eor_cycles(&cpu.absy(0x0, &bus)));
     }
 
     #[test]
@@ -108,7 +110,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.eor(&cpu.absy(0x1234, &bus)));
+        assert_eq!(5, cpu.eor_cycles(&cpu.absy(0x1234, &bus)));
     }
 
     #[test]
@@ -118,7 +120,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.eor(&cpu.indx(0x0, &bus)));
+        assert_eq!(6, cpu.eor_cycles(&cpu.indx(0x0, &bus)));
     }
 
     #[test]
@@ -128,7 +130,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.eor(&cpu.indy(0x0, &bus)));
+        assert_eq!(5, cpu.eor_cycles(&cpu.indy(0x0, &bus)));
     }
 
     #[test]
@@ -139,7 +141,7 @@ mod eor_tests {
 
         bus.expect_read().return_const(0x80);
 
-        assert_eq!(6, cpu.eor(&cpu.indy(0x0, &bus)));
+        assert_eq!(6, cpu.eor_cycles(&cpu.indy(0x0, &bus)));
     }
 
     #[test]

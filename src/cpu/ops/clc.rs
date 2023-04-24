@@ -14,9 +14,12 @@
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn clc(&mut self) -> u8 {
-        self.c = false;
+    pub(in crate::cpu) fn clc_cycles(&mut self) -> u8 {
         2
+    }
+
+    pub(in crate::cpu) fn clc(&mut self) {
+        self.c = false;
     }
 }
 
@@ -28,7 +31,7 @@ mod clc_tests {
     fn test_clc_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.clc());
+        assert_eq!(2, cpu.clc_cycles());
     }
 
     #[test]

@@ -26,15 +26,17 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn cpx_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+        2 + mode.cycles
+    }
+
+    pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult) {
         let data = mode.data.unwrap();
         let result = self.x.wrapping_add(!data).wrapping_add(1);
 
         self.n = (result & 0x80) > 0;
         self.z = self.x == data;
         self.c = self.x >= data;
-
-        2 + mode.cycles
     }
 }
 
@@ -48,7 +50,7 @@ mod cpx_tests {
     fn test_cpx_imm_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.cpx(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.cpx_cycles(&cpu.imm(0x0)));
     }
 
     #[test]
@@ -57,7 +59,7 @@ mod cpx_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.cpx(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.cpx_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -66,7 +68,7 @@ mod cpx_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cpx(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.cpx_cycles(&cpu.abs(0x0, &bus)));
     }
 
     #[test]

@@ -23,15 +23,17 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn cpy(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn cpy_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+        2 + mode.cycles
+    }
+
+    pub(in crate::cpu) fn cpy(&mut self, mode: &AddrModeResult) {
         let data = mode.data.unwrap();
         let result = self.y.wrapping_add(!data).wrapping_add(1);
 
         self.n = (result & 0x80) > 0;
         self.z = self.y == data;
         self.c = self.y >= data;
-
-        2 + mode.cycles
     }
 }
 
@@ -45,7 +47,7 @@ mod cpy_tests {
     fn test_cpy_imm_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.cpy(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.cpy_cycles(&cpu.imm(0x0)));
     }
 
     #[test]
@@ -54,7 +56,7 @@ mod cpy_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.cpy(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.cpy_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -63,7 +65,7 @@ mod cpy_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cpy(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.cpy_cycles(&cpu.abs(0x0, &bus)));
     }
 
     #[test]

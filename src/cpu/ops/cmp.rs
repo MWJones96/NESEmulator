@@ -20,15 +20,17 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn cmp_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+        2 + mode.cycles
+    }
+
+    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult) {
         let data = mode.data.unwrap();
         let result = self.a.wrapping_add(!data).wrapping_add(1);
 
         self.n = (result & 0x80) > 0;
         self.z = self.a == data;
         self.c = self.a >= data;
-
-        2 + mode.cycles
     }
 }
 
@@ -42,7 +44,7 @@ mod cmp_tests {
     fn test_cmp_imm_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.cmp(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.cmp_cycles(&cpu.imm(0x0)));
     }
 
     #[test]
@@ -51,7 +53,7 @@ mod cmp_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.cmp(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.cmp_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -60,7 +62,7 @@ mod cmp_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp(&cpu.zpx(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu.zpx(0x0, &bus)));
     }
 
     #[test]
@@ -69,7 +71,7 @@ mod cmp_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu.abs(0x0, &bus)));
     }
 
     #[test]
@@ -78,7 +80,7 @@ mod cmp_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp(&cpu.absx(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu.absx(0x0, &bus)));
     }
 
     #[test]
@@ -89,7 +91,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.cmp(&cpu.absx(0x1234, &bus)));
+        assert_eq!(5, cpu.cmp_cycles(&cpu.absx(0x1234, &bus)));
     }
 
     #[test]
@@ -98,7 +100,7 @@ mod cmp_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp(&cpu.absy(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu.absy(0x0, &bus)));
     }
 
     #[test]
@@ -109,7 +111,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.cmp(&cpu.absy(0x1234, &bus)));
+        assert_eq!(5, cpu.cmp_cycles(&cpu.absy(0x1234, &bus)));
     }
 
     #[test]
@@ -119,7 +121,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.cmp(&cpu.indx(0x0, &bus)));
+        assert_eq!(6, cpu.cmp_cycles(&cpu.indx(0x0, &bus)));
     }
 
     #[test]
@@ -129,7 +131,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.cmp(&cpu.indy(0x0, &bus)));
+        assert_eq!(5, cpu.cmp_cycles(&cpu.indy(0x0, &bus)));
     }
 
     #[test]
@@ -140,7 +142,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x80);
 
-        assert_eq!(6, cpu.cmp(&cpu.indy(0x0, &bus)));
+        assert_eq!(6, cpu.cmp_cycles(&cpu.indy(0x0, &bus)));
     }
 
     #[test]

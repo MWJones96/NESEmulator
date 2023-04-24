@@ -12,9 +12,12 @@
 use super::super::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn cli(&mut self) -> u8 {
-        self.i = false;
+    pub(in crate::cpu) fn cli_cycles(&mut self) -> u8 {
         2
+    }
+
+    pub(in crate::cpu) fn cli(&mut self) {
+        self.i = false;
     }
 }
 
@@ -26,7 +29,7 @@ mod cli_tests {
     fn test_cli_correct_number_of_cycles() {
         let mut cpu = CPU::new();
 
-        assert_eq!(2, cpu.cli());
+        assert_eq!(2, cpu.cli_cycles());
     }
 
     #[test]

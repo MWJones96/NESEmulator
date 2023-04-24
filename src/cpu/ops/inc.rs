@@ -20,7 +20,14 @@ use crate::cpu::{
 };
 
 impl CPU {
-    fn inc(&mut self, mode: &AddrModeResult, bus: &dyn Bus) -> u8 {
+    pub(in crate::cpu) fn inc_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+        match mode.mode {
+            AddrMode::ABSX => 7,
+            _ => 4 + mode.cycles,
+        }
+    }
+
+    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
         let data = mode.data.unwrap().wrapping_add(1);
         let addr = mode.addr.unwrap();
 
@@ -28,11 +35,6 @@ impl CPU {
 
         self.n = (data & 0x80) > 0;
         self.z = data == 0;
-
-        match mode.mode {
-            AddrMode::ABSX => 7,
-            _ => 4 + mode.cycles,
-        }
     }
 }
 
@@ -53,7 +55,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(5, cpu.inc(&cpu.zp(0x0, &bus), &bus));
+        assert_eq!(5, cpu.inc_cycles(&cpu.zp(0x0, &bus)));
     }
 
     #[test]
@@ -65,7 +67,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.inc(&cpu.zpx(0x0, &bus), &bus));
+        assert_eq!(6, cpu.inc_cycles(&cpu.zpx(0x0, &bus)));
     }
 
     #[test]
@@ -77,7 +79,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.inc(&cpu.abs(0x0, &bus), &bus));
+        assert_eq!(6, cpu.inc_cycles(&cpu.abs(0x0, &bus)));
     }
 
     #[test]
@@ -89,7 +91,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(7, cpu.inc(&cpu.absx(0x0, &bus), &bus));
+        assert_eq!(7, cpu.inc_cycles(&cpu.absx(0x0, &bus)));
     }
 
     #[test]

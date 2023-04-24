@@ -15,13 +15,15 @@
 use crate::cpu::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn dex(&mut self) -> u8 {
+    pub(in crate::cpu) fn dex_cycles(&mut self) -> u8 {
+        2
+    }
+
+    pub(in crate::cpu) fn dex(&mut self) {
         self.x = self.x.wrapping_sub(1);
 
         self.n = (self.x & 0x80) > 0;
         self.z = self.x == 0;
-
-        2
     }
 }
 
@@ -32,7 +34,7 @@ mod dex_tests {
     #[test]
     fn test_dex_returns_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        assert_eq!(2, cpu.dex());
+        assert_eq!(2, cpu.dex_cycles());
     }
 
     #[test]

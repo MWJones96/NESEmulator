@@ -18,13 +18,15 @@
 use crate::cpu::CPU;
 
 impl CPU {
-    pub(in crate::cpu) fn iny(&mut self) -> u8 {
+    pub(in crate::cpu) fn iny_cycles(&mut self) -> u8 {
+        2
+    }
+
+    pub(in crate::cpu) fn iny(&mut self) {
         self.y = self.y.wrapping_add(1);
 
         self.n = (self.y & 0x80) > 0;
         self.z = self.y == 0;
-
-        2
     }
 }
 
@@ -35,7 +37,7 @@ mod iny_tests {
     #[test]
     fn test_iny_returns_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        assert_eq!(2, cpu.iny());
+        assert_eq!(2, cpu.iny_cycles());
     }
 
     #[test]
