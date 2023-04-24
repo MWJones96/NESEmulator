@@ -2,15 +2,15 @@
     PLP - Pull Processor Status From Stack
     Operation: P↑
 
-    This instruction transfers the next value on the 
-    stack to the Proces­ sor Status register, thereby 
-    changing all of the flags and setting the mode 
+    This instruction transfers the next value on the
+    stack to the Proces­ sor Status register, thereby
+    changing all of the flags and setting the mode
     switches to the values from the stack.
 
-    The PLP instruction affects no registers in the 
-    processor other than the status register. This 
-    instruction could affect all flags in the status 
-    register. 
+    The PLP instruction affects no registers in the
+    processor other than the status register. This
+    instruction could affect all flags in the status
+    register.
 */
 
 use crate::cpu::{addr::AddrModeResult, bus::Bus};
