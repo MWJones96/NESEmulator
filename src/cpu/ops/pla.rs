@@ -1,18 +1,18 @@
-/* 
+/*
     PLA - Pull Accumulator From Stack
     Operation: A↑
 
-    This instruction adds 1 to the current value of the 
-    stack pointer and uses it to address the stack and 
+    This instruction adds 1 to the current value of the
+    stack pointer and uses it to address the stack and
     loads the contents of the stack into the A register.
 
-    The PLA instruction does not affect the carry or 
-    overflow flags. It sets N if the bit 7 is on in 
-    accumulator A as a result of instructions, otherwise 
-    it is reset. If accumulator A is zero as a result of 
-    the PLA, then the Z flag is set, otherwise it is reset. 
-    The PLA instruction changes content of the accumulator 
-    A to the contents of the memory location at stack register 
+    The PLA instruction does not affect the carry or
+    overflow flags. It sets N if the bit 7 is on in
+    accumulator A as a result of instructions, otherwise
+    it is reset. If accumulator A is zero as a result of
+    the PLA, then the Z flag is set, otherwise it is reset.
+    The PLA instruction changes content of the accumulator
+    A to the contents of the memory location at stack register
     plus 1 and also increments the stack register.
 */
 
@@ -100,11 +100,9 @@ mod pla_tests {
         let mut bus = MockBus::new();
         cpu.sp = 0xff;
 
-        bus.expect_read()
-            .with(eq(0x100))
-            .times(1)
-            .return_const(0xff);
+        bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);
 
         cpu.pla(&cpu.imp(), &bus);
+        assert_eq!(0x0, cpu.sp);
     }
 }
