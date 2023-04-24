@@ -30,3 +30,4 @@ mod jsr;
 mod lda;
 mod ldx;
 mod ldy;
+mod lsr;

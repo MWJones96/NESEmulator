@@ -171,4 +171,19 @@ mod asl_tests {
         cpu.asl(&cpu.acc(), &bus);
         assert_eq!(false, cpu.n);
     }
+
+    #[test]
+    fn test_asl_writes_to_memory() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
+
+        bus.expect_write()
+            .with(eq(0x0), eq(0xfe))
+            .times(1)
+            .return_const(());
+
+        cpu.asl(&cpu.zp(0x0, &bus), &bus);
+    }
 }
