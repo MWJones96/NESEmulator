@@ -11,7 +11,7 @@ impl CPU {
         let resolved_addr = high_byte << 8 | low_byte;
 
         AddrModeResult {
-            data: Some(bus.read(resolved_addr)),
+            data: None,
             cycles: 4,
             mode: AddrMode::IND,
             addr: Some(resolved_addr),
@@ -42,15 +42,10 @@ mod ind_tests {
             .times(1)
             .return_const(0x20);
 
-        bus.expect_read()
-            .with(eq(0x2040))
-            .times(1)
-            .return_const(0xff);
-
         let ind = cpu.ind(0x0000, &bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0xff),
+                data: None,
                 cycles: 4,
                 mode: AddrMode::IND,
                 addr: Some(0x2040)
@@ -74,15 +69,10 @@ mod ind_tests {
             .times(1)
             .return_const(0x20);
 
-        bus.expect_read()
-            .with(eq(0x2040))
-            .times(1)
-            .return_const(0xaa);
-
         let ind = cpu.ind(0x80ff, &bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0xaa),
+                data: None,
                 cycles: 4,
                 mode: AddrMode::IND,
                 addr: Some(0x2040)

@@ -1,3 +1,13 @@
+/* 
+    JMP - JMP Indirect
+    Operation: [PC + 1] → PCL, [PC + 2] → PCH
+
+    This instruction establishes a new value for the program counter.
+
+    It affects only the program counter in the microprocessor and 
+    affects no flags in the status register.
+*/
+
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
@@ -5,7 +15,9 @@ impl CPU {
         1 + mode.cycles
     }
 
-    pub(in crate::cpu) fn jmp(&self, mode: &AddrModeResult) {}
+    pub(in crate::cpu) fn jmp(&mut self, mode: &AddrModeResult) {
+        self.pc = mode.addr.unwrap();
+    }
 }
 
 #[cfg(test)]
@@ -22,5 +34,26 @@ mod jmp_tests {
         bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.jmp_cycles(&cpu.abs(0x0000, &bus)));
+    }
+
+    #[test]
+    fn test_jmp_ind_correct_number_of_cycles() {
+        let cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        bus.expect_read().return_const(0x0);
+
+        assert_eq!(5, cpu.jmp_cycles(&cpu.ind(0x0000, &bus)));
+    }
+
+    #[test]
+    fn test_jmp_goes_to_correct_pc() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        bus.expect_read().return_const(0x0);
+
+        cpu.jmp(&cpu.abs(0x1234, &bus));
+        assert_eq!(0x1234, cpu.pc);
     }
 }
