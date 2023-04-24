@@ -1,17 +1,17 @@
-/* 
+/*
     ROL - Rotate Left
     Operation: C ← /M7...M0/ ← C
 
-    The rotate left instruction shifts either the accumulator 
-    or addressed memory left 1 bit, with the input carry being 
-    stored in bit 0 and with the input bit 7 being stored in 
+    The rotate left instruction shifts either the accumulator
+    or addressed memory left 1 bit, with the input carry being
+    stored in bit 0 and with the input bit 7 being stored in
     the carry flags.
 
-    The ROL instruction either shifts the accumulator left 1 bit 
-    and stores the carry in accumulator bit 0 or does not affect 
-    the internal reg­isters at all. The ROL instruction sets carry 
-    equal to the input bit 7, sets N equal to the input bit 6, 
-    sets the Z flag if the result of the ro­ tate is 0, otherwise 
+    The ROL instruction either shifts the accumulator left 1 bit
+    and stores the carry in accumulator bit 0 or does not affect
+    the internal reg­isters at all. The ROL instruction sets carry
+    equal to the input bit 7, sets N equal to the input bit 6,
+    sets the Z flag if the result of the ro­ tate is 0, otherwise
     it resets Z and does not affect the overflow flag at all.
 */
 
