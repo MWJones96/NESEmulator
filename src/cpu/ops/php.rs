@@ -1,12 +1,12 @@
-/* 
+/*
     PHP - Push Processor Status On Stack
     Operation: P↓
 
-    This instruction transfers the contents of the processor 
-    status reg­ ister unchanged to the stack, as governed by 
+    This instruction transfers the contents of the processor
+    status reg­ ister unchanged to the stack, as governed by
     the stack pointer.
 
-    The PHP instruction affects no registers or flags in the 
+    The PHP instruction affects no registers or flags in the
     micropro­cessor.
 */
 

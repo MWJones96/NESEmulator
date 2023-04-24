@@ -35,3 +35,4 @@ mod nop;
 mod ora;
 mod pha;
 mod php;
+mod pla;
