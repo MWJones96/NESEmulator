@@ -33,3 +33,4 @@ mod ldy;
 mod lsr;
 mod nop;
 mod ora;
+mod pha;
