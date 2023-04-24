@@ -28,3 +28,4 @@ mod iny;
 mod jmp;
 mod jsr;
 mod lda;
+mod ldx;
