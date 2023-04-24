@@ -12,6 +12,7 @@ mod indy;
 mod rel;
 mod zp;
 mod zpx;
+mod zpy;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(in crate::cpu) enum AddrMode {
@@ -19,6 +20,7 @@ pub(in crate::cpu) enum AddrMode {
     IMM,
     ZP,
     ZPX,
+    ZPY,
     ABS,
     ABSX,
     ABSY,
@@ -31,11 +33,10 @@ pub(in crate::cpu) enum AddrMode {
 
 #[derive(Debug, PartialEq)]
 pub(in crate::cpu) struct AddrModeResult {
+    pub addr: Option<u16>,
     pub data: Option<u8>,
     pub cycles: u8,
     pub mode: AddrMode,
-    //Address where the data came from (does not apply for ACC and IMM modes)
-    pub addr: Option<u16>,
 }
 
 impl CPU {
