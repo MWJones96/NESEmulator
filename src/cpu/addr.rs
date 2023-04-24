@@ -5,6 +5,7 @@ mod absx;
 mod absy;
 mod acc;
 mod imm;
+mod imp;
 mod indx;
 mod indy;
 mod rel;
@@ -23,6 +24,7 @@ pub(in crate::cpu) enum AddrMode {
     INDX,
     INDY,
     REL,
+    IMP,
 }
 
 #[derive(Debug, PartialEq)]
