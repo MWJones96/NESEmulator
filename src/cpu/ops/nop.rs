@@ -12,7 +12,7 @@ impl CPU {
         2
     }
 
-    pub(in crate::cpu) fn nop(&self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn nop(&self, _mode: &AddrModeResult) {
         //No operation
     }
 }
@@ -24,7 +24,6 @@ mod nop_tests {
     #[test]
     fn test_nop_correct_number_of_cycles() {
         let cpu = CPU::new();
-
         assert_eq!(2, cpu.nop_cycles(&cpu.imp()));
     }
 
