@@ -6,6 +6,7 @@ mod absy;
 mod acc;
 mod imm;
 mod imp;
+mod ind;
 mod indx;
 mod indy;
 mod rel;
@@ -21,6 +22,7 @@ pub(in crate::cpu) enum AddrMode {
     ABS,
     ABSX,
     ABSY,
+    IND,
     INDX,
     INDY,
     REL,

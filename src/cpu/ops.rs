@@ -25,3 +25,4 @@ mod eor;
 mod inc;
 mod inx;
 mod iny;
+mod jmp;
