@@ -34,3 +34,4 @@ mod lsr;
 mod nop;
 mod ora;
 mod pha;
+mod php;
