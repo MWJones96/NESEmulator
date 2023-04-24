@@ -1,15 +1,15 @@
-/* 
+/*
     RTS - Return From Subroutine
     Operation: PC↑, PC + 1 → PC
 
-    This instruction loads the program count low and 
-    program count high from the stack into the program 
-    counter and increments the program counter so that 
-    it points to the instruction following the JSR. 
-    The stack pointer is adjusted by incrementing 
+    This instruction loads the program count low and
+    program count high from the stack into the program
+    counter and increments the program counter so that
+    it points to the instruction following the JSR.
+    The stack pointer is adjusted by incrementing
     it twice.
 
-    The RTS instruction does not affect any flags and 
+    The RTS instruction does not affect any flags and
     affects only PCL and PCH.
 */
 
@@ -25,7 +25,7 @@ impl CPU {
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
 
         self.sp = self.sp.wrapping_add(2);
-        self.pc = pc_high << 8 | pc_low;
+        self.pc = (pc_high << 8 | pc_low).wrapping_add(1);
     }
 }
 
@@ -64,7 +64,7 @@ mod rts_tests {
 
         cpu.rts(&cpu.imp(), &bus);
 
-        assert_eq!(0x2040, cpu.pc);
+        assert_eq!(0x2041, cpu.pc);
         assert_eq!(0xff, cpu.sp);
     }
 }

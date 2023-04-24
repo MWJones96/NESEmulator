@@ -28,8 +28,10 @@ impl CPU {
     }
 
     pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
-        let pc_high_byte = (self.pc >> 8) as u8;
-        let pc_low_byte = (self.pc & 0xff) as u8;
+        let return_addr = self.pc.wrapping_sub(1);
+
+        let pc_high_byte = (return_addr >> 8) as u8;
+        let pc_low_byte = (return_addr & 0xff) as u8;
 
         bus.write(0x100 + self.sp.wrapping_sub(0) as u16, pc_high_byte);
         bus.write(0x100 + self.sp.wrapping_sub(1) as u16, pc_low_byte);
@@ -73,7 +75,7 @@ mod jsr_tests {
             .return_const(());
 
         bus.expect_write()
-            .with(eq(0x100), eq(0x34))
+            .with(eq(0x100), eq(0x33))
             .times(1)
             .return_const(());
 
