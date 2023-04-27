@@ -42,3 +42,4 @@ mod ror;
 mod rti;
 mod rts;
 mod sbc;
+mod sec;
