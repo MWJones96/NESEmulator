@@ -46,3 +46,4 @@ mod sec;
 mod sed;
 mod sei;
 mod sta;
+mod stx;
