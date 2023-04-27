@@ -28,6 +28,7 @@ impl CPU {
     }
 
     pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
+        //Set return address to last byte of JSR
         let return_addr = self.pc.wrapping_sub(1);
 
         let pc_high_byte = (return_addr >> 8) as u8;

@@ -25,7 +25,8 @@ impl CPU {
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
 
         self.sp = self.sp.wrapping_add(2);
-        self.pc = (pc_high << 8 | pc_low).wrapping_add(1);
+        //Jump to next instruction after JSR
+        self.pc = (pc_high << 8 | pc_low).wrapping_add(1); 
     }
 }
 
