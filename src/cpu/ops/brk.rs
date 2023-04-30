@@ -23,7 +23,7 @@ impl CPU {
         7
     }
 
-    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, _reason: u8, bus: &dyn Bus) {
+    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
         self.i = true;
 
         let pc_lsb = (self.pc & 0xff) as u8;
@@ -69,7 +69,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(&cpu.imp(), 0x0, &bus);
+        cpu.brk(&cpu.imp(), &bus);
 
         assert_eq!(true, cpu.i);
     }
@@ -93,7 +93,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(&cpu.imp(), 0x0, &bus);
+        cpu.brk(&cpu.imp(), &bus);
     }
 
     #[test]
@@ -112,7 +112,7 @@ mod brk_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(&cpu.imp(), 0x0, &bus);
+        cpu.brk(&cpu.imp(), &bus);
 
         assert_eq!(0xfc, cpu.sp);
     }
@@ -134,7 +134,7 @@ mod brk_tests {
             .times(1)
             .return_const(0x40);
 
-        cpu.brk(&cpu.imp(), 0x0, &bus);
+        cpu.brk(&cpu.imp(), &bus);
 
         assert_eq!(0x4020, cpu.pc);
         assert_eq!(true, cpu.i);
@@ -164,7 +164,7 @@ mod brk_tests {
             .times(1)
             .return_const(());
 
-        cpu.brk(&cpu.imp(), 0x0, &bus);
+        cpu.brk(&cpu.imp(), &bus);
 
         assert_eq!(0xfd, cpu.sp);
     }

@@ -16,14 +16,14 @@
     instruction only affects the index register Y.
 */
 
-use crate::cpu::CPU;
+use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
-    pub(in crate::cpu) fn dey_cycles(&mut self) -> u8 {
+    pub(in crate::cpu) fn dey_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn dey(&mut self) {
+    pub(in crate::cpu) fn dey(&mut self, _mode: &AddrModeResult) {
         self.y = self.y.wrapping_sub(1);
 
         self.n = (self.y & 0x80) > 0;
@@ -38,7 +38,7 @@ mod dey_tests {
     #[test]
     fn test_dey_returns_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        assert_eq!(2, cpu.dey_cycles());
+        assert_eq!(2, cpu.dey_cycles(&cpu.imp()));
     }
 
     #[test]
@@ -46,7 +46,7 @@ mod dey_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x80;
 
-        cpu.dey();
+        cpu.dey(&cpu.imp());
 
         assert_eq!(0x7f, cpu.y);
     }
@@ -56,7 +56,7 @@ mod dey_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x0;
 
-        cpu.dey();
+        cpu.dey(&cpu.imp());
 
         assert_eq!(0xff, cpu.y);
         assert_eq!(true, cpu.n);
@@ -67,7 +67,7 @@ mod dey_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x1;
 
-        cpu.dey();
+        cpu.dey(&cpu.imp());
 
         assert_eq!(0x0, cpu.y);
         assert_eq!(true, cpu.z);

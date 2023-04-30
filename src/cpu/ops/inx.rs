@@ -15,14 +15,14 @@
     INX does not affect any other register other than the X register.
 */
 
-use crate::cpu::CPU;
+use crate::cpu::{CPU, addr::AddrModeResult};
 
 impl CPU {
-    pub(in crate::cpu) fn inx_cycles(&mut self) -> u8 {
+    pub(in crate::cpu) fn inx_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn inx(&mut self) {
+    pub(in crate::cpu) fn inx(&mut self, _mode: &AddrModeResult) {
         self.x = self.x.wrapping_add(1);
 
         self.n = (self.x & 0x80) > 0;
@@ -37,7 +37,7 @@ mod inx_tests {
     #[test]
     fn test_inx_returns_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        assert_eq!(2, cpu.inx_cycles());
+        assert_eq!(2, cpu.inx_cycles(&cpu.imp()));
     }
 
     #[test]
@@ -45,7 +45,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.inx();
+        cpu.inx(&cpu.imp());
 
         assert_eq!(0x81, cpu.x);
     }
@@ -55,7 +55,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x7f;
 
-        cpu.inx();
+        cpu.inx(&cpu.imp());
 
         assert_eq!(0x80, cpu.x);
         assert_eq!(true, cpu.n);
@@ -66,7 +66,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xff;
 
-        cpu.inx();
+        cpu.inx(&cpu.imp());
 
         assert_eq!(0x0, cpu.x);
         assert_eq!(true, cpu.z);
