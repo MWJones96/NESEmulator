@@ -50,3 +50,4 @@ mod stx;
 mod sty;
 mod tax;
 mod tay;
+mod tsx;
