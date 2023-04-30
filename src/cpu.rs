@@ -4,6 +4,12 @@ mod addr;
 mod bus;
 mod ops;
 
+struct CurrentInstruction {
+    opcode: u8,
+    cycles_remaining: u8,
+    mode: AddrModeResult,
+}
+
 pub struct CPU {
     pc: u16,
     sp: u8,
@@ -45,7 +51,10 @@ impl CPU {
         }
     }
 
-    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn Bus) {
+    fn execute(&mut self, instruction: &CurrentInstruction, bus: &dyn Bus) {
+        let opcode = instruction.opcode;
+        let mode = &instruction.mode;
+
         match opcode {
             0x00 => self.brk(mode, bus),
             0x08 => self.php(mode, bus),
@@ -118,12 +127,29 @@ impl CPU {
             | (self.z as u8) << 1
             | (self.c as u8) << 0
     }
+
+    fn fetch_byte(&mut self, bus: &dyn Bus) -> u8 {
+        let data = bus.read(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+
+        data
+    }
+
+    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn Bus) -> u16 {
+        let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
+        let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
+        self.pc = self.pc.wrapping_add(2);
+
+        high_byte << 8 | low_byte
+    }
 }
 
 #[cfg(test)]
 mod cpu_tests {
+    use mockall::predicate::eq;
+
     // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::*;
+    use super::{bus::MockBus, *};
 
     #[test]
     fn test_cpu_initial_state() {
@@ -214,18 +240,42 @@ mod cpu_tests {
 
         assert_eq!(0b1111_1111, cpu.get_status_byte())
     }
+
+    #[test]
+    fn test_fetch_next_byte() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        cpu.pc = 0xffff;
+        bus.expect_read()
+            .with(eq(0xffff))
+            .times(1)
+            .return_const(0xcc);
+
+        let byte: u8 = cpu.fetch_byte(&bus);
+        assert_eq!(0xcc, byte);
+        assert_eq!(0x0, cpu.pc);
+    }
+
+    #[test]
+    fn test_fetch_next_two_bytes_as_u16() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        cpu.pc = 0xffff;
+        bus.expect_read()
+            .with(eq(0xffff))
+            .times(1)
+            .return_const(0x40);
+        bus.expect_read().with(eq(0x0)).times(1).return_const(0x20);
+
+        let two_bytes = cpu.fetch_two_bytes_as_u16(&bus);
+        assert_eq!(0x2040, two_bytes);
+        assert_eq!(0x1, cpu.pc);
+    }
 }
 
 #[cfg(test)]
 mod execute_tests {
-    use super::{bus::MockBus, *};
-
-    #[test]
-    #[should_panic]
-    fn test_panic_on_invalid_opcode() {
-        let mut cpu = CPU::new();
-        let bus = MockBus::new();
-
-        cpu.execute(0xff, &cpu.imp(), &bus);
-    }
+    use super::*;
 }

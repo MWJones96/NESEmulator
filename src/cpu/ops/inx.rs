@@ -15,7 +15,7 @@
     INX does not affect any other register other than the X register.
 */
 
-use crate::cpu::{CPU, addr::AddrModeResult};
+use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn inx_cycles(&self, _mode: &AddrModeResult) -> u8 {

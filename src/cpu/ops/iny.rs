@@ -15,7 +15,7 @@
     otherwise resets the Z flag.
 */
 
-use crate::cpu::{CPU, addr::AddrModeResult};
+use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn iny_cycles(&self, _mode: &AddrModeResult) -> u8 {
