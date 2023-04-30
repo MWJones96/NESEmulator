@@ -1,15 +1,15 @@
-/* 
+/*
     TXA - Transfer Index X To Accumulator
     Operation: X → A
 
-    This instruction moves the value that is in the index register 
-    X to the accumulator A without disturbing the content of the 
+    This instruction moves the value that is in the index register
+    X to the accumulator A without disturbing the content of the
     index register X.
 
-    TXA does not affect any register other than the accumula­tor and 
-    does not affect the carry or overflow flag. If the result in A 
-    has bit 7 on, then the N flag is set, otherwise it is reset. If 
-    the resultant value in the accumulator is 0, then the Z flag is 
+    TXA does not affect any register other than the accumula­tor and
+    does not affect the carry or overflow flag. If the result in A
+    has bit 7 on, then the N flag is set, otherwise it is reset. If
+    the resultant value in the accumulator is 0, then the Z flag is
     set, other­ wise it is reset.
 */
 
@@ -39,7 +39,7 @@ mod txa_tests {
         let cpu = CPU::new();
         assert_eq!(2, cpu.txa_cycles(&cpu.imp()));
     }
-    
+
     #[test]
     fn test_txa() {
         let mut cpu = CPU::new();
@@ -49,7 +49,7 @@ mod txa_tests {
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.x);
     }
-    
+
     #[test]
     fn test_txa_negative_flag() {
         let mut cpu = CPU::new();

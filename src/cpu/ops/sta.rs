@@ -1,14 +1,17 @@
-/* 
+/*
     STA - Store Accumulator in Memory
     Operation: A → M
 
     This instruction transfers the contents of the accumulator to memory.
 
-    This instruction affects none of the flags in the processor status 
+    This instruction affects none of the flags in the processor status
     register and does not affect the accumulator.
 */
 
-use crate::cpu::{addr::{AddrMode, AddrModeResult}, bus::Bus};
+use crate::cpu::{
+    addr::{AddrMode, AddrModeResult},
+    bus::Bus,
+};
 
 use super::super::CPU;
 
@@ -17,7 +20,7 @@ impl CPU {
         match mode.mode {
             AddrMode::ABSX | AddrMode::ABSY => 5,
             AddrMode::INDY => 6,
-            _ => 2 + mode.cycles
+            _ => 2 + mode.cycles,
         }
     }
 
@@ -39,8 +42,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.sta_cycles(&cpu.zp(0x0, &bus)));
     }
@@ -50,8 +52,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.sta_cycles(&cpu.zpx(0x0, &bus)));
     }
@@ -61,8 +62,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.sta_cycles(&cpu.abs(0x0, &bus)));
     }
@@ -72,8 +72,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.sta_cycles(&cpu.absx(0x0, &bus)));
     }
@@ -83,8 +82,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.sta_cycles(&cpu.absy(0x0, &bus)));
     }
@@ -94,8 +92,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.sta_cycles(&cpu.indx(0x0, &bus)));
     }
@@ -105,8 +102,7 @@ mod sta_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.sta_cycles(&cpu.indy(0x0, &bus)));
     }
@@ -117,8 +113,7 @@ mod sta_tests {
         let mut bus = MockBus::new();
         cpu.a = 0xee;
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         bus.expect_write()
             .with(eq(0x8000), eq(0xee))

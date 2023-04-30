@@ -2,11 +2,11 @@
     SED - Set Decimal Mode
     Operation: 1 → D
 
-    This instruction sets the decimal mode flag D to a 1. This makes 
-    all subsequent ADC and SBC instructions operate as a decimal 
+    This instruction sets the decimal mode flag D to a 1. This makes
+    all subsequent ADC and SBC instructions operate as a decimal
     arithmetic operation.
 
-    SED affects no registers in the microprocessor and no flags other 
+    SED affects no registers in the microprocessor and no flags other
     than the decimal mode which is set to a 1.
 */
 

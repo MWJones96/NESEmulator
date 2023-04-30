@@ -26,7 +26,7 @@ impl CPU {
 
         self.sp = self.sp.wrapping_add(2);
         //Jump to next instruction after JSR
-        self.pc = (pc_high << 8 | pc_low).wrapping_add(1); 
+        self.pc = (pc_high << 8 | pc_low).wrapping_add(1);
     }
 }
 

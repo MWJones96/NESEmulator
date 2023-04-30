@@ -1,3 +1,5 @@
+use self::{addr::AddrModeResult, bus::Bus};
+
 mod addr;
 mod bus;
 mod ops;
@@ -40,6 +42,12 @@ impl CPU {
             i: false, //Bit 2
             z: false, //Bit 1
             c: false, //Bit 0
+        }
+    }
+
+    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn Bus) {
+        match opcode {
+            _ => panic!("Opcode {} is unimplemented", opcode)
         }
     }
 
@@ -148,5 +156,19 @@ mod cpu_tests {
         cpu.c = true;
 
         assert_eq!(0b1111_1111, cpu.get_status_byte())
+    }
+}
+
+#[cfg(test)]
+mod execute_tests {
+    use super::{*, bus::MockBus};
+
+    #[test]
+    #[should_panic]
+    fn test_panic_on_invalid_opcode() {
+        let mut cpu = CPU::new();
+        let bus = MockBus::new();
+
+        cpu.execute(0xff, &cpu.imp(), &bus)
     }
 }

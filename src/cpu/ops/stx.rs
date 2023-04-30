@@ -1,14 +1,17 @@
-/* 
+/*
     STX - Store Index Register X In Memory
     Operation: X → M
 
     Transfers value of X register to addressed memory location.
 
-    No flags or registers in the microprocessor are affected by 
+    No flags or registers in the microprocessor are affected by
     the store operation.
 */
 
-use crate::cpu::{addr::{AddrMode, AddrModeResult}, bus::Bus};
+use crate::cpu::{
+    addr::{AddrMode, AddrModeResult},
+    bus::Bus,
+};
 
 use super::super::CPU;
 
@@ -16,7 +19,7 @@ impl CPU {
     pub(in crate::cpu) fn stx_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ABSY => 4,
-            _ => 2 + mode.cycles
+            _ => 2 + mode.cycles,
         }
     }
 
@@ -38,8 +41,7 @@ mod stx_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.stx_cycles(&cpu.zp(0x0, &bus)));
     }
@@ -49,12 +51,10 @@ mod stx_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.stx_cycles(&cpu.abs(0x0, &bus)));
     }
-
 
     #[test]
     fn test_stx_absy_correct_number_of_cycles() {
@@ -62,8 +62,7 @@ mod stx_tests {
         let mut bus = MockBus::new();
         cpu.y = 0xff;
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.stx_cycles(&cpu.absy(0xffff, &bus)));
     }
@@ -74,8 +73,7 @@ mod stx_tests {
         let mut bus = MockBus::new();
         cpu.x = 0xcc;
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         bus.expect_write()
             .with(eq(0xffff), eq(0xcc))

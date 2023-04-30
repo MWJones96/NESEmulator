@@ -24,7 +24,7 @@ mod tya_tests {
         let cpu = CPU::new();
         assert_eq!(2, cpu.tya_cycles(&cpu.imp()));
     }
-    
+
     #[test]
     fn test_tya() {
         let mut cpu = CPU::new();
@@ -34,7 +34,7 @@ mod tya_tests {
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.y);
     }
-    
+
     #[test]
     fn test_tya_negative_flag() {
         let mut cpu = CPU::new();

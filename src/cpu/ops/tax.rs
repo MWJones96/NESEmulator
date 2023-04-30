@@ -1,15 +1,15 @@
-/* 
+/*
     TAX - Transfer Accumulator To Index X
     Operation: A → X
 
-    This instruction takes the value from accumulator A and trans­fers 
-    or loads it into the index register X without disturbing the content 
+    This instruction takes the value from accumulator A and trans­fers
+    or loads it into the index register X without disturbing the content
     of the accumulator A.
 
-    TAX only affects the index register X, does not affect the carry or 
-    overflow flags. The N flag is set if the resultant value in the index 
-    register X has bit 7 on, otherwise N is reset. The Z bit is set if 
-    the content of the register X is 0 as a result of the opera­tion, 
+    TAX only affects the index register X, does not affect the carry or
+    overflow flags. The N flag is set if the resultant value in the index
+    register X has bit 7 on, otherwise N is reset. The Z bit is set if
+    the content of the register X is 0 as a result of the opera­tion,
     otherwise it is reset.
 */
 
@@ -39,7 +39,7 @@ mod tax_tests {
         let cpu = CPU::new();
         assert_eq!(2, cpu.tax_cycles(&cpu.imp()));
     }
-    
+
     #[test]
     fn test_tax() {
         let mut cpu = CPU::new();
@@ -49,7 +49,7 @@ mod tax_tests {
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.a);
     }
-    
+
     #[test]
     fn test_tax_negative_flag() {
         let mut cpu = CPU::new();

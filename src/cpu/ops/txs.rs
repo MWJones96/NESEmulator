@@ -1,12 +1,12 @@
-/* 
+/*
     TXS - Transfer Index X To Stack Pointer
     Operation: X → S
 
-    This instruction transfers the value in the index register 
+    This instruction transfers the value in the index register
     X to the stack pointer.
 
-    TXS changes only the stack pointer, making it equal to the 
-    content of the index register X. It does not affect any of 
+    TXS changes only the stack pointer, making it equal to the
+    content of the index register X. It does not affect any of
     the flags.
 */
 
@@ -36,7 +36,7 @@ mod txs_tests {
         let cpu = CPU::new();
         assert_eq!(2, cpu.txs_cycles(&cpu.imp()));
     }
-    
+
     #[test]
     fn test_txs() {
         let mut cpu = CPU::new();
@@ -46,7 +46,7 @@ mod txs_tests {
         assert_eq!(0xcc, cpu.sp);
         assert_eq!(0xcc, cpu.x);
     }
-    
+
     #[test]
     fn test_txs_negative_flag() {
         let mut cpu = CPU::new();

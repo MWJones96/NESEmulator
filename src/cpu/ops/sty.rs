@@ -1,4 +1,4 @@
-/* 
+/*
     STY - Store Index Register Y In Memory
     Operation: Y → M
 
@@ -7,7 +7,10 @@
     STY does not affect any flags or registers in the microprocessor.
 */
 
-use crate::cpu::{addr::{AddrMode, AddrModeResult}, bus::Bus};
+use crate::cpu::{
+    addr::{AddrMode, AddrModeResult},
+    bus::Bus,
+};
 
 use super::super::CPU;
 
@@ -15,7 +18,7 @@ impl CPU {
     pub(in crate::cpu) fn sty_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ABSX => 4,
-            _ => 2 + mode.cycles
+            _ => 2 + mode.cycles,
         }
     }
 
@@ -37,8 +40,7 @@ mod sty_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.sty_cycles(&cpu.zp(0x0, &bus)));
     }
@@ -48,12 +50,10 @@ mod sty_tests {
         let cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.sty_cycles(&cpu.abs(0x0, &bus)));
     }
-
 
     #[test]
     fn test_sty_absx_correct_number_of_cycles() {
@@ -61,8 +61,7 @@ mod sty_tests {
         let mut bus = MockBus::new();
         cpu.x = 0xff;
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.sty_cycles(&cpu.absx(0xffff, &bus)));
     }
@@ -73,8 +72,7 @@ mod sty_tests {
         let mut bus = MockBus::new();
         cpu.y = 0xbb;
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
         bus.expect_write()
             .with(eq(0xffff), eq(0xbb))
