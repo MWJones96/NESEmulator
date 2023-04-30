@@ -4,10 +4,11 @@ mod addr;
 mod bus;
 mod ops;
 
-struct CurrentInstruction {
+#[derive(Debug, PartialEq)]
+struct Instruction {
     opcode: u8,
-    cycles_remaining: u8,
     mode: AddrModeResult,
+    cycles_remaining: u8,
 }
 
 pub struct CPU {
@@ -26,6 +27,8 @@ pub struct CPU {
     i: bool, //Bit 2
     z: bool, //Bit 1
     c: bool, //Bit 0
+
+    current_instruction: Option<Instruction>
 }
 
 impl CPU {
@@ -48,10 +51,12 @@ impl CPU {
             i: false, //Bit 2
             z: false, //Bit 1
             c: false, //Bit 0
+
+            current_instruction: None,
         }
     }
 
-    fn execute(&mut self, instruction: &CurrentInstruction, bus: &dyn Bus) {
+    fn execute(&mut self, instruction: &Instruction, bus: &dyn Bus) {
         let opcode = instruction.opcode;
         let mode = &instruction.mode;
 
@@ -170,6 +175,8 @@ mod cpu_tests {
         assert_eq!(false, cpu.i); //Bit 2
         assert_eq!(false, cpu.z); //Bit 1
         assert_eq!(false, cpu.c); //Bit 0
+
+        assert_eq!(None, cpu.current_instruction);
     }
 
     #[test]
