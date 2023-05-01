@@ -1,11 +1,11 @@
-use crate::cpu::{CPU, bus::Bus};
+use crate::cpu::{bus::Bus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn reset_cycles(&self) -> u8 {
         8
     }
 
-    pub (in crate::cpu) fn reset(&mut self, bus: &dyn Bus) {
+    pub(in crate::cpu) fn reset(&mut self, bus: &dyn Bus) {
         let low_byte = bus.read(CPU::RESET_VECTOR) as u16;
         let high_byte = bus.read(CPU::RESET_VECTOR + 1) as u16;
 
@@ -57,15 +57,9 @@ mod reset_tests {
 
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .with(eq(0xFFFC))
-            .once()
-            .return_const(0x40);
-        
-        bus.expect_read()
-            .with(eq(0xFFFD))
-            .once()
-            .return_const(0x20);
+        bus.expect_read().with(eq(0xFFFC)).once().return_const(0x40);
+
+        bus.expect_read().with(eq(0xFFFD)).once().return_const(0x20);
 
         cpu.reset(&bus);
 

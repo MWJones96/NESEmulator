@@ -4,7 +4,23 @@ mod addr;
 mod bus;
 mod ops;
 
-#[derive(Default)]
+#[derive(PartialEq, Debug)]
+enum InstructionType {
+    Reset,
+    Interrupt,
+    NonMaskableInterrupt,
+    Instruction {
+        opcode: u8,
+        addressing_mode: AddrModeResult,
+    },
+}
+
+#[derive(PartialEq, Debug)]
+struct CurrentInstruction {
+    remaining_cycles: u8,
+    instruction_type: InstructionType,
+}
+
 pub struct CPU {
     pc: u16,
     sp: u8,
@@ -21,6 +37,8 @@ pub struct CPU {
     i: bool, //Bit 2
     z: bool, //Bit 1
     c: bool, //Bit 0
+
+    current_instruction: CurrentInstruction,
 }
 
 impl CPU {
@@ -45,6 +63,11 @@ impl CPU {
             i: false, //Bit 2
             z: false, //Bit 1
             c: false, //Bit 0
+
+            current_instruction: CurrentInstruction {
+                remaining_cycles: 8,
+                instruction_type: InstructionType::Reset,
+            },
         }
     }
 
@@ -91,15 +114,15 @@ impl CPU {
             | 0x76 | 0xF5 | 0x95 | 0x94 => {
                 let addr = self.fetch_byte(bus);
                 self.zpx(addr, bus)
-            },
+            }
             0xB6 | 0x96 => {
                 let addr = self.fetch_byte(bus);
                 self.zpy(addr, bus)
-            },
+            }
             0x90 | 0xB0 | 0xF0 | 0x30 | 0xD0 | 0x10 | 0x50 | 0x70 => {
                 let offset = self.fetch_byte(bus);
                 self.rel(offset)
-            },
+            }
             _ => panic!("Opcode {:#02x} is not implemented", opcode),
         }
     }
@@ -109,7 +132,7 @@ impl CPU {
             0x00 => {
                 let _reason = self.fetch_byte(bus); //Throw away value
                 self.brk(mode, bus)
-            },
+            }
             0x08 => self.php(mode, bus),
             0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora(mode),
             0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl(mode, bus),
@@ -223,6 +246,14 @@ mod cpu_tests {
         assert_eq!(false, cpu.i); //Bit 2
         assert_eq!(false, cpu.z); //Bit 1
         assert_eq!(false, cpu.c); //Bit 0
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 8,
+                instruction_type: InstructionType::Reset
+            },
+            cpu.current_instruction
+        );
     }
 
     #[test]
