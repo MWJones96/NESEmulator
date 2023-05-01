@@ -1,9 +1,9 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrMode, AddrModeResult};
 
 impl CPU {
-    pub(in crate::cpu) fn indy(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn indy(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
         let low_byte_addr = addr;
         let high_byte_addr = low_byte_addr.wrapping_add(1);
 
@@ -28,12 +28,12 @@ mod indy_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::{addr::AddrModeResult, bus::MockBus};
+    use crate::cpu::{addr::AddrModeResult, bus::MockCPUBus};
 
     #[test]
     fn test_indy_addressing_mode_no_page_cross() {
         let mut cpu = CPU::new();
-        let mut mock_bus = MockBus::new();
+        let mut mock_bus = MockCPUBus::new();
 
         mock_bus.expect_read().with(eq(0xff)).return_const(0x77);
         mock_bus.expect_read().with(eq(0x0)).return_const(0x88);
@@ -56,7 +56,7 @@ mod indy_tests {
     #[test]
     fn test_indy_addressing_mode_with_page_cross() {
         let mut cpu = CPU::new();
-        let mut mock_bus = MockBus::new();
+        let mut mock_bus = MockCPUBus::new();
 
         mock_bus.expect_read().with(eq(0xff)).return_const(0x77);
         mock_bus.expect_read().with(eq(0x0)).return_const(0x88);

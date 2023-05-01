@@ -15,7 +15,7 @@
 
 use crate::cpu::{
     addr::{AddrMode, AddrModeResult},
-    bus::Bus,
+    bus::CPUBus,
     CPU,
 };
 
@@ -27,7 +27,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         let data = mode.data.unwrap().wrapping_add(1);
         let addr = mode.addr.unwrap();
 
@@ -42,14 +42,14 @@ impl CPU {
 mod inc_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
     #[test]
     fn test_inc_zp_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -61,7 +61,7 @@ mod inc_tests {
     #[test]
     fn test_inc_zpx_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -73,7 +73,7 @@ mod inc_tests {
     #[test]
     fn test_inc_abs_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -85,7 +85,7 @@ mod inc_tests {
     #[test]
     fn test_inc_absx_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -97,7 +97,7 @@ mod inc_tests {
     #[test]
     fn test_inc_negative_flag() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x7f);
 
@@ -114,7 +114,7 @@ mod inc_tests {
     #[test]
     fn test_inc_zero_flag() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 

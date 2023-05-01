@@ -16,7 +16,7 @@
 
 use crate::cpu::{
     addr::{AddrMode, AddrModeResult},
-    bus::Bus,
+    bus::CPUBus,
 };
 
 use super::super::CPU;
@@ -30,7 +30,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         let before = mode.data.unwrap();
         let after: u8 = ((self.c as u8) << 7) | before >> 1;
 
@@ -50,7 +50,7 @@ impl CPU {
 mod ror_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -65,7 +65,7 @@ mod ror_tests {
     #[test]
     fn test_ror_zp() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
@@ -75,7 +75,7 @@ mod ror_tests {
     #[test]
     fn test_ror_zpx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
@@ -86,7 +86,7 @@ mod ror_tests {
     #[test]
     fn test_ror_abs() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(0xffff))
@@ -99,7 +99,7 @@ mod ror_tests {
     #[test]
     fn test_ror_absx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
 
@@ -111,7 +111,7 @@ mod ror_tests {
     #[test]
     fn test_ror_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
         cpu.c = true;
@@ -124,7 +124,7 @@ mod ror_tests {
     #[test]
     fn test_ror_no_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
 
@@ -136,7 +136,7 @@ mod ror_tests {
     #[test]
     fn test_ror_negative_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x0;
         cpu.c = true;
@@ -149,7 +149,7 @@ mod ror_tests {
     #[test]
     fn test_ror_zero_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x1;
         cpu.ror(&cpu.acc(), &bus);

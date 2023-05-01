@@ -13,14 +13,14 @@
     affects only PCL and PCH.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::Bus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn rts_cycles(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
-    pub(in crate::cpu) fn rts(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn rts(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(1) as u16)) as u16;
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
 
@@ -34,7 +34,7 @@ impl CPU {
 mod rts_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -48,7 +48,7 @@ mod rts_tests {
     #[test]
     fn test_rts_returns_pc() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfd;
 
         bus.expect_read()

@@ -10,7 +10,7 @@
 
 use crate::cpu::{
     addr::{AddrMode, AddrModeResult},
-    bus::Bus,
+    bus::CPUBus,
 };
 
 use super::super::CPU;
@@ -23,7 +23,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn stx(&self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn stx(&self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.x);
     }
 }
@@ -32,14 +32,14 @@ impl CPU {
 mod stx_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
     #[test]
     fn test_stx_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -49,7 +49,7 @@ mod stx_tests {
     #[test]
     fn test_stx_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -59,7 +59,7 @@ mod stx_tests {
     #[test]
     fn test_stx_absy_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -70,7 +70,7 @@ mod stx_tests {
     #[test]
     fn test_stx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.x = 0xcc;
 
         bus.expect_read().return_const(0x0);

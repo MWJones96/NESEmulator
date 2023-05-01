@@ -1,9 +1,9 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::AddrModeResult;
 
 impl CPU {
-    pub(in crate::cpu) fn zpx(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn zpx(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.x) as u16;
 
         AddrModeResult {
@@ -20,12 +20,12 @@ mod zpx_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::{addr::AddrModeResult, bus::MockBus};
+    use crate::cpu::{addr::AddrModeResult, bus::MockCPUBus};
 
     #[test]
     fn test_zpx_addressing_mode() {
         let mut cpu = CPU::new();
-        let mut mock_bus = MockBus::new();
+        let mut mock_bus = MockCPUBus::new();
         cpu.x = 0x2;
 
         mock_bus.expect_read().with(eq(0x1)).return_const(0x77);

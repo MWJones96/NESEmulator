@@ -20,14 +20,14 @@
     program counter low and the program counter high.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::Bus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn jsr_cycles(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
-    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         //Set return address to last byte of JSR
         let return_addr = self.pc.wrapping_sub(1);
 
@@ -46,14 +46,14 @@ impl CPU {
 mod jsr_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
     #[test]
     fn test_jsr_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -63,7 +63,7 @@ mod jsr_tests {
     #[test]
     fn test_jsr_pushes_onto_stack() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.pc = 0x1234;
         cpu.sp = 0x1;
@@ -88,7 +88,7 @@ mod jsr_tests {
     #[test]
     fn test_jsr_sets_pc_to_new_value() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 

@@ -36,7 +36,7 @@ impl CPU {
 
 #[cfg(test)]
 mod cmp_tests {
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -50,7 +50,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_zp_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.cmp_cycles(&cpu.zp(0x0, &bus)));
@@ -59,7 +59,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_zpx_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmp_cycles(&cpu.zpx(0x0, &bus)));
@@ -68,7 +68,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_abs_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmp_cycles(&cpu.abs(0x0, &bus)));
@@ -77,7 +77,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absx_no_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmp_cycles(&cpu.absx(0x0, &bus)));
@@ -86,7 +86,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absx_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -97,7 +97,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absy_no_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmp_cycles(&cpu.absy(0x0, &bus)));
@@ -106,7 +106,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -117,7 +117,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_indx_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -127,7 +127,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_indy_no_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -137,7 +137,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_indy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x80);

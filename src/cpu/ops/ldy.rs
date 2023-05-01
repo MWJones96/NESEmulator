@@ -29,7 +29,7 @@ impl CPU {
 
 #[cfg(test)]
 mod ldy_tests {
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -43,7 +43,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_zp_correct_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldy_cycles(&cpu.zp(0x0, &bus));
@@ -53,7 +53,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_zpx_correct_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldy_cycles(&cpu.zpx(0x0, &bus));
@@ -63,7 +63,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_abs_correct_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldy_cycles(&cpu.abs(0x0, &bus));
@@ -73,7 +73,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_absx_correct_cycles_no_page_cross() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldy_cycles(&cpu.absx(0x88, &bus));
@@ -83,7 +83,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_absx_correct_cycles_with_page_cross() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         cpu.x = 0xff;

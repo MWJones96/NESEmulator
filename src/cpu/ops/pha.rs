@@ -12,7 +12,7 @@
     operation. It affects no flags.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::Bus};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -21,7 +21,7 @@ impl CPU {
         3
     }
 
-    pub(in crate::cpu) fn pha(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn pha(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         bus.write(0x100 + (self.sp as u16), self.a);
         self.sp = self.sp.wrapping_sub(1);
     }
@@ -31,7 +31,7 @@ impl CPU {
 mod pha_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -44,7 +44,7 @@ mod pha_tests {
     #[test]
     fn test_pha_push_acc_onto_stack() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0xee;
 
         bus.expect_write()
@@ -59,7 +59,7 @@ mod pha_tests {
     #[test]
     fn test_pha_push_acc_onto_stack_with_overflow() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0x0;
 
         bus.expect_write().return_const(());

@@ -1,11 +1,11 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn nmi_cycles(&self) -> u8 {
         8
     }
 
-    pub(in crate::cpu) fn nmi(&mut self, bus: &dyn Bus) {
+    pub(in crate::cpu) fn nmi(&mut self, bus: &dyn CPUBus) {
         let pc_high: u8 = (self.pc >> 8) as u8;
         let pc_low: u8 = self.pc as u8;
 
@@ -28,7 +28,7 @@ impl CPU {
 mod nmi_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -41,7 +41,7 @@ mod nmi_tests {
     #[test]
     fn test_nmi() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.pc = 0x2040;
         cpu.sp = 0xff;

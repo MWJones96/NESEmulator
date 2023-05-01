@@ -19,14 +19,14 @@
     registers in the microprocessor.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::Bus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn rti_cycles(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
-    pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         let reg = bus.read(0x100 + (self.sp.wrapping_add(1) as u16));
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(3) as u16)) as u16;
@@ -48,7 +48,7 @@ impl CPU {
 mod rti_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -62,7 +62,7 @@ mod rti_tests {
     #[test]
     fn test_rti_returns_status_register_all_flags() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfc;
 
         bus.expect_read()
@@ -88,7 +88,7 @@ mod rti_tests {
     #[test]
     fn test_rti_returns_status_register_no_flags() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfc;
 
         bus.expect_read().return_const(0x0);
@@ -109,7 +109,7 @@ mod rti_tests {
     #[test]
     fn test_rti_returns_pc() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfc;
 
         bus.expect_read()

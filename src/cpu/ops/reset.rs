@@ -1,11 +1,11 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn reset_cycles(&self) -> u8 {
         8
     }
 
-    pub(in crate::cpu) fn reset(&mut self, bus: &dyn Bus) {
+    pub(in crate::cpu) fn reset(&mut self, bus: &dyn CPUBus) {
         let low_byte = bus.read(CPU::RESET_VECTOR) as u16;
         let high_byte = bus.read(CPU::RESET_VECTOR + 1) as u16;
 
@@ -30,7 +30,7 @@ impl CPU {
 mod reset_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -55,7 +55,7 @@ mod reset_tests {
         cpu.z = true;
         cpu.c = true;
 
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0xFFFC)).once().return_const(0x40);
 

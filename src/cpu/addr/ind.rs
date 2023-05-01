@@ -1,9 +1,9 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrMode, AddrModeResult};
 
 impl CPU {
-    pub(in crate::cpu) fn ind(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn ind(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
         let low_byte = bus.read(addr) as u16;
         let high_byte =
             bus.read((addr & 0xff00) + ((addr & 0xff) as u8).wrapping_add(1) as u16) as u16;
@@ -23,14 +23,14 @@ impl CPU {
 mod ind_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
     #[test]
     fn test_ind_addressing_mode() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(0x0000))
@@ -57,7 +57,7 @@ mod ind_tests {
     #[test]
     fn test_ind_addressing_mode_hardware_bug() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(0x80ff))

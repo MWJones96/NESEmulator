@@ -31,7 +31,7 @@ impl CPU {
 
 #[cfg(test)]
 mod ora_tests {
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -44,7 +44,7 @@ mod ora_tests {
     #[test]
     fn test_ora_zp_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -54,7 +54,7 @@ mod ora_tests {
     #[test]
     fn test_ora_zpx_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -64,7 +64,7 @@ mod ora_tests {
     #[test]
     fn test_ora_abs_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -74,7 +74,7 @@ mod ora_tests {
     #[test]
     fn test_ora_absx_no_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -84,7 +84,7 @@ mod ora_tests {
     #[test]
     fn test_ora_absx_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -95,7 +95,7 @@ mod ora_tests {
     #[test]
     fn test_ora_absy_no_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -105,7 +105,7 @@ mod ora_tests {
     #[test]
     fn test_ora_absy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -116,7 +116,7 @@ mod ora_tests {
     #[test]
     fn test_ora_indx_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -126,7 +126,7 @@ mod ora_tests {
     #[test]
     fn test_ora_indy_no_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -136,7 +136,7 @@ mod ora_tests {
     #[test]
     fn test_ora_indy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x80);

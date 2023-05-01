@@ -22,14 +22,14 @@ impl CPU {
 
 #[cfg(test)]
 mod jmp_tests {
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
     #[test]
     fn test_jmp_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -39,7 +39,7 @@ mod jmp_tests {
     #[test]
     fn test_jmp_ind_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -49,7 +49,7 @@ mod jmp_tests {
     #[test]
     fn test_jmp_goes_to_correct_pc() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 

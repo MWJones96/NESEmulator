@@ -1,9 +1,9 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::AddrModeResult;
 
 impl CPU {
-    pub(in crate::cpu) fn abs(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn abs(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr)),
             cycles: 2,
@@ -18,12 +18,12 @@ mod abs_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     #[test]
     fn test_abs_addressing_mode() {
         let cpu = CPU::new();
-        let mut mock_bus = MockBus::new();
+        let mut mock_bus = MockCPUBus::new();
 
         mock_bus.expect_read().with(eq(0xffff)).return_const(0x88);
 

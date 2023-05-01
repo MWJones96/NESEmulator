@@ -19,7 +19,7 @@
 
 use crate::cpu::{
     addr::{AddrMode, AddrModeResult},
-    bus::Bus,
+    bus::CPUBus,
 };
 
 use super::super::CPU;
@@ -33,7 +33,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         let before_shift = mode.data.unwrap();
         let after_shift = before_shift >> 1;
 
@@ -53,7 +53,7 @@ impl CPU {
 mod lsr_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -68,7 +68,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_zp() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
@@ -78,7 +78,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_zpx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
@@ -89,7 +89,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_abs() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(0xffff))
@@ -102,7 +102,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_absx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
 
@@ -114,7 +114,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_shift() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x2;
         cpu.lsr(&cpu.acc(), &bus);
@@ -132,7 +132,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x1;
         cpu.lsr(&cpu.acc(), &bus);
@@ -146,7 +146,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_acc_zero_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x1;
         cpu.lsr(&cpu.acc(), &bus);
@@ -160,7 +160,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_acc_negative_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.n = true;
 
@@ -172,7 +172,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_writes_to_memory() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 

@@ -16,7 +16,7 @@
     plus 1 and also increments the stack register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::Bus};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -25,7 +25,7 @@ impl CPU {
         4
     }
 
-    pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         self.sp = self.sp.wrapping_add(1);
 
         self.a = bus.read(0x100 + (self.sp as u16));
@@ -38,7 +38,7 @@ impl CPU {
 mod pla_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -51,7 +51,7 @@ mod pla_tests {
     #[test]
     fn test_pla_fetches_accumulator() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read()
@@ -68,7 +68,7 @@ mod pla_tests {
     #[test]
     fn test_pla_sets_negative_flag() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read()
@@ -84,7 +84,7 @@ mod pla_tests {
     #[test]
     fn test_pla_sets_zero_flag() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read().with(eq(0x1ff)).times(1).return_const(0x0);
@@ -97,7 +97,7 @@ mod pla_tests {
     #[test]
     fn test_pla_pull_from_empty_stack() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xff;
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);

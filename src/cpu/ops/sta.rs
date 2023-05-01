@@ -10,7 +10,7 @@
 
 use crate::cpu::{
     addr::{AddrMode, AddrModeResult},
-    bus::Bus,
+    bus::CPUBus,
 };
 
 use super::super::CPU;
@@ -24,7 +24,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn sta(&self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn sta(&self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.a);
     }
 }
@@ -33,14 +33,14 @@ impl CPU {
 mod sta_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
     #[test]
     fn test_sta_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -50,7 +50,7 @@ mod sta_tests {
     #[test]
     fn test_sta_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -60,7 +60,7 @@ mod sta_tests {
     #[test]
     fn test_sta_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -70,7 +70,7 @@ mod sta_tests {
     #[test]
     fn test_sta_absx_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -80,7 +80,7 @@ mod sta_tests {
     #[test]
     fn test_sta_absy_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -90,7 +90,7 @@ mod sta_tests {
     #[test]
     fn test_sta_indx_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -100,7 +100,7 @@ mod sta_tests {
     #[test]
     fn test_sta_indy_correct_number_of_cycles() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -110,7 +110,7 @@ mod sta_tests {
     #[test]
     fn test_sta() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0xee;
 
         bus.expect_read().return_const(0x0);

@@ -1,4 +1,4 @@
-use self::{addr::AddrModeResult, bus::Bus};
+use self::{addr::AddrModeResult, bus::CPUBus};
 
 mod addr;
 mod bus;
@@ -88,7 +88,7 @@ impl CPU {
         }
     }
 
-    pub fn clock(&mut self, bus: &dyn Bus) {
+    pub fn clock(&mut self, bus: &dyn CPUBus) {
         self.current_instruction.remaining_cycles -= 1;
 
         if (self.current_instruction.remaining_cycles == 0) {
@@ -129,14 +129,14 @@ impl CPU {
             | (self.c as u8) << 0
     }
 
-    fn fetch_byte(&mut self, bus: &dyn Bus) -> u8 {
+    fn fetch_byte(&mut self, bus: &dyn CPUBus) -> u8 {
         let data = bus.read(self.pc);
         self.pc = self.pc.wrapping_add(1);
 
         data
     }
 
-    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn Bus) -> u16 {
+    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn CPUBus) -> u16 {
         let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
         let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
         self.pc = self.pc.wrapping_add(2);
@@ -146,7 +146,7 @@ impl CPU {
 }
 
 impl CPU {
-    fn fetch_addr_mode(&mut self, opcode: u8, bus: &dyn Bus) -> AddrModeResult {
+    fn fetch_addr_mode(&mut self, opcode: u8, bus: &dyn CPUBus) -> AddrModeResult {
         match opcode {
             0x00 | 0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08
             | 0x68 | 0x28 | 0x40 | 0x60 | 0x38 | 0xF8 | 0x78 | 0xAA | 0xA8 | 0xBA | 0x8A | 0x9A
@@ -258,7 +258,7 @@ impl CPU {
         }
     }
 
-    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn Bus) {
+    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn CPUBus) {
         match opcode {
             0x00 => self.brk(mode, bus),
             0x08 => self.php(mode, bus),
@@ -326,7 +326,7 @@ mod cpu_tests {
     use mockall::predicate::eq;
 
     // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::{bus::MockBus, *};
+    use super::{bus::MockCPUBus, *};
 
     #[test]
     fn test_cpu_initial_state() {
@@ -431,7 +431,7 @@ mod cpu_tests {
     #[test]
     fn test_fetch_next_byte() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.pc = 0xffff;
         bus.expect_read()
@@ -447,7 +447,7 @@ mod cpu_tests {
     #[test]
     fn test_fetch_next_two_bytes_as_u16() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.pc = 0xffff;
         bus.expect_read()
@@ -464,7 +464,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_reset() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(CPU::RESET_VECTOR))
@@ -512,7 +512,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_system_reset() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -538,7 +538,7 @@ mod cpu_tests {
     #[test]
     fn test_brk_instruction_fetches_extra_byte() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(CPU::RESET_VECTOR))

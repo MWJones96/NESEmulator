@@ -13,7 +13,7 @@
     register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::Bus};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -22,7 +22,7 @@ impl CPU {
         4
     }
 
-    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         self.sp = self.sp.wrapping_add(1);
         let data = bus.read(0x100 + (self.sp as u16));
 
@@ -39,7 +39,7 @@ impl CPU {
 mod plp_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -52,7 +52,7 @@ mod plp_tests {
     #[test]
     fn test_plp_fetches_all_flags() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read()
@@ -75,7 +75,7 @@ mod plp_tests {
     #[test]
     fn test_plp_fetches_no_flags() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read()
@@ -98,7 +98,7 @@ mod plp_tests {
     #[test]
     fn test_plp_pull_from_empty_stack() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.sp = 0xff;
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);

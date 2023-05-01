@@ -1,9 +1,9 @@
-use crate::cpu::{bus::Bus, CPU};
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::AddrModeResult;
 
 impl CPU {
-    pub(in crate::cpu) fn zp(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn zp(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr as u16)),
             cycles: 1,
@@ -17,14 +17,14 @@ impl CPU {
 mod zp_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::{addr::AddrModeResult, bus::MockBus};
+    use crate::cpu::{addr::AddrModeResult, bus::MockCPUBus};
 
     use super::*;
 
     #[test]
     fn test_zp_addressing_mode() {
         let cpu = CPU::new();
-        let mut mock_bus = MockBus::new();
+        let mut mock_bus = MockCPUBus::new();
         mock_bus.expect_read().with(eq(0x0)).return_const(0x77);
 
         let result = cpu.zp(0x0, &mock_bus);

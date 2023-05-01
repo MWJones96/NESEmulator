@@ -42,7 +42,7 @@ impl CPU {
 
 #[cfg(test)]
 mod cpx_tests {
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -56,7 +56,7 @@ mod cpx_tests {
     #[test]
     fn test_cpx_zp_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.cpx_cycles(&cpu.zp(0x0, &bus)));
@@ -65,7 +65,7 @@ mod cpx_tests {
     #[test]
     fn test_cpx_abs_correct_number_of_cycles() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cpx_cycles(&cpu.abs(0x0, &bus)));

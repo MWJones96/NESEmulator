@@ -16,7 +16,7 @@
 
 use crate::cpu::{
     addr::{AddrMode, AddrModeResult},
-    bus::Bus,
+    bus::CPUBus,
 };
 
 use super::super::CPU;
@@ -30,7 +30,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn Bus) {
+    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
         let data: u16 = (mode.data.unwrap() as u16) << 1;
 
         self.c = data > (u8::MAX as u16);
@@ -49,7 +49,7 @@ impl CPU {
 mod asl_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockBus;
+    use crate::cpu::bus::MockCPUBus;
 
     use super::*;
 
@@ -64,7 +64,7 @@ mod asl_tests {
     #[test]
     fn test_asl_zp() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
@@ -74,7 +74,7 @@ mod asl_tests {
     #[test]
     fn test_asl_zpx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
@@ -85,7 +85,7 @@ mod asl_tests {
     #[test]
     fn test_asl_abs() {
         let cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read()
             .with(eq(0xffff))
@@ -98,7 +98,7 @@ mod asl_tests {
     #[test]
     fn test_asl_absx() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
 
@@ -110,7 +110,7 @@ mod asl_tests {
     #[test]
     fn test_asl_shift() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x1;
         cpu.asl(&cpu.acc(), &bus);
@@ -133,7 +133,7 @@ mod asl_tests {
     #[test]
     fn test_asl_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0xc0;
         cpu.asl(&cpu.acc(), &bus);
@@ -147,7 +147,7 @@ mod asl_tests {
     #[test]
     fn test_asl_acc_zero_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x80;
         cpu.asl(&cpu.acc(), &bus);
@@ -161,7 +161,7 @@ mod asl_tests {
     #[test]
     fn test_asl_acc_negative_flag() {
         let mut cpu = CPU::new();
-        let bus = MockBus::new();
+        let bus = MockCPUBus::new();
 
         cpu.a = 0x40;
         cpu.asl(&cpu.acc(), &bus);
@@ -175,7 +175,7 @@ mod asl_tests {
     #[test]
     fn test_asl_writes_to_memory() {
         let mut cpu = CPU::new();
-        let mut bus = MockBus::new();
+        let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
