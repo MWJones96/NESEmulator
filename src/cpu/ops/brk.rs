@@ -24,23 +24,20 @@ impl CPU {
     }
 
     pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &dyn Bus) {
-        self.i = true;
-
         let pc_lsb = (self.pc & 0xff) as u8;
         let pc_msb = (self.pc >> 8) as u8;
-
-        const B: u8 = 0x10;
 
         bus.write(0x100 + (self.sp.wrapping_sub(0)) as u16, pc_msb);
         bus.write(0x100 + (self.sp.wrapping_sub(1)) as u16, pc_lsb);
         bus.write(
             0x100 + (self.sp.wrapping_sub(2)) as u16,
-            self.get_status_byte() | B,
+            self.get_status_byte() | 0x10,
         );
 
-        self.pc = (bus.read(CPU::INTERRUPT_VECTOR.wrapping_add(1)) as u16) << 8
-            | bus.read(CPU::INTERRUPT_VECTOR) as u16;
         self.sp = self.sp.wrapping_sub(3);
+        self.i = true;
+        self.pc = (bus.read(CPU::INTERRUPT_VECTOR + 1) as u16) << 8
+            | bus.read(CPU::INTERRUPT_VECTOR) as u16;
     }
 }
 
@@ -104,7 +101,7 @@ mod brk_tests {
         cpu.z = true;
 
         bus.expect_write()
-            .with(eq(0x1fd), eq(0b0011_0111))
+            .with(eq(0x1fd), eq(0b0011_0011))
             .times(1)
             .return_const(());
 
@@ -160,7 +157,7 @@ mod brk_tests {
             .return_const(());
 
         bus.expect_write()
-            .with(eq(0x1fe), eq(0b0011_0100))
+            .with(eq(0x1fe), eq(0b0011_0000))
             .times(1)
             .return_const(());
 

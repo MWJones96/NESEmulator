@@ -12,15 +12,14 @@ impl CPU {
         bus.write(0x100 + self.sp.wrapping_sub(0) as u16, pc_high);
         bus.write(0x100 + self.sp.wrapping_sub(1) as u16, pc_low);
 
-        self.b = false;
-        self.i = true;
 
         bus.write(
             0x100 + self.sp.wrapping_sub(2) as u16,
-            self.get_status_byte(),
+            self.get_status_byte() & !0x10,
         );
-        self.sp = self.sp.wrapping_sub(3);
 
+        self.i = true;
+        self.sp = self.sp.wrapping_sub(3);
         self.pc = (bus.read(CPU::NMI_VECTOR + 1) as u16) << 8 | bus.read(CPU::NMI_VECTOR) as u16;
     }
 }
@@ -47,9 +46,6 @@ mod nmi_tests {
         cpu.pc = 0x2040;
         cpu.sp = 0xff;
 
-        cpu.b = true;
-        cpu.i = false;
-
         bus.expect_write()
             .with(eq(0x1ff), eq(0x20))
             .once()
@@ -61,7 +57,7 @@ mod nmi_tests {
             .return_const(());
 
         bus.expect_write()
-            .with(eq(0x1fd), eq(0b0010_0100))
+            .with(eq(0x1fd), eq(0b0010_0000))
             .once()
             .return_const(());
 
