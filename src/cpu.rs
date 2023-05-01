@@ -69,6 +69,13 @@ impl CPU {
         }
     }
 
+    pub fn system_reset(&mut self) {
+        self.current_instruction = CurrentInstruction {
+            remaining_cycles: self.reset_cycles(),
+            instruction_type: InstructionType::Reset
+        }
+    }
+
     pub fn clock(&mut self, bus: &dyn Bus) {
         self.current_instruction.remaining_cycles -= 1;
 
@@ -94,6 +101,34 @@ impl CPU {
         }
     }
 
+    fn get_status_byte(&self) -> u8 {
+        (self.n as u8) << 7
+            | (self.v as u8) << 6
+            | 0x1 << 5
+            | (self.b as u8) << 4
+            | (self.d as u8) << 3
+            | (self.i as u8) << 2
+            | (self.z as u8) << 1
+            | (self.c as u8) << 0
+    }
+
+    fn fetch_byte(&mut self, bus: &dyn Bus) -> u8 {
+        let data = bus.read(self.pc);
+        self.pc = self.pc.wrapping_add(1);
+
+        data
+    }
+
+    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn Bus) -> u16 {
+        let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
+        let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
+        self.pc = self.pc.wrapping_add(2);
+
+        high_byte << 8 | low_byte
+    }
+}
+
+impl CPU {
     fn fetch_addr_mode(&mut self, opcode: u8, bus: &dyn Bus) -> AddrModeResult {
         match opcode {
             0x00 | 0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08
@@ -271,32 +306,6 @@ impl CPU {
 
             _ => panic!("Opcode {:#02x} is not implemented", opcode),
         }
-    }
-
-    fn get_status_byte(&self) -> u8 {
-        (self.n as u8) << 7
-            | (self.v as u8) << 6
-            | 0x1 << 5
-            | (self.b as u8) << 4
-            | (self.d as u8) << 3
-            | (self.i as u8) << 2
-            | (self.z as u8) << 1
-            | (self.c as u8) << 0
-    }
-
-    fn fetch_byte(&mut self, bus: &dyn Bus) -> u8 {
-        let data = bus.read(self.pc);
-        self.pc = self.pc.wrapping_add(1);
-
-        data
-    }
-
-    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn Bus) -> u16 {
-        let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
-        let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
-        self.pc = self.pc.wrapping_add(2);
-
-        high_byte << 8 | low_byte
     }
 }
 
@@ -484,6 +493,31 @@ mod cpu_tests {
 
         assert_eq!(0x2042, cpu.pc);
         assert_eq!(0x0, cpu.a);
+    }
+
+    #[test]
+    fn test_cpu_system_reset() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        bus.expect_read()
+            .return_const(0x0);
+
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+        cpu.clock(&bus);
+
+        cpu.system_reset();
+
+        assert_eq!(CurrentInstruction {
+            remaining_cycles: 8,
+            instruction_type: InstructionType::Reset
+        }, cpu.current_instruction);
     }
 }
 
