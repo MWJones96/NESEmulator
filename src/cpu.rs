@@ -5,6 +5,11 @@ mod bus;
 mod ops;
 
 #[derive(PartialEq, Debug)]
+enum AwaitingInterrupt {
+    NMI,
+}
+
+#[derive(PartialEq, Debug)]
 enum InstructionType {
     Reset,
     Instruction {
@@ -37,6 +42,7 @@ pub struct CPU {
     c: bool, //Bit 0
 
     current_instruction: CurrentInstruction,
+    awaiting_interrupt: Option<AwaitingInterrupt>,
 }
 
 impl CPU {
@@ -66,13 +72,19 @@ impl CPU {
                 remaining_cycles: 8,
                 instruction_type: InstructionType::Reset,
             },
+
+            awaiting_interrupt: None,
         }
     }
+
+    pub fn system_nmi(&mut self) {}
+
+    pub fn system_irq(&mut self) {}
 
     pub fn system_reset(&mut self) {
         self.current_instruction = CurrentInstruction {
             remaining_cycles: self.reset_cycles(),
-            instruction_type: InstructionType::Reset
+            instruction_type: InstructionType::Reset,
         }
     }
 
@@ -89,18 +101,23 @@ impl CPU {
             }
 
             let opcode = self.fetch_byte(bus);
-            let mode = self.fetch_addr_mode(opcode, bus);
+            if (opcode == 0x0) {
+                self.fetch_byte(bus); //Discard next byte for BRK
+            }
+            let addressing_mode = self.fetch_addr_mode(opcode, bus);
 
             self.current_instruction = CurrentInstruction {
-                remaining_cycles: self.get_number_of_cycles(opcode, &mode),
+                remaining_cycles: self.get_number_of_cycles(opcode, &addressing_mode),
                 instruction_type: InstructionType::Instruction {
                     opcode,
-                    addressing_mode: mode,
+                    addressing_mode,
                 },
             }
         }
     }
+}
 
+impl CPU {
     fn get_status_byte(&self) -> u8 {
         (self.n as u8) << 7
             | (self.v as u8) << 6
@@ -237,17 +254,13 @@ impl CPU {
             0xEE | 0xFE | 0xE6 | 0xF6 => self.inc_cycles(mode),
             0xF0 => self.beq_cycles(mode),
             0xF8 => self.sed_cycles(mode),
-
             _ => panic!("Opcode {:#02x} is not implemented", opcode),
         }
     }
 
     fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn Bus) {
         match opcode {
-            0x00 => {
-                let _reason = self.fetch_byte(bus); //Throw away byte
-                self.brk(mode, bus);
-            },
+            0x00 => self.brk(mode, bus),
             0x08 => self.php(mode, bus),
             0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora(mode),
             0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl(mode, bus),
@@ -303,7 +316,6 @@ impl CPU {
             0xEE | 0xFE | 0xE6 | 0xF6 => self.inc(mode, bus),
             0xF0 => self.beq(mode),
             0xF8 => self.sed(mode),
-
             _ => panic!("Opcode {:#02x} is not implemented", opcode),
         }
     }
@@ -343,6 +355,8 @@ mod cpu_tests {
             },
             cpu.current_instruction
         );
+
+        assert_eq!(None, cpu.awaiting_interrupt);
     }
 
     #[test]
@@ -500,24 +514,62 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         let mut bus = MockBus::new();
 
-        bus.expect_read()
-            .return_const(0x0);
+        bus.expect_read().return_const(0x0);
 
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
+        cpu.current_instruction = CurrentInstruction {
+            remaining_cycles: 1,
+            instruction_type: InstructionType::Instruction {
+                opcode: 0x0,
+                addressing_mode: cpu.imp(),
+            },
+        };
 
         cpu.system_reset();
 
-        assert_eq!(CurrentInstruction {
-            remaining_cycles: 8,
-            instruction_type: InstructionType::Reset
-        }, cpu.current_instruction);
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 8,
+                instruction_type: InstructionType::Reset
+            },
+            cpu.current_instruction
+        );
+    }
+
+    #[test]
+    fn test_brk_instruction_fetches_extra_byte() {
+        let mut cpu = CPU::new();
+        let mut bus = MockBus::new();
+
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR))
+            .once()
+            .return_const(0x40);
+
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR + 1))
+            .once()
+            .return_const(0x20);
+
+        bus.expect_read().with(eq(0x2040)).once().return_const(0x00);
+
+        bus.expect_read().with(eq(0x2041)).once().return_const(0x00);
+
+        for _ in 0..8 {
+            cpu.clock(&bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x00,
+                    addressing_mode: cpu.imp()
+                }
+            },
+            cpu.current_instruction
+        );
+
+        assert_eq!(0x2042, cpu.pc);
     }
 }
 

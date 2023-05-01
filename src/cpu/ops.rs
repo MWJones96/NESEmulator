@@ -55,4 +55,6 @@ mod txa;
 mod txs;
 mod tya;
 
+mod irq;
+mod nmi;
 mod reset;

@@ -1,3 +1,7 @@
+use cpu::CPU;
+
 mod cpu;
 
-fn main() {}
+fn main() {
+    let mut cpu = CPU::new();
+}
