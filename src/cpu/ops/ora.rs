@@ -17,7 +17,7 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
-    pub(in crate::cpu) fn ora_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn ora_cycles(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 

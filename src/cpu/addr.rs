@@ -31,7 +31,7 @@ pub(in crate::cpu) enum AddrMode {
     IMP,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub(in crate::cpu) struct AddrModeResult {
     pub addr: Option<u16>,
     pub data: Option<u8>,

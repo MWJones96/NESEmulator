@@ -16,7 +16,7 @@
 use crate::cpu::{addr::AddrMode, addr::AddrModeResult, bus::Bus, CPU};
 
 impl CPU {
-    pub(in crate::cpu) fn dec_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn dec_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ABSX => 7,
             _ => 4 + mode.cycles,

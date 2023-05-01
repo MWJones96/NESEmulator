@@ -20,7 +20,7 @@ use crate::cpu::{
 };
 
 impl CPU {
-    pub(in crate::cpu) fn inc_cycles(&mut self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn inc_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ABSX => 7,
             _ => 4 + mode.cycles,
