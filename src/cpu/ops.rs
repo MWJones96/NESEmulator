@@ -54,3 +54,5 @@ mod tsx;
 mod txa;
 mod txs;
 mod tya;
+
+mod reset;

@@ -4,13 +4,7 @@ mod addr;
 mod bus;
 mod ops;
 
-#[derive(Debug, PartialEq)]
-struct Instruction {
-    opcode: u8,
-    mode: AddrModeResult,
-    cycles_remaining: u8,
-}
-
+#[derive(Default)]
 pub struct CPU {
     pc: u16,
     sp: u8,
@@ -27,11 +21,11 @@ pub struct CPU {
     i: bool, //Bit 2
     z: bool, //Bit 1
     c: bool, //Bit 0
-
-    current_instruction: Option<Instruction>
 }
 
 impl CPU {
+    const NMI_VECTOR: u16 = 0xfffa;
+    const RESET_VECTOR: u16 = 0xfffc;
     const INTERRUPT_VECTOR: u16 = 0xfffe;
 
     pub fn new() -> Self {
@@ -51,17 +45,71 @@ impl CPU {
             i: false, //Bit 2
             z: false, //Bit 1
             c: false, //Bit 0
-
-            current_instruction: None,
         }
     }
 
-    fn execute(&mut self, instruction: &Instruction, bus: &dyn Bus) {
-        let opcode = instruction.opcode;
-        let mode = &instruction.mode;
+    pub fn clock(&mut self, bus: &dyn Bus) {
+        let opcode = self.fetch_byte(bus);
+        let mode = self.fetch_addr_mode(opcode, bus);
+        self.execute(opcode, &mode, bus);
+    }
 
+    fn fetch_addr_mode(&mut self, opcode: u8, bus: &dyn Bus) -> AddrModeResult {
         match opcode {
-            0x00 => self.brk(mode, bus),
+            0x00 | 0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08
+            | 0x68 | 0x28 | 0x40 | 0x60 | 0x38 | 0xF8 | 0x78 | 0xAA | 0xA8 | 0xBA | 0x8A | 0x9A
+            | 0x98 => self.imp(),
+            0x0A | 0x4A | 0x2A | 0x6A => self.acc(),
+            0x69 | 0x29 | 0xC9 | 0xE0 | 0xC0 | 0x49 | 0xA9 | 0xA2 | 0xA0 | 0x09 | 0xE9 => {
+                let byte = self.fetch_byte(bus);
+                self.imm(byte)
+            }
+            0x6D | 0x2D | 0x0E | 0x2C | 0xCD | 0xEC | 0xCC | 0xCE | 0x4D | 0xEE | 0x4C | 0x20
+            | 0xAD | 0xAE | 0xAC | 0x4E | 0x0D | 0x2E | 0x6E | 0xED | 0x8D | 0x8E | 0x8C => {
+                let abs_addr = self.fetch_two_bytes_as_u16(bus);
+                self.abs(abs_addr, bus)
+            }
+            0x7D | 0x3D | 0x1E | 0xDD | 0xDE | 0x5D | 0xFE | 0xBD | 0xBC | 0x5E | 0x1D | 0x3E
+            | 0x7E | 0xFD | 0x9D => {
+                let abs_addr = self.fetch_two_bytes_as_u16(bus);
+                self.absx(abs_addr, bus)
+            }
+            0x79 | 0x39 | 0xD9 | 0x59 | 0xB9 | 0xBE | 0x19 | 0xF9 | 0x99 => {
+                let abs_addr = self.fetch_two_bytes_as_u16(bus);
+                self.absy(abs_addr, bus)
+            }
+            0x6C => {
+                let abs_addr = self.fetch_two_bytes_as_u16(bus);
+                self.ind(abs_addr, bus)
+            }
+            0x65 | 0x25 | 0x06 | 0x24 | 0xC5 | 0xE4 | 0xC4 | 0xC6 | 0x45 | 0xE6 | 0xA5 | 0xA6
+            | 0xA4 | 0x46 | 0x05 | 0x26 | 0x66 | 0xE5 | 0x85 | 0x86 | 0x84 => {
+                let addr = self.fetch_byte(bus);
+                self.zp(addr, bus)
+            }
+            0x75 | 0x35 | 0x16 | 0xD5 | 0xD6 | 0x55 | 0xF6 | 0xB5 | 0xB4 | 0x56 | 0x15 | 0x36
+            | 0x76 | 0xF5 | 0x95 | 0x94 => {
+                let addr = self.fetch_byte(bus);
+                self.zpx(addr, bus)
+            },
+            0xB6 | 0x96 => {
+                let addr = self.fetch_byte(bus);
+                self.zpy(addr, bus)
+            },
+            0x90 | 0xB0 | 0xF0 | 0x30 | 0xD0 | 0x10 | 0x50 | 0x70 => {
+                let offset = self.fetch_byte(bus);
+                self.rel(offset)
+            },
+            _ => panic!("Opcode {:#02x} is not implemented", opcode),
+        }
+    }
+
+    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn Bus) {
+        match opcode {
+            0x00 => {
+                let _reason = self.fetch_byte(bus); //Throw away value
+                self.brk(mode, bus)
+            },
             0x08 => self.php(mode, bus),
             0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora(mode),
             0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl(mode, bus),
@@ -175,8 +223,6 @@ mod cpu_tests {
         assert_eq!(false, cpu.i); //Bit 2
         assert_eq!(false, cpu.z); //Bit 1
         assert_eq!(false, cpu.c); //Bit 0
-
-        assert_eq!(None, cpu.current_instruction);
     }
 
     #[test]
