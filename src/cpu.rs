@@ -92,7 +92,7 @@ impl CPU {
     pub fn clock(&mut self, bus: &mut dyn CPUBus) {
         self.current_instruction.remaining_cycles -= 1;
 
-        if (self.current_instruction.remaining_cycles == 0) {
+        if self.current_instruction.remaining_cycles == 0 {
             match self.current_instruction.instruction_type {
                 InstructionType::Reset => self.reset(bus),
                 InstructionType::Instruction {
@@ -102,7 +102,7 @@ impl CPU {
             }
 
             let opcode = self.fetch_byte(bus);
-            if (opcode == 0x0) {
+            if opcode == 0x0 {
                 self.fetch_byte(bus); //Discard next byte for BRK
             }
             let addressing_mode = self.fetch_addr_mode(opcode, bus);
