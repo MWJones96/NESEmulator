@@ -36,7 +36,7 @@ mod inx_tests {
 
     #[test]
     fn test_inx_returns_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         assert_eq!(2, cpu.inx_cycles(&cpu.imp()));
     }
 

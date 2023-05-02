@@ -48,14 +48,14 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_imm_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
 
         assert_eq!(2, cpu.cpx_cycles(&cpu.imm(0x0)));
     }
 
     #[test]
     fn test_cpx_zp_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -64,7 +64,7 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_abs_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 

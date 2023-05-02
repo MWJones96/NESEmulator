@@ -42,7 +42,7 @@ mod dec_tests {
 
     #[test]
     fn test_dec_zp_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -54,7 +54,7 @@ mod dec_tests {
 
     #[test]
     fn test_dec_zpx_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -66,7 +66,7 @@ mod dec_tests {
 
     #[test]
     fn test_dec_abs_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -78,7 +78,7 @@ mod dec_tests {
 
     #[test]
     fn test_dec_absx_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);

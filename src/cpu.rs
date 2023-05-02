@@ -1,7 +1,8 @@
 use self::{addr::AddrModeResult, bus::CPUBus};
 
-mod addr;
 pub mod bus;
+
+mod addr;
 mod ops;
 
 #[derive(PartialEq, Debug)]
@@ -170,6 +171,10 @@ impl CPU {
                 let abs_addr = self.fetch_two_bytes_as_u16(bus);
                 self.absy(abs_addr, bus)
             }
+            0x61 | 0x21 | 0xC1 | 0x41 | 0xA1 | 0x01 | 0xE1 | 0x81 => {
+                let addr = self.fetch_byte(bus);
+                self.indx(addr, bus)
+            }
             0x6C => {
                 let abs_addr = self.fetch_two_bytes_as_u16(bus);
                 self.ind(abs_addr, bus)
@@ -179,6 +184,10 @@ impl CPU {
                 let addr = self.fetch_byte(bus);
                 self.zp(addr, bus)
             }
+            0x71 | 0x31 | 0xD1 | 0x51 | 0xB1 | 0x11 | 0xF1 | 0x91 => {
+                let addr = self.fetch_byte(bus);
+                self.indy(addr, bus)
+            } 
             0x75 | 0x35 | 0x16 | 0xD5 | 0xD6 | 0x55 | 0xF6 | 0xB5 | 0xB4 | 0x56 | 0x15 | 0x36
             | 0x76 | 0xF5 | 0x95 | 0x94 => {
                 let addr = self.fetch_byte(bus);
@@ -566,9 +575,4 @@ mod cpu_tests {
 
         assert_eq!(0x2042, cpu.pc);
     }
-}
-
-#[cfg(test)]
-mod execute_tests {
-    use super::*;
 }

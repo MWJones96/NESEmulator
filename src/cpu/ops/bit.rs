@@ -41,7 +41,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_zp_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
@@ -51,7 +51,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_abs_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);

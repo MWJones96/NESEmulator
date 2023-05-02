@@ -37,7 +37,7 @@ mod dey_tests {
 
     #[test]
     fn test_dey_returns_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         assert_eq!(2, cpu.dey_cycles(&cpu.imp()));
     }
 

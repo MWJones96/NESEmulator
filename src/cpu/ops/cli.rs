@@ -29,7 +29,7 @@ mod cli_tests {
 
     #[test]
     fn test_cli_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
 
         assert_eq!(2, cpu.cli_cycles(&cpu.imp()));
     }

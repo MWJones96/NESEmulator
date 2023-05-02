@@ -48,7 +48,7 @@ mod inc_tests {
 
     #[test]
     fn test_inc_zp_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -60,7 +60,7 @@ mod inc_tests {
 
     #[test]
     fn test_inc_zpx_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -72,7 +72,7 @@ mod inc_tests {
 
     #[test]
     fn test_inc_abs_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -84,7 +84,7 @@ mod inc_tests {
 
     #[test]
     fn test_inc_absx_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);

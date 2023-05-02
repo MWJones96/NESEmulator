@@ -36,7 +36,7 @@ mod iny_tests {
 
     #[test]
     fn test_iny_returns_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         assert_eq!(2, cpu.iny_cycles(&cpu.imp()));
     }
 

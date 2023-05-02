@@ -30,7 +30,7 @@ mod sei_tests {
 
     #[test]
     fn test_sei_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
 
         assert_eq!(2, cpu.sei_cycles(&cpu.imp()));
     }
