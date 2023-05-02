@@ -6,13 +6,16 @@ mod addr;
 mod ops;
 
 #[derive(PartialEq, Debug)]
-enum AwaitingInterrupt {
+enum PendingInterrupt {
     NMI,
+    IRQ
 }
 
 #[derive(PartialEq, Debug)]
 enum InstructionType {
     Reset,
+    NMI,
+    IRQ,
     Instruction {
         opcode: u8,
         addressing_mode: AddrModeResult,
@@ -43,7 +46,7 @@ pub struct CPU {
     c: bool, //Bit 0
 
     current_instruction: CurrentInstruction,
-    awaiting_interrupt: Option<AwaitingInterrupt>,
+    pending_interrupt: Option<PendingInterrupt>,
 }
 
 impl CPU {
@@ -74,13 +77,27 @@ impl CPU {
                 instruction_type: InstructionType::Reset,
             },
 
-            awaiting_interrupt: None,
+            pending_interrupt: None,
         }
     }
 
-    pub fn system_nmi(&mut self) {}
+    pub fn system_nmi(&mut self) {
+        match self.current_instruction.instruction_type {
+            InstructionType::NMI | InstructionType::IRQ => return,
+            _ => self.pending_interrupt = Some(PendingInterrupt::NMI)
+        }
+    }
 
-    pub fn system_irq(&mut self) {}
+    pub fn system_irq(&mut self) {
+        if self.pending_interrupt == Some(PendingInterrupt::NMI) {
+            return;
+        }
+
+        match self.current_instruction.instruction_type {
+            InstructionType::NMI | InstructionType::IRQ => return,
+            _ => self.pending_interrupt = Some(PendingInterrupt::IRQ)
+        }
+    }
 
     pub fn system_reset(&mut self) {
         self.current_instruction = CurrentInstruction {
@@ -95,6 +112,8 @@ impl CPU {
         if self.current_instruction.remaining_cycles == 0 {
             match self.current_instruction.instruction_type {
                 InstructionType::Reset => self.reset(bus),
+                InstructionType::NMI => {}
+                InstructionType::IRQ => {}
                 InstructionType::Instruction {
                     opcode,
                     addressing_mode,
@@ -365,7 +384,7 @@ mod cpu_tests {
             cpu.current_instruction
         );
 
-        assert_eq!(None, cpu.awaiting_interrupt);
+        assert_eq!(None, cpu.pending_interrupt);
     }
 
     #[test]
@@ -574,5 +593,119 @@ mod cpu_tests {
         );
 
         assert_eq!(0x2042, cpu.pc);
+    }
+
+    #[test]
+    fn test_nmi_queued() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+        bus.expect_read().return_const(0x0);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        cpu.system_nmi();
+
+        assert_eq!(Some(PendingInterrupt::NMI), cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_nmi_signal_ignored_on_nmi_setup() {
+        let mut cpu = CPU::new();
+        cpu.current_instruction = CurrentInstruction {
+            remaining_cycles: cpu.nmi_cycles(),
+            instruction_type: InstructionType::NMI,
+        };
+
+        cpu.system_nmi();
+
+        assert_eq!(None, cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_nmi_signal_ignored_on_irq_setup() {
+        let mut cpu = CPU::new();
+        cpu.current_instruction = CurrentInstruction {
+            remaining_cycles: cpu.nmi_cycles(),
+            instruction_type: InstructionType::IRQ,
+        };
+
+        cpu.system_nmi();
+
+        assert_eq!(None, cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_irq_queued() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+        bus.expect_read().return_const(0x0);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        cpu.system_irq();
+
+        assert_eq!(Some(PendingInterrupt::IRQ), cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_irq_gets_replaced_by_nmi() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+        bus.expect_read().return_const(0x0);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        cpu.system_irq();
+        cpu.system_nmi();
+
+        assert_eq!(Some(PendingInterrupt::NMI), cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_nmi_does_not_get_replaced_by_irq() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+        bus.expect_read().return_const(0x0);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        cpu.system_nmi();
+        cpu.system_irq();
+
+        assert_eq!(Some(PendingInterrupt::NMI), cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_irq_signal_ignored_on_nmi_setup() {
+        let mut cpu = CPU::new();
+        cpu.current_instruction = CurrentInstruction {
+            remaining_cycles: cpu.nmi_cycles(),
+            instruction_type: InstructionType::NMI,
+        };
+
+        cpu.system_irq();
+
+        assert_eq!(None, cpu.pending_interrupt);
+    }
+
+    #[test]
+    fn test_irq_signal_ignored_on_irq_setup() {
+        let mut cpu = CPU::new();
+        cpu.current_instruction = CurrentInstruction {
+            remaining_cycles: cpu.nmi_cycles(),
+            instruction_type: InstructionType::IRQ,
+        };
+
+        cpu.system_irq();
+
+        assert_eq!(None, cpu.pending_interrupt);
     }
 }
