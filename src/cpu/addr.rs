@@ -40,7 +40,13 @@ pub(in crate::cpu) struct AddrModeResult {
 }
 
 impl CPU {
-    fn abs_helper(&self, addr: u16, register: u8, mode: AddrMode, bus: &dyn CPUBus) -> AddrModeResult {
+    fn abs_helper(
+        &self,
+        addr: u16,
+        register: u8,
+        mode: AddrMode,
+        bus: &dyn CPUBus,
+    ) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(register as u16);
         let page_after: u8 = (resolved_addr >> 8) as u8;

@@ -1,7 +1,7 @@
 use self::{addr::AddrModeResult, bus::CPUBus};
 
-pub mod bus;
 mod addr;
+pub mod bus;
 mod ops;
 
 #[derive(PartialEq, Debug)]

@@ -1,7 +1,7 @@
 use crate::cpu::bus::CPUBus;
 
 pub struct MainBus {
-    mem: [u8; 0x10000]
+    mem: [u8; 0x10000],
 }
 
 impl CPUBus for MainBus {
@@ -20,9 +20,7 @@ mod MainBusTests {
 
     #[test]
     fn test_cpu_bus_read() {
-        let mut main_bus = MainBus {
-            mem: [0; 0x10000]
-        };
+        let mut main_bus = MainBus { mem: [0; 0x10000] };
 
         main_bus.mem[0x1234] = 0xee;
 
@@ -31,9 +29,7 @@ mod MainBusTests {
 
     #[test]
     fn test_cpu_bus_write() {
-        let mut main_bus = MainBus {
-            mem: [0; 0x10000]
-        };
+        let mut main_bus = MainBus { mem: [0; 0x10000] };
 
         main_bus.write(0xeeee, 0x34);
         assert_eq!(0x34, main_bus.mem[0xeeee]);
