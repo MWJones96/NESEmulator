@@ -1,7 +1,7 @@
 use self::{addr::AddrModeResult, bus::CPUBus};
 
+pub mod bus;
 mod addr;
-mod bus;
 mod ops;
 
 #[derive(PartialEq, Debug)]
@@ -88,7 +88,7 @@ impl CPU {
         }
     }
 
-    pub fn clock(&mut self, bus: &dyn CPUBus) {
+    pub fn clock(&mut self, bus: &mut dyn CPUBus) {
         self.current_instruction.remaining_cycles -= 1;
 
         if (self.current_instruction.remaining_cycles == 0) {
@@ -258,7 +258,7 @@ impl CPU {
         }
     }
 
-    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         match opcode {
             0x00 => self.brk(mode, bus),
             0x08 => self.php(mode, bus),
@@ -480,14 +480,9 @@ mod cpu_tests {
 
         bus.expect_read().with(eq(0x2041)).once().return_const(0xff);
 
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
-        cpu.clock(&bus);
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
 
         assert_eq!(
             CurrentInstruction {
@@ -555,7 +550,7 @@ mod cpu_tests {
         bus.expect_read().with(eq(0x2041)).once().return_const(0x00);
 
         for _ in 0..8 {
-            cpu.clock(&bus);
+            cpu.clock(&mut bus);
         }
 
         assert_eq!(

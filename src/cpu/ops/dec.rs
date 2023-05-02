@@ -23,7 +23,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let result = mode.data.unwrap().wrapping_sub(1);
         bus.write(mode.addr.unwrap(), result);
 
@@ -100,7 +100,7 @@ mod dec_tests {
             .times(1)
             .return_const(());
 
-        cpu.dec(&cpu.zp(0x0, &bus), &bus);
+        cpu.dec(&cpu.zp(0x0, &bus), &mut bus);
     }
 
     #[test]
@@ -112,7 +112,7 @@ mod dec_tests {
 
         bus.expect_write().with(eq(0x0), eq(0xff)).return_const(());
 
-        cpu.dec(&cpu.zp(0x0, &bus), &bus);
+        cpu.dec(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.n);
     }
 
@@ -125,7 +125,7 @@ mod dec_tests {
 
         bus.expect_write().with(eq(0x0), eq(0x0)).return_const(());
 
-        cpu.dec(&cpu.zp(0x0, &bus), &bus);
+        cpu.dec(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.z);
     }
 }

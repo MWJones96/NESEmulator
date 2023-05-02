@@ -31,7 +31,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn rol(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn rol(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data: u16 = ((mode.data.unwrap() as u16) << 1) | (self.c as u16);
 
         self.c = data > 0xff;
@@ -111,10 +111,10 @@ mod rol_tests {
     #[test]
     fn test_rol_no_carry_flag_set_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0xff;
 
-        cpu.rol(&cpu.acc(), &bus);
+        cpu.rol(&cpu.acc(), &mut bus);
         assert_eq!(0xfe, cpu.a);
         assert_eq!(true, cpu.c);
     }
@@ -122,10 +122,10 @@ mod rol_tests {
     #[test]
     fn test_rol_no_carry_flag_no_set_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0x1;
 
-        cpu.rol(&cpu.acc(), &bus);
+        cpu.rol(&cpu.acc(), &mut bus);
         assert_eq!(0x2, cpu.a);
         assert_eq!(false, cpu.c);
     }
@@ -133,11 +133,11 @@ mod rol_tests {
     #[test]
     fn test_rol_with_carry_flag_no_set_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0x1;
         cpu.c = true;
 
-        cpu.rol(&cpu.acc(), &bus);
+        cpu.rol(&cpu.acc(), &mut bus);
         assert_eq!(0x3, cpu.a);
         assert_eq!(false, cpu.c);
     }
@@ -145,11 +145,11 @@ mod rol_tests {
     #[test]
     fn test_rol_with_carry_flag_and_set_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0b1000_0001;
         cpu.c = true;
 
-        cpu.rol(&cpu.acc(), &bus);
+        cpu.rol(&cpu.acc(), &mut bus);
         assert_eq!(0b0000_0011, cpu.a);
         assert_eq!(true, cpu.c);
     }
@@ -157,20 +157,20 @@ mod rol_tests {
     #[test]
     fn test_rol_zero_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0b1000_0000;
 
-        cpu.rol(&cpu.acc(), &bus);
+        cpu.rol(&cpu.acc(), &mut bus);
         assert_eq!(true, cpu.z);
     }
 
     #[test]
     fn test_rol_negative_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
         cpu.a = 0b0100_0000;
 
-        cpu.rol(&cpu.acc(), &bus);
+        cpu.rol(&cpu.acc(), &mut bus);
         assert_eq!(true, cpu.n);
     }
 }

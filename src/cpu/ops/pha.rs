@@ -21,7 +21,7 @@ impl CPU {
         3
     }
 
-    pub(in crate::cpu) fn pha(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn pha(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(0x100 + (self.sp as u16), self.a);
         self.sp = self.sp.wrapping_sub(1);
     }
@@ -52,7 +52,7 @@ mod pha_tests {
             .times(1)
             .return_const(());
 
-        cpu.pha(&cpu.imp(), &bus);
+        cpu.pha(&cpu.imp(), &mut bus);
         assert_eq!(0xfe, cpu.sp);
     }
 
@@ -64,7 +64,7 @@ mod pha_tests {
 
         bus.expect_write().return_const(());
 
-        cpu.pha(&cpu.imp(), &bus);
+        cpu.pha(&cpu.imp(), &mut bus);
         assert_eq!(0xff, cpu.sp);
     }
 }

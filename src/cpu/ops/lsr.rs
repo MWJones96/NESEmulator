@@ -33,7 +33,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let before_shift = mode.data.unwrap();
         let after_shift = before_shift >> 1;
 
@@ -114,58 +114,58 @@ mod lsr_tests {
     #[test]
     fn test_lsr_shift() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0x2;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(0x1, cpu.a);
 
         cpu.a = 0xff;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(0x7f, cpu.a);
 
         cpu.a = 0x00;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(0x00, cpu.a);
     }
 
     #[test]
     fn test_lsr_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0x1;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(true, cpu.c);
 
         cpu.a = 0x2;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(false, cpu.c);
     }
 
     #[test]
     fn test_lsr_acc_zero_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0x1;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(true, cpu.z);
 
         cpu.a = 0x2;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(false, cpu.z);
     }
 
     #[test]
     fn test_lsr_acc_negative_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.n = true;
 
         cpu.a = 0x80;
-        cpu.lsr(&cpu.acc(), &bus);
+        cpu.lsr(&cpu.acc(), &mut bus);
         assert_eq!(false, cpu.n);
     }
 
@@ -181,6 +181,6 @@ mod lsr_tests {
             .times(1)
             .return_const(());
 
-        cpu.lsr(&cpu.zp(0x0, &bus), &bus);
+        cpu.lsr(&cpu.zp(0x0, &bus), &mut bus);
     }
 }

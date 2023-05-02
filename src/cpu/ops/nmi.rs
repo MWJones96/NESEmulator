@@ -5,7 +5,7 @@ impl CPU {
         8
     }
 
-    pub(in crate::cpu) fn nmi(&mut self, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn nmi(&mut self, bus: &mut dyn CPUBus) {
         let pc_high: u8 = (self.pc >> 8) as u8;
         let pc_low: u8 = self.pc as u8;
 
@@ -71,7 +71,7 @@ mod nmi_tests {
             .once()
             .return_const(0x80);
 
-        cpu.nmi(&bus);
+        cpu.nmi(&mut bus);
 
         assert_eq!(0x8000, cpu.pc);
         assert_eq!(0xfc, cpu.sp);

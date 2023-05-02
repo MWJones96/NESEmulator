@@ -27,7 +27,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap().wrapping_add(1);
         let addr = mode.addr.unwrap();
 
@@ -106,7 +106,7 @@ mod inc_tests {
             .times(1)
             .return_const(());
 
-        cpu.inc(&cpu.absx(0x0, &bus), &bus);
+        cpu.inc(&cpu.absx(0x0, &bus), &mut bus);
 
         assert_eq!(true, cpu.n);
     }
@@ -123,7 +123,7 @@ mod inc_tests {
             .times(1)
             .return_const(());
 
-        cpu.inc(&cpu.absx(0x0, &bus), &bus);
+        cpu.inc(&cpu.absx(0x0, &bus), &mut bus);
 
         assert_eq!(true, cpu.z);
     }

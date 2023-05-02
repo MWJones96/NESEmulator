@@ -23,7 +23,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn stx(&self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn stx(&self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.x);
     }
 }
@@ -80,6 +80,6 @@ mod stx_tests {
             .times(1)
             .return_const(());
 
-        cpu.stx(&cpu.abs(0xffff, &bus), &bus);
+        cpu.stx(&cpu.abs(0xffff, &bus), &mut bus);
     }
 }

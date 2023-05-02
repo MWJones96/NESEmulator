@@ -30,7 +30,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let before = mode.data.unwrap();
         let after: u8 = ((self.c as u8) << 7) | before >> 1;
 
@@ -111,12 +111,12 @@ mod ror_tests {
     #[test]
     fn test_ror_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
         cpu.c = true;
 
-        cpu.ror(&cpu.acc(), &bus);
+        cpu.ror(&cpu.acc(), &mut bus);
         assert_eq!(0b1000_0000, cpu.a);
         assert_eq!(true, cpu.c);
     }
@@ -124,11 +124,11 @@ mod ror_tests {
     #[test]
     fn test_ror_no_carry_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
 
-        cpu.ror(&cpu.acc(), &bus);
+        cpu.ror(&cpu.acc(), &mut bus);
         assert_eq!(0b0000_0000, cpu.a);
         assert_eq!(true, cpu.c);
     }
@@ -136,12 +136,12 @@ mod ror_tests {
     #[test]
     fn test_ror_negative_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0x0;
         cpu.c = true;
 
-        cpu.ror(&cpu.acc(), &bus);
+        cpu.ror(&cpu.acc(), &mut bus);
         assert_eq!(0x80, cpu.a);
         assert_eq!(true, cpu.n);
     }
@@ -149,10 +149,10 @@ mod ror_tests {
     #[test]
     fn test_ror_zero_flag() {
         let mut cpu = CPU::new();
-        let bus = MockCPUBus::new();
+        let mut bus = MockCPUBus::new();
 
         cpu.a = 0x1;
-        cpu.ror(&cpu.acc(), &bus);
+        cpu.ror(&cpu.acc(), &mut bus);
 
         assert_eq!(true, cpu.z);
     }

@@ -19,7 +19,7 @@ impl CPU {
         3
     }
 
-    pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(0x100 + (self.sp as u16), self.get_status_byte());
         self.sp = self.sp.wrapping_sub(1);
     }
@@ -50,7 +50,7 @@ mod php_tests {
             .times(1)
             .return_const(());
 
-        cpu.php(&cpu.imp(), &bus);
+        cpu.php(&cpu.imp(), &mut bus);
         assert_eq!(0xfe, cpu.sp);
     }
 
@@ -62,7 +62,7 @@ mod php_tests {
 
         bus.expect_write().return_const(());
 
-        cpu.php(&cpu.imp(), &bus);
+        cpu.php(&cpu.imp(), &mut bus);
         assert_eq!(0xff, cpu.sp);
     }
 }

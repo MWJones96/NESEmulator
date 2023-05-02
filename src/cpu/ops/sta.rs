@@ -24,7 +24,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn sta(&self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn sta(&self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.a);
     }
 }
@@ -120,6 +120,6 @@ mod sta_tests {
             .times(1)
             .return_const(());
 
-        cpu.sta(&cpu.abs(0x8000, &bus), &bus);
+        cpu.sta(&cpu.abs(0x8000, &bus), &mut bus);
     }
 }

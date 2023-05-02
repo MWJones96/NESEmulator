@@ -22,7 +22,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn sty(&self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn sty(&self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.y);
     }
 }
@@ -79,6 +79,6 @@ mod sty_tests {
             .times(1)
             .return_const(());
 
-        cpu.sty(&cpu.abs(0xffff, &bus), &bus);
+        cpu.sty(&cpu.abs(0xffff, &bus), &mut bus);
     }
 }

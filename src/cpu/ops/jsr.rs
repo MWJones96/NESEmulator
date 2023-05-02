@@ -27,7 +27,7 @@ impl CPU {
         6
     }
 
-    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         //Set return address to last byte of JSR
         let return_addr = self.pc.wrapping_sub(1);
 
@@ -80,7 +80,7 @@ mod jsr_tests {
             .times(1)
             .return_const(());
 
-        cpu.jsr(&cpu.abs(0x0000, &bus), &bus);
+        cpu.jsr(&cpu.abs(0x0000, &bus), &mut bus);
 
         assert_eq!(0xff, cpu.sp);
     }
@@ -94,7 +94,7 @@ mod jsr_tests {
 
         bus.expect_write().return_const(());
 
-        cpu.jsr(&cpu.abs(0xeeee, &bus), &bus);
+        cpu.jsr(&cpu.abs(0xeeee, &bus), &mut bus);
 
         assert_eq!(0xeeee, cpu.pc);
     }
