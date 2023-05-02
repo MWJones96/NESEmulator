@@ -6,9 +6,7 @@ pub struct MainBus {
 
 impl MainBus {
     pub fn new() -> Self {
-        Self {
-            mem: [0; 0x10000]
-        }
+        Self { mem: [0; 0x10000] }
     }
 }
 
