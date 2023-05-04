@@ -18,7 +18,6 @@ impl CPU {
 
         self.n = false;
         self.v = false;
-        self.b = false;
         self.d = false;
         self.i = false;
         self.z = false;
@@ -49,7 +48,6 @@ mod reset_tests {
 
         cpu.n = true;
         cpu.v = true;
-        cpu.b = true;
         cpu.d = true;
         cpu.i = true;
         cpu.z = true;
@@ -70,6 +68,6 @@ mod reset_tests {
         assert_eq!(0x0, cpu.x);
         assert_eq!(0x0, cpu.y);
 
-        assert_eq!(0b0010_0000, cpu.get_status_byte())
+        assert_eq!(0b0010_0000, cpu.get_status_byte(false))
     }
 }

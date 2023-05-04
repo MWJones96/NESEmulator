@@ -33,7 +33,7 @@ pub struct CPU {
     n: bool, //Bit 7
     v: bool, //Bit 6
     //Bit 5 (unused)
-    b: bool, //Bit 4
+    //Bit 4 (only used for BRK)
     d: bool, //Bit 3
     i: bool, //Bit 2
     z: bool, //Bit 1
@@ -62,7 +62,7 @@ impl CPU {
             n: false, //Bit 7
             v: false, //Bit 6
             //Bit 5 unused (always 1)
-            b: false, //Bit 4
+            //Bit 4 (only used for BRK)
             d: false, //Bit 3
             i: false, //Bit 2
             z: false, //Bit 1
@@ -125,11 +125,11 @@ impl CPU {
 }
 
 impl CPU {
-    fn get_status_byte(&self) -> u8 {
+    fn get_status_byte(&self, brk: bool) -> u8 {
         (self.n as u8) << 7
             | (self.v as u8) << 6
             | 0x1 << 5
-            | (self.b as u8) << 4
+            | (brk as u8) << 4
             | (self.d as u8) << 3
             | (self.i as u8) << 2
             | (self.z as u8) << 1
@@ -356,8 +356,6 @@ mod cpu_tests {
 
         assert_eq!(false, cpu.n); //Bit 7
         assert_eq!(false, cpu.v); //Bit 6
-                                  //Bit 5 (unused)
-        assert_eq!(false, cpu.b); //Bit 4
         assert_eq!(false, cpu.d); //Bit 3
         assert_eq!(false, cpu.i); //Bit 2
         assert_eq!(false, cpu.z); //Bit 1
@@ -378,56 +376,55 @@ mod cpu_tests {
     #[test]
     fn test_get_status_byte_no_flags() {
         let cpu = CPU::new();
-        assert_eq!(0b0010_0000, cpu.get_status_byte())
+        assert_eq!(0b0010_0000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_negative_flag() {
         let mut cpu = CPU::new();
         cpu.n = true;
-        assert_eq!(0b1010_0000, cpu.get_status_byte())
+        assert_eq!(0b1010_0000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_overflow_flag() {
         let mut cpu = CPU::new();
         cpu.v = true;
-        assert_eq!(0b0110_0000, cpu.get_status_byte())
+        assert_eq!(0b0110_0000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_break_flag() {
         let mut cpu = CPU::new();
-        cpu.b = true;
-        assert_eq!(0b0011_0000, cpu.get_status_byte())
+        assert_eq!(0b0011_0000, cpu.get_status_byte(true))
     }
 
     #[test]
     fn test_get_status_byte_decimal_flag() {
         let mut cpu = CPU::new();
         cpu.d = true;
-        assert_eq!(0b0010_1000, cpu.get_status_byte())
+        assert_eq!(0b0010_1000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_interrupt_flag() {
         let mut cpu = CPU::new();
         cpu.i = true;
-        assert_eq!(0b0010_0100, cpu.get_status_byte())
+        assert_eq!(0b0010_0100, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_zero_flag() {
         let mut cpu = CPU::new();
         cpu.z = true;
-        assert_eq!(0b0010_0010, cpu.get_status_byte())
+        assert_eq!(0b0010_0010, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_carry_flag() {
         let mut cpu = CPU::new();
         cpu.c = true;
-        assert_eq!(0b0010_0001, cpu.get_status_byte())
+        assert_eq!(0b0010_0001, cpu.get_status_byte(false))
     }
 
     #[test]
@@ -435,13 +432,12 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         cpu.n = true;
         cpu.v = true;
-        cpu.b = true;
         cpu.d = true;
         cpu.i = true;
         cpu.z = true;
         cpu.c = true;
 
-        assert_eq!(0b1111_1111, cpu.get_status_byte())
+        assert_eq!(0b1111_1111, cpu.get_status_byte(true))
     }
 
     #[test]

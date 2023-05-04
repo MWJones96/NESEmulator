@@ -31,7 +31,7 @@ impl CPU {
         bus.write(0x100 + (self.sp.wrapping_sub(1)) as u16, pc_lsb);
         bus.write(
             0x100 + (self.sp.wrapping_sub(2)) as u16,
-            self.get_status_byte() | 0x10,
+            self.get_status_byte(true),
         );
 
         self.sp = self.sp.wrapping_sub(3);
@@ -134,7 +134,7 @@ mod brk_tests {
 
         assert_eq!(0x4020, cpu.pc);
         assert_eq!(true, cpu.i);
-        assert_eq!(0b0010_0100, cpu.get_status_byte());
+        assert_eq!(0b0011_0100, cpu.get_status_byte(true));
     }
 
     #[test]

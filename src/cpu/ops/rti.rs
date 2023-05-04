@@ -76,7 +76,6 @@ mod rti_tests {
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
-        assert_eq!(false, cpu.b);
         assert_eq!(true, cpu.d);
         assert_eq!(true, cpu.i);
         assert_eq!(true, cpu.z);
@@ -97,7 +96,6 @@ mod rti_tests {
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
-        assert_eq!(false, cpu.b);
         assert_eq!(false, cpu.d);
         assert_eq!(false, cpu.i);
         assert_eq!(false, cpu.z);

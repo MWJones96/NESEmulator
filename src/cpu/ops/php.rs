@@ -20,7 +20,7 @@ impl CPU {
     }
 
     pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
-        bus.write(0x100 + (self.sp as u16), self.get_status_byte());
+        bus.write(0x100 + (self.sp as u16), self.get_status_byte(false));
         self.sp = self.sp.wrapping_sub(1);
     }
 }
