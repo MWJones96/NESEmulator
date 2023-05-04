@@ -85,6 +85,7 @@ impl CPU {
 
     pub fn system_irq(&mut self, interrupt: bool) {
         //Level-detected
+        self.pending_irq = interrupt;
     }
 
     pub fn system_reset(&mut self) {
@@ -98,41 +99,54 @@ impl CPU {
         self.current_instruction.remaining_cycles -= 1;
 
         if self.current_instruction.remaining_cycles == 0 {
-            match self.current_instruction.instruction_type {
-                InstructionType::Reset => self.reset(bus),
-                InstructionType::NMI => self.nmi(bus),
-                InstructionType::IRQ => {}
-                InstructionType::Instruction {
-                    opcode,
-                    addressing_mode,
-                } => self.execute(opcode, &addressing_mode, bus),
-            }
+            self.execute_operation(bus);
 
             if self.pending_nmi {
                 self.current_instruction = CurrentInstruction {
                     remaining_cycles: self.nmi_cycles(),
                     instruction_type: InstructionType::NMI,
                 }
-            } else {
-                let opcode = self.fetch_byte(bus);
-                if opcode == 0x0 {
-                    self.fetch_byte(bus); //Discard next byte for BRK
-                }
-                let addressing_mode = self.fetch_addr_mode(opcode, bus);
-
+            } else if self.pending_irq {
                 self.current_instruction = CurrentInstruction {
-                    remaining_cycles: self.get_number_of_cycles(opcode, &addressing_mode),
-                    instruction_type: InstructionType::Instruction {
-                        opcode,
-                        addressing_mode,
-                    },
+                    remaining_cycles: self.irq_cycles(),
+                    instruction_type: InstructionType::IRQ,
                 }
+            } else {
+                self.current_instruction = self.fetch_next_instruction(bus);
             }
         }
     }
 }
 
 impl CPU {
+    fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
+        match self.current_instruction.instruction_type {
+            InstructionType::Reset => self.reset(bus),
+            InstructionType::NMI => self.nmi(bus),
+            InstructionType::IRQ => {}
+            InstructionType::Instruction {
+                opcode,
+                addressing_mode,
+            } => self.execute(opcode, &addressing_mode, bus),
+        }
+    }
+
+    fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
+        let opcode = self.fetch_byte(bus);
+        if opcode == 0x0 {
+            self.fetch_byte(bus); //Discard next byte for BRK
+        }
+        let addressing_mode = self.fetch_addr_mode(opcode, bus);
+
+        CurrentInstruction {
+            remaining_cycles: self.get_number_of_cycles(opcode, &addressing_mode),
+            instruction_type: InstructionType::Instruction {
+                opcode,
+                addressing_mode,
+            },
+        }
+    }
+
     fn get_status_byte(&self, brk: bool) -> u8 {
         (self.n as u8) << 7
             | (self.v as u8) << 6
@@ -592,6 +606,8 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
+        bus.expect_read().with(eq(CPU::NMI_VECTOR)).return_const(0x40);
+        bus.expect_read().with(eq(CPU::NMI_VECTOR + 1)).return_const(0x20);
         bus.expect_read().return_const(0x0);
 
         bus.expect_write().return_const(());
@@ -611,6 +627,16 @@ mod cpu_tests {
             },
             cpu.current_instruction
         );
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(0x2042, cpu.pc);
+        assert_eq!(CurrentInstruction {
+            remaining_cycles: 7,
+            instruction_type: InstructionType::Instruction { opcode: 0x0, addressing_mode: cpu.imp() }
+        }, cpu.current_instruction);
     }
 
     #[test]
@@ -645,6 +671,32 @@ mod cpu_tests {
                     opcode: 0x0,
                     addressing_mode: cpu.imp()
                 }
+            },
+            cpu.current_instruction
+        );
+    }
+
+    #[test]
+    fn test_irq_request_triggered() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+
+        bus.expect_read().return_const(0x0);
+
+        bus.expect_write().return_const(());
+
+        cpu.system_irq(true);
+
+        assert_eq!(true, cpu.pending_irq);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::IRQ
             },
             cpu.current_instruction
         );
