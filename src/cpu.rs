@@ -106,7 +106,7 @@ impl CPU {
                     remaining_cycles: self.nmi_cycles(),
                     instruction_type: InstructionType::NMI,
                 }
-            } else if self.pending_irq {
+            } else if self.pending_irq && !self.i {
                 self.current_instruction = CurrentInstruction {
                     remaining_cycles: self.irq_cycles(),
                     instruction_type: InstructionType::IRQ,
@@ -417,7 +417,7 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_break_flag() {
-        let mut cpu = CPU::new();
+        let cpu = CPU::new();
         assert_eq!(0b0011_0000, cpu.get_status_byte(true))
     }
 
@@ -606,8 +606,12 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
-        bus.expect_read().with(eq(CPU::NMI_VECTOR)).return_const(0x40);
-        bus.expect_read().with(eq(CPU::NMI_VECTOR + 1)).return_const(0x20);
+        bus.expect_read()
+            .with(eq(CPU::NMI_VECTOR))
+            .return_const(0x40);
+        bus.expect_read()
+            .with(eq(CPU::NMI_VECTOR + 1))
+            .return_const(0x20);
         bus.expect_read().return_const(0x0);
 
         bus.expect_write().return_const(());
@@ -633,10 +637,16 @@ mod cpu_tests {
         }
 
         assert_eq!(0x2042, cpu.pc);
-        assert_eq!(CurrentInstruction {
-            remaining_cycles: 7,
-            instruction_type: InstructionType::Instruction { opcode: 0x0, addressing_mode: cpu.imp() }
-        }, cpu.current_instruction);
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x0,
+                    addressing_mode: cpu.imp()
+                }
+            },
+            cpu.current_instruction
+        );
     }
 
     #[test]
@@ -697,6 +707,46 @@ mod cpu_tests {
             CurrentInstruction {
                 remaining_cycles: 7,
                 instruction_type: InstructionType::IRQ
+            },
+            cpu.current_instruction
+        );
+    }
+
+    #[test]
+    fn test_irq_request_ignored_on_flag_set() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR))
+            .return_const(0x40);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR + 1))
+            .return_const(0x20);
+        bus.expect_read().with(eq(0x2040)).return_const(0x69);
+        bus.expect_read().with(eq(0x2041)).return_const(0x69);
+        bus.expect_read().return_const(0x0);
+
+        bus.expect_write().return_const(());
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        cpu.i = true;
+        cpu.system_irq(true);
+
+        for _ in 0..2 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x0,
+                    addressing_mode: cpu.imp()
+                }
             },
             cpu.current_instruction
         );

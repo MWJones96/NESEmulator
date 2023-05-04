@@ -34,8 +34,8 @@ impl CPU {
             self.get_status_byte(true),
         );
 
-        self.sp = self.sp.wrapping_sub(3);
         self.i = true;
+        self.sp = self.sp.wrapping_sub(3);
         self.pc = (bus.read(CPU::IRQ_VECTOR + 1) as u16) << 8 | bus.read(CPU::IRQ_VECTOR) as u16;
     }
 }
