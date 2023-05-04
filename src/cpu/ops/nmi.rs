@@ -11,7 +11,6 @@ impl CPU {
 
         bus.write(0x100 + self.sp.wrapping_sub(0) as u16, pc_high);
         bus.write(0x100 + self.sp.wrapping_sub(1) as u16, pc_low);
-
         bus.write(
             0x100 + self.sp.wrapping_sub(2) as u16,
             self.get_status_byte() & !0x10,

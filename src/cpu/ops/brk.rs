@@ -36,8 +36,7 @@ impl CPU {
 
         self.sp = self.sp.wrapping_sub(3);
         self.i = true;
-        self.pc = (bus.read(CPU::INTERRUPT_VECTOR + 1) as u16) << 8
-            | bus.read(CPU::INTERRUPT_VECTOR) as u16;
+        self.pc = (bus.read(CPU::IRQ_VECTOR + 1) as u16) << 8 | bus.read(CPU::IRQ_VECTOR) as u16;
     }
 }
 
@@ -122,12 +121,12 @@ mod brk_tests {
         bus.expect_write().return_const(());
 
         bus.expect_read()
-            .with(eq(CPU::INTERRUPT_VECTOR))
+            .with(eq(CPU::IRQ_VECTOR))
             .times(1)
             .return_const(0x20);
 
         bus.expect_read()
-            .with(eq(CPU::INTERRUPT_VECTOR + 1))
+            .with(eq(CPU::IRQ_VECTOR + 1))
             .times(1)
             .return_const(0x40);
 
