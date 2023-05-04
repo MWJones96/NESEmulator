@@ -19,6 +19,8 @@ impl CPU {
         self.i = true;
         self.sp = self.sp.wrapping_sub(3);
         self.pc = (bus.read(CPU::NMI_VECTOR + 1) as u16) << 8 | bus.read(CPU::NMI_VECTOR) as u16;
+    
+        self.pending_nmi = false;
     }
 }
 
@@ -43,6 +45,9 @@ mod nmi_tests {
 
         cpu.pc = 0x2040;
         cpu.sp = 0xff;
+
+        //NMI should not interrupt an NMI immediately after the NMI routine
+        cpu.pending_nmi = true;
 
         bus.expect_write()
             .with(eq(0x1ff), eq(0x20))
@@ -73,5 +78,7 @@ mod nmi_tests {
 
         assert_eq!(0x8000, cpu.pc);
         assert_eq!(0xfc, cpu.sp);
+
+        assert_eq!(false, cpu.pending_nmi);
     }
 }
