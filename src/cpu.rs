@@ -123,7 +123,7 @@ impl CPU {
         match self.current_instruction.instruction_type {
             InstructionType::Reset => self.reset(bus),
             InstructionType::NMI => self.nmi(bus),
-            InstructionType::IRQ => {}
+            InstructionType::IRQ => self.irq(bus),
             InstructionType::Instruction {
                 opcode,
                 addressing_mode,
@@ -691,6 +691,8 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
+        bus.expect_read().with(eq(CPU::IRQ_VECTOR)).return_const(0x40);
+        bus.expect_read().with(eq(CPU::IRQ_VECTOR + 1)).return_const(0x20);
         bus.expect_read().return_const(0x0);
 
         bus.expect_write().return_const(());
@@ -710,6 +712,12 @@ mod cpu_tests {
             },
             cpu.current_instruction
         );
+
+        for _ in 0..7 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(0x2042, cpu.pc);
     }
 
     #[test]
