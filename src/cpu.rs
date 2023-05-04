@@ -80,9 +80,10 @@ impl CPU {
 
     pub fn system_nmi(&mut self) {
         //Edge-detected
+        self.pending_nmi = true;
     }
 
-    pub fn system_irq(&mut self, request: bool) {
+    pub fn system_irq(&mut self, interrupt: bool) {
         //Level-detected
     }
 
@@ -107,18 +108,25 @@ impl CPU {
                 } => self.execute(opcode, &addressing_mode, bus),
             }
 
-            let opcode = self.fetch_byte(bus);
-            if opcode == 0x0 {
-                self.fetch_byte(bus); //Discard next byte for BRK
-            }
-            let addressing_mode = self.fetch_addr_mode(opcode, bus);
+            if self.pending_nmi {
+                self.current_instruction = CurrentInstruction {
+                    remaining_cycles: self.nmi_cycles(),
+                    instruction_type: InstructionType::NMI,
+                }
+            } else {
+                let opcode = self.fetch_byte(bus);
+                if opcode == 0x0 {
+                    self.fetch_byte(bus); //Discard next byte for BRK
+                }
+                let addressing_mode = self.fetch_addr_mode(opcode, bus);
 
-            self.current_instruction = CurrentInstruction {
-                remaining_cycles: self.get_number_of_cycles(opcode, &addressing_mode),
-                instruction_type: InstructionType::Instruction {
-                    opcode,
-                    addressing_mode,
-                },
+                self.current_instruction = CurrentInstruction {
+                    remaining_cycles: self.get_number_of_cycles(opcode, &addressing_mode),
+                    instruction_type: InstructionType::Instruction {
+                        opcode,
+                        addressing_mode,
+                    },
+                }
             }
         }
     }
@@ -577,5 +585,68 @@ mod cpu_tests {
         );
 
         assert_eq!(0x2042, cpu.pc);
+    }
+
+    #[test]
+    fn test_nmi_request_triggerred() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+
+        bus.expect_read().return_const(0x0);
+
+        bus.expect_write().return_const(());
+
+        cpu.system_nmi();
+
+        assert_eq!(true, cpu.pending_nmi);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 8,
+                instruction_type: InstructionType::NMI
+            },
+            cpu.current_instruction
+        );
+    }
+
+    #[test]
+    fn test_nmi_request_ignored_on_nmi_startup() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+
+        bus.expect_read().return_const(0x0);
+
+        bus.expect_write().return_const(());
+
+        cpu.system_nmi();
+
+        assert_eq!(true, cpu.pending_nmi);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        cpu.system_nmi();
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(false, cpu.pending_nmi);
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x0,
+                    addressing_mode: cpu.imp()
+                }
+            },
+            cpu.current_instruction
+        );
     }
 }

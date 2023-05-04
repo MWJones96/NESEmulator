@@ -5,8 +5,7 @@ impl CPU {
         0
     }
 
-    pub(in crate::cpu) fn irq(&mut self, bus: &mut dyn CPUBus) {
-    }
+    pub(in crate::cpu) fn irq(&mut self, bus: &mut dyn CPUBus) {}
 }
 
 #[cfg(test)]

@@ -13,13 +13,13 @@ impl CPU {
         bus.write(0x100 + self.sp.wrapping_sub(1) as u16, pc_low);
         bus.write(
             0x100 + self.sp.wrapping_sub(2) as u16,
-            self.get_status_byte(false) & !0x10,
+            self.get_status_byte(false),
         );
 
         self.i = true;
         self.sp = self.sp.wrapping_sub(3);
         self.pc = (bus.read(CPU::NMI_VECTOR + 1) as u16) << 8 | bus.read(CPU::NMI_VECTOR) as u16;
-    
+
         self.pending_nmi = false;
     }
 }
