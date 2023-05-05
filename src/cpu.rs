@@ -626,13 +626,13 @@ mod cpu_tests {
 
         assert_eq!(
             CurrentInstruction {
-                remaining_cycles: 8,
+                remaining_cycles: 7,
                 instruction_type: InstructionType::NMI
             },
             cpu.current_instruction
         );
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -668,7 +668,7 @@ mod cpu_tests {
 
         cpu.system_nmi();
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 

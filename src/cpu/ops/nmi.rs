@@ -2,7 +2,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
     pub(in crate::cpu) fn nmi_cycles(&self) -> u8 {
-        8
+        7
     }
 
     pub(in crate::cpu) fn nmi(&mut self, bus: &mut dyn CPUBus) {
@@ -35,7 +35,7 @@ mod nmi_tests {
     #[test]
     fn test_nmi_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(8, cpu.nmi_cycles())
+        assert_eq!(7, cpu.nmi_cycles())
     }
 
     #[test]
