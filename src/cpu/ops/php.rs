@@ -40,13 +40,13 @@ mod php_tests {
     }
 
     #[test]
-    fn test_php_push_acc_onto_stack() {
+    fn test_php_push_status_onto_stack() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.c = true;
 
         bus.expect_write()
-            .with(eq(0x1ff), eq(0b0010_0001))
+            .with(eq(0x1ff), eq(0b0010_0101))
             .times(1)
             .return_const(());
 
@@ -55,7 +55,7 @@ mod php_tests {
     }
 
     #[test]
-    fn test_php_push_acc_onto_stack_with_overflow() {
+    fn test_php_push_status_onto_stack_with_overflow() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0x0;

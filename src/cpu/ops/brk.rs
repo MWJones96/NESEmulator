@@ -100,7 +100,7 @@ mod brk_tests {
         cpu.z = true;
 
         bus.expect_write()
-            .with(eq(0x1fd), eq(0b0011_0011))
+            .with(eq(0x1fd), eq(0b0011_0111))
             .times(1)
             .return_const(());
 
@@ -156,7 +156,7 @@ mod brk_tests {
             .return_const(());
 
         bus.expect_write()
-            .with(eq(0x1fe), eq(0b0011_0000))
+            .with(eq(0x1fe), eq(0b0011_0100))
             .times(1)
             .return_const(());
 

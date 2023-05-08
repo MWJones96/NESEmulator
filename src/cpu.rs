@@ -64,7 +64,7 @@ impl CPU {
             //Bit 5 unused (always 1)
             //Bit 4 (only used for BRK)
             d: false, //Bit 3
-            i: false, //Bit 2
+            i: true, //Bit 2 (IRQs disabled on power-on)
             z: false, //Bit 1
             c: false, //Bit 0
 
@@ -379,7 +379,7 @@ mod cpu_tests {
         assert_eq!(false, cpu.n); //Bit 7
         assert_eq!(false, cpu.v); //Bit 6
         assert_eq!(false, cpu.d); //Bit 3
-        assert_eq!(false, cpu.i); //Bit 2
+        assert_eq!(true, cpu.i); //Bit 2
         assert_eq!(false, cpu.z); //Bit 1
         assert_eq!(false, cpu.c); //Bit 0
 
@@ -397,13 +397,15 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_no_flags() {
-        let cpu = CPU::new();
+        let mut cpu = CPU::new();
+        cpu.i = false;
         assert_eq!(0b0010_0000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_negative_flag() {
         let mut cpu = CPU::new();
+        cpu.i = false;
         cpu.n = true;
         assert_eq!(0b1010_0000, cpu.get_status_byte(false))
     }
@@ -411,33 +413,36 @@ mod cpu_tests {
     #[test]
     fn test_get_status_byte_overflow_flag() {
         let mut cpu = CPU::new();
+        cpu.i = false;
         cpu.v = true;
         assert_eq!(0b0110_0000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_break_flag() {
-        let cpu = CPU::new();
+        let mut cpu = CPU::new();
+        cpu.i = false;
         assert_eq!(0b0011_0000, cpu.get_status_byte(true))
     }
 
     #[test]
     fn test_get_status_byte_decimal_flag() {
         let mut cpu = CPU::new();
+        cpu.i = false;
         cpu.d = true;
         assert_eq!(0b0010_1000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_interrupt_flag() {
-        let mut cpu = CPU::new();
-        cpu.i = true;
+        let cpu = CPU::new();
         assert_eq!(0b0010_0100, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_zero_flag() {
         let mut cpu = CPU::new();
+        cpu.i = false;
         cpu.z = true;
         assert_eq!(0b0010_0010, cpu.get_status_byte(false))
     }
@@ -445,6 +450,7 @@ mod cpu_tests {
     #[test]
     fn test_get_status_byte_carry_flag() {
         let mut cpu = CPU::new();
+        cpu.i = false;
         cpu.c = true;
         assert_eq!(0b0010_0001, cpu.get_status_byte(false))
     }
@@ -691,33 +697,29 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
-        bus.expect_read().with(eq(CPU::IRQ_VECTOR)).return_const(0x40);
-        bus.expect_read().with(eq(CPU::IRQ_VECTOR + 1)).return_const(0x20);
+        bus.expect_read().with(eq(CPU::RESET_VECTOR)).return_const(0x40);
+        bus.expect_read().with(eq(CPU::RESET_VECTOR + 1)).return_const(0x20);
+        bus.expect_read().with(eq(0x2040)).return_const(0x69);
+        bus.expect_read().with(eq(0x2041)).return_const(0x69);
+        
         bus.expect_read().return_const(0x0);
 
         bus.expect_write().return_const(());
-
-        cpu.system_irq(true);
-
-        assert_eq!(true, cpu.pending_irq);
 
         for _ in 0..8 {
             cpu.clock(&mut bus);
         }
 
-        assert_eq!(
-            CurrentInstruction {
-                remaining_cycles: 7,
-                instruction_type: InstructionType::IRQ
-            },
-            cpu.current_instruction
-        );
-
-        for _ in 0..7 {
+        cpu.i = false;
+        cpu.system_irq(true);
+        for _ in 0..2 {
             cpu.clock(&mut bus);
         }
 
-        assert_eq!(0x2042, cpu.pc);
+        assert_eq!(CurrentInstruction {
+            remaining_cycles: 7,
+            instruction_type: InstructionType::IRQ
+        }, cpu.current_instruction)
     }
 
     #[test]

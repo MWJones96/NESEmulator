@@ -9,19 +9,9 @@ impl CPU {
         let low_byte = bus.read(CPU::RESET_VECTOR) as u16;
         let high_byte = bus.read(CPU::RESET_VECTOR + 1) as u16;
 
+        self.i = true;
         self.pc = high_byte << 8 | low_byte;
         self.sp = 0xFD;
-
-        self.a = 0x0;
-        self.x = 0x0;
-        self.y = 0x0;
-
-        self.n = false;
-        self.v = false;
-        self.d = false;
-        self.i = false;
-        self.z = false;
-        self.c = false;
     }
 }
 
@@ -46,28 +36,20 @@ mod reset_tests {
         cpu.x = 0x1;
         cpu.y = 0x1;
 
-        cpu.n = true;
-        cpu.v = true;
-        cpu.d = true;
-        cpu.i = true;
-        cpu.z = true;
-        cpu.c = true;
-
         let mut bus = MockCPUBus::new();
 
-        bus.expect_read().with(eq(0xFFFC)).once().return_const(0x40);
-
-        bus.expect_read().with(eq(0xFFFD)).once().return_const(0x20);
+        bus.expect_read().with(eq(CPU::RESET_VECTOR)).once().return_const(0x40);
+        bus.expect_read().with(eq(CPU::RESET_VECTOR + 1)).once().return_const(0x20);
 
         cpu.reset(&bus);
 
         assert_eq!(0x2040, cpu.pc);
         assert_eq!(0xFD, cpu.sp);
 
-        assert_eq!(0x0, cpu.a);
-        assert_eq!(0x0, cpu.x);
-        assert_eq!(0x0, cpu.y);
+        assert_eq!(0x1, cpu.a);
+        assert_eq!(0x1, cpu.x);
+        assert_eq!(0x1, cpu.y);
 
-        assert_eq!(0b0010_0000, cpu.get_status_byte(false))
+        assert_eq!(0b0010_0100, cpu.get_status_byte(false))
     }
 }

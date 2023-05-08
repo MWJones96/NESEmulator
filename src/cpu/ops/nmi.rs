@@ -60,7 +60,7 @@ mod nmi_tests {
             .return_const(());
 
         bus.expect_write()
-            .with(eq(0x1fd), eq(0b0010_0000))
+            .with(eq(0x1fd), eq(0b0010_0100))
             .once()
             .return_const(());
 
