@@ -64,7 +64,7 @@ impl CPU {
             //Bit 5 unused (always 1)
             //Bit 4 (only used for BRK)
             d: false, //Bit 3
-            i: true, //Bit 2 (IRQs disabled on power-on)
+            i: true,  //Bit 2 (IRQs disabled on power-on)
             z: false, //Bit 1
             c: false, //Bit 0
 
@@ -100,20 +100,6 @@ impl CPU {
 
         if self.current_instruction.remaining_cycles == 0 {
             self.execute_operation(bus);
-
-            if self.pending_nmi {
-                self.current_instruction = CurrentInstruction {
-                    remaining_cycles: self.nmi_cycles(),
-                    instruction_type: InstructionType::NMI,
-                }
-            } else if self.pending_irq && !self.i {
-                self.current_instruction = CurrentInstruction {
-                    remaining_cycles: self.irq_cycles(),
-                    instruction_type: InstructionType::IRQ,
-                }
-            } else {
-                self.current_instruction = self.fetch_next_instruction(bus);
-            }
         }
     }
 }
@@ -121,13 +107,40 @@ impl CPU {
 impl CPU {
     fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
         match self.current_instruction.instruction_type {
-            InstructionType::Reset => self.reset(bus),
-            InstructionType::NMI => self.nmi(bus),
-            InstructionType::IRQ => self.irq(bus),
+            InstructionType::Reset => {
+                self.reset(bus);
+                self.current_instruction = self.fetch_next_instruction(bus);
+            }
+            InstructionType::NMI => {
+                self.nmi(bus);
+                self.current_instruction = self.fetch_next_instruction(bus);
+            }
+            InstructionType::IRQ => {
+                self.irq(bus);
+                self.current_instruction = self.fetch_next_instruction(bus);
+            }
             InstructionType::Instruction {
                 opcode,
                 addressing_mode,
-            } => self.execute(opcode, &addressing_mode, bus),
+            } => {
+                self.execute(opcode, &addressing_mode, bus);
+
+                //We only poll for interrupts in non-interrupt routines
+                //(i.e. regular instructions)
+                if self.pending_nmi {
+                    self.current_instruction = CurrentInstruction {
+                        remaining_cycles: self.nmi_cycles(),
+                        instruction_type: InstructionType::NMI,
+                    };
+                } else if self.pending_irq && !self.i {
+                    self.current_instruction = CurrentInstruction {
+                        remaining_cycles: self.irq_cycles(),
+                        instruction_type: InstructionType::IRQ,
+                    };
+                } else {
+                    self.current_instruction = self.fetch_next_instruction(bus);
+                }
+            }
         }
     }
 
@@ -608,16 +621,18 @@ mod cpu_tests {
     }
 
     #[test]
-    fn test_nmi_request_triggerred() {
+    fn test_nmi_request_triggered() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::NMI_VECTOR))
+            .with(eq(CPU::RESET_VECTOR))
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::NMI_VECTOR + 1))
+            .with(eq(CPU::RESET_VECTOR + 1))
             .return_const(0x20);
+        bus.expect_read().with(eq(0x2040)).return_const(0x69);
+        bus.expect_read().with(eq(0x2041)).return_const(0x69);
         bus.expect_read().return_const(0x0);
 
         bus.expect_write().return_const(());
@@ -627,6 +642,19 @@ mod cpu_tests {
         assert_eq!(true, cpu.pending_nmi);
 
         for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 2,
+                instruction_type: InstructionType::Instruction { opcode: 0x69, addressing_mode: cpu.imm(0x69) }
+            },
+            cpu.current_instruction
+        );
+        assert_eq!(0x2042, cpu.pc);
+
+        for _ in 0..2 {
             cpu.clock(&mut bus);
         }
 
@@ -637,59 +665,6 @@ mod cpu_tests {
             },
             cpu.current_instruction
         );
-
-        for _ in 0..7 {
-            cpu.clock(&mut bus);
-        }
-
-        assert_eq!(0x2042, cpu.pc);
-        assert_eq!(
-            CurrentInstruction {
-                remaining_cycles: 7,
-                instruction_type: InstructionType::Instruction {
-                    opcode: 0x0,
-                    addressing_mode: cpu.imp()
-                }
-            },
-            cpu.current_instruction
-        );
-    }
-
-    #[test]
-    fn test_nmi_request_ignored_on_nmi_startup() {
-        let mut cpu = CPU::new();
-        let mut bus = MockCPUBus::new();
-
-        bus.expect_read().return_const(0x0);
-
-        bus.expect_write().return_const(());
-
-        cpu.system_nmi();
-
-        assert_eq!(true, cpu.pending_nmi);
-
-        for _ in 0..8 {
-            cpu.clock(&mut bus);
-        }
-
-        cpu.system_nmi();
-
-        for _ in 0..7 {
-            cpu.clock(&mut bus);
-        }
-
-        assert_eq!(false, cpu.pending_nmi);
-
-        assert_eq!(
-            CurrentInstruction {
-                remaining_cycles: 7,
-                instruction_type: InstructionType::Instruction {
-                    opcode: 0x0,
-                    addressing_mode: cpu.imp()
-                }
-            },
-            cpu.current_instruction
-        );
     }
 
     #[test]
@@ -697,11 +672,15 @@ mod cpu_tests {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
-        bus.expect_read().with(eq(CPU::RESET_VECTOR)).return_const(0x40);
-        bus.expect_read().with(eq(CPU::RESET_VECTOR + 1)).return_const(0x20);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR))
+            .return_const(0x40);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR + 1))
+            .return_const(0x20);
         bus.expect_read().with(eq(0x2040)).return_const(0x69);
         bus.expect_read().with(eq(0x2041)).return_const(0x69);
-        
+
         bus.expect_read().return_const(0x0);
 
         bus.expect_write().return_const(());
@@ -716,10 +695,13 @@ mod cpu_tests {
             cpu.clock(&mut bus);
         }
 
-        assert_eq!(CurrentInstruction {
-            remaining_cycles: 7,
-            instruction_type: InstructionType::IRQ
-        }, cpu.current_instruction)
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::IRQ
+            },
+            cpu.current_instruction
+        )
     }
 
     #[test]

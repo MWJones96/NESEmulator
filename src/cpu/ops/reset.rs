@@ -38,8 +38,14 @@ mod reset_tests {
 
         let mut bus = MockCPUBus::new();
 
-        bus.expect_read().with(eq(CPU::RESET_VECTOR)).once().return_const(0x40);
-        bus.expect_read().with(eq(CPU::RESET_VECTOR + 1)).once().return_const(0x20);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR))
+            .once()
+            .return_const(0x40);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR + 1))
+            .once()
+            .return_const(0x20);
 
         cpu.reset(&bus);
 
