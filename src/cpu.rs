@@ -123,24 +123,40 @@ impl CPU {
                 opcode,
                 addressing_mode,
             } => {
+                let i_flag_before = self.i;
                 self.execute(opcode, &addressing_mode, bus);
+                let i_flag_after = self.i;
+
+                let polled_i_flag = if opcode == 0x58 {
+                    i_flag_before
+                } else {
+                    i_flag_after
+                };
 
                 //We only poll for interrupts in non-interrupt routines
                 //(i.e. regular instructions)
-                if self.pending_nmi {
-                    self.current_instruction = CurrentInstruction {
-                        remaining_cycles: self.nmi_cycles(),
-                        instruction_type: InstructionType::NMI,
-                    };
-                } else if self.pending_irq && !self.i {
-                    self.current_instruction = CurrentInstruction {
-                        remaining_cycles: self.irq_cycles(),
-                        instruction_type: InstructionType::IRQ,
-                    };
-                } else {
-                    self.current_instruction = self.fetch_next_instruction(bus);
-                }
+                self.poll_for_interrupts_or_fetch_next_instruction(bus, polled_i_flag);
             }
+        }
+    }
+
+    fn poll_for_interrupts_or_fetch_next_instruction(
+        &mut self,
+        bus: &mut dyn CPUBus,
+        i_flag: bool,
+    ) {
+        if self.pending_nmi {
+            self.current_instruction = CurrentInstruction {
+                remaining_cycles: self.nmi_cycles(),
+                instruction_type: InstructionType::NMI,
+            };
+        } else if self.pending_irq && !i_flag {
+            self.current_instruction = CurrentInstruction {
+                remaining_cycles: self.irq_cycles(),
+                instruction_type: InstructionType::IRQ,
+            };
+        } else {
+            self.current_instruction = self.fetch_next_instruction(bus);
         }
     }
 
@@ -648,7 +664,10 @@ mod cpu_tests {
         assert_eq!(
             CurrentInstruction {
                 remaining_cycles: 2,
-                instruction_type: InstructionType::Instruction { opcode: 0x69, addressing_mode: cpu.imm(0x69) }
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x69,
+                    addressing_mode: cpu.imm(0x69)
+                }
             },
             cpu.current_instruction
         );
@@ -739,6 +758,70 @@ mod cpu_tests {
                     opcode: 0x0,
                     addressing_mode: cpu.imp()
                 }
+            },
+            cpu.current_instruction
+        );
+    }
+
+    #[test]
+    fn test_cpu_cli_delays_interrupt() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR))
+            .once()
+            .return_const(0x40);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR + 1))
+            .once()
+            .return_const(0x20);
+        bus.expect_read().with(eq(0x2040)).once().return_const(0x58); //CLI
+        bus.expect_read().with(eq(0x2041)).once().return_const(0x58);
+
+        bus.expect_read().return_const(0x0);
+
+        cpu.system_irq(true);
+
+        for _ in 0..8 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 2,
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x58,
+                    addressing_mode: cpu.imp()
+                }
+            },
+            cpu.current_instruction
+        );
+
+        for _ in 0..2 {
+            cpu.clock(&mut bus);
+        }
+
+        //Interrupt delayed until end of next instruction
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 2,
+                instruction_type: InstructionType::Instruction {
+                    opcode: 0x58,
+                    addressing_mode: cpu.imp()
+                }
+            },
+            cpu.current_instruction
+        );
+
+        for _ in 0..2 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::IRQ
             },
             cpu.current_instruction
         );
