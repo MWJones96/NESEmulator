@@ -1,3 +1,15 @@
+/* 
+    Absolute
+
+    In absolute addressing, the second byte of the instruction 
+    specifies the eight low order bits of the effective address 
+    while the third byte specifies the eight high order bits. 
+    Thus, the absolute addressing mode allows access to the 
+    entire 65 K bytes of addressable memory.
+
+    Bytes: 3
+*/
+
 use crate::cpu::{bus::CPUBus, CPU};
 
 use super::AddrModeResult;

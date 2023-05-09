@@ -1,3 +1,13 @@
+/* 
+    Implied
+
+    In the implied addressing mode, the address containing the 
+    operand is implicitly stated in the operation code of the 
+    instruction.
+
+    Bytes: 1
+*/
+
 use crate::cpu::CPU;
 
 use super::{AddrMode, AddrModeResult};

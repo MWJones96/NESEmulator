@@ -1,3 +1,12 @@
+/* 
+    Accumulator
+
+    This form of addressing is represented with a one byte 
+    instruction, implying an operation on the accumulator.
+
+    Bytes: 1
+*/
+
 use crate::cpu::CPU;
 
 use super::AddrModeResult;

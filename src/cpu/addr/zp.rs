@@ -1,3 +1,15 @@
+/* 
+    Zero Page
+
+    The zero page instructions allow for shorter code and 
+    execution times by only fetching the second byte of the 
+    instruction and assuming a zero high address byte. 
+    Careful use of the zero page can result in significant 
+    increase in code efficiency.
+
+    Bytes: 2
+*/
+
 use crate::cpu::{bus::CPUBus, CPU};
 
 use super::AddrModeResult;

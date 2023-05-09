@@ -1,3 +1,19 @@
+/* 
+    Y-Indexed Zero Page
+
+    This form of addressing is used in conjunction with the 
+    Y index register. The effective address is calculated 
+    by adding the second byte to the contents of the index 
+    register. Since this is a form of "Zero Page" addressing, 
+    the content of the second byte references a location in 
+    page zero. Additionally, due to the “Zero Page" addressing 
+    nature of this mode, no carry is added to the high order 
+    8 bits of memory and crossing of page boundaries does 
+    not occur.
+
+    Bytes: 2
+*/
+
 use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrMode, AddrModeResult};

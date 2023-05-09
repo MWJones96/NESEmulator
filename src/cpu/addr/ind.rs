@@ -1,3 +1,22 @@
+/* 
+    Absolute Indirect
+    The second byte of the instruction contains the low order 
+    eight bits of a memory location. The high order eight bits 
+    of that memory location is contained in the third byte of 
+    the instruction. The contents of the fully specified memory 
+    location is the low order byte of the effective address. 
+    The next memory location contains the high order byte of the 
+    effective address which is loaded into the sixteen bits of 
+    the program counter.
+
+    Note on the MOS 6502:
+    The indirect jump instruction does not increment the page 
+    address when the indirect pointer crosses a page boundary. 
+    JMP ($xxFF) will fetch the address from $xxFF and $xx00.
+
+    Bytes: 3
+*/
+
 use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrMode, AddrModeResult};

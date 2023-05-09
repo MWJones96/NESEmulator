@@ -1,3 +1,19 @@
+/* 
+    X-Indexed Zero Page Indirect
+
+    In indexed indirect addressing, the second byte of the 
+    instruction is added to the contents of the X index 
+    register, discarding the carry. The result of this 
+    addition points to a memory location on page zero whose 
+    contents is the low order eight bits of the effective 
+    address. The next memory location in page zero contains 
+    the high order eight bits of the effective address. Both 
+    memory locations specifying the high and low order bytes 
+    of the effective address must be in page zero.
+
+    Bytes: 2
+*/
+
 use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrMode, AddrModeResult};
