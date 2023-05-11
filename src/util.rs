@@ -8,13 +8,13 @@ pub enum Mirroring {
 
 #[derive(Debug, PartialEq)]
 pub struct INESHeader {
-    prg_rom_banks: u8,
-    chr_rom_banks: u8,
-    mapper_num: u8,
-    mirroring: Mirroring,
-    battery: bool,
-    trainer: bool,
-    four_screen_vram: bool,
+    pub prg_rom_banks: u8,
+    pub chr_rom_banks: u8,
+    pub mapper_num: u8,
+    pub mirroring: Mirroring,
+    pub battery: bool,
+    pub trainer: bool,
+    pub four_screen_vram: bool,
 }
 
 pub fn read_bytes_from_file(file_path: String) -> Vec<u8> {

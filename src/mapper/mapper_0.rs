@@ -1,6 +1,8 @@
-use super::{CHRRomMapper, PRGRomMapper};
+use super::{CHRRomMapper, PRGRomMapper, Mapper};
 
 pub struct Mapper0;
+
+impl Mapper for Mapper0 {}
 
 impl PRGRomMapper for Mapper0 {
     fn read(&self, addr: u16) -> u8 {
