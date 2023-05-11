@@ -49,7 +49,7 @@ pub fn extract_header(bytes: &[u8]) -> INESHeader {
 pub fn extract_prg_rom<'a>(header: &INESHeader, bytes: &'a [u8]) -> &'a [u8] {
     assert!(&bytes[0..4] == ['N' as u8, 'E' as u8, 'S' as u8, 0x1A]);
 
-    let start = 16 + ((header.trainer as usize) * 512);
+    let start = 16 + (header.trainer as usize) * 512;
     let end = start + (header.prg_rom_banks as usize) * 16384;
 
     &bytes[start..end]
@@ -58,7 +58,7 @@ pub fn extract_prg_rom<'a>(header: &INESHeader, bytes: &'a [u8]) -> &'a [u8] {
 pub fn extract_chr_rom<'a>(header: &INESHeader, bytes: &'a [u8]) -> &'a [u8] {
     assert!(&bytes[0..4] == ['N' as u8, 'E' as u8, 'S' as u8, 0x1A]);
 
-    let start = 16 + ((header.trainer as usize) * 512) + (header.prg_rom_banks as usize) * 16384;
+    let start = 16 + (header.trainer as usize) * 512 + (header.prg_rom_banks as usize) * 16384;
     let end = start + (header.chr_rom_banks as usize) * 8192;
 
     &bytes[start..end]
