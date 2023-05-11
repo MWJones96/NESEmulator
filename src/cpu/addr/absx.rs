@@ -1,14 +1,14 @@
-/* 
+/*
     X-Indexed Absolute
 
-    This form of addressing is used in conjunction with the 
-    X index register. The effective address is formed by 
-    adding the contents of X to the address contained in 
-    the second and third bytes of the instruction. This mode 
-    allows the index register to contain the index or count 
-    value and the instruction to contain the base address. 
-    This type of indexing allows any location referencing 
-    and the index to modify multiple fields resulting in 
+    This form of addressing is used in conjunction with the
+    X index register. The effective address is formed by
+    adding the contents of X to the address contained in
+    the second and third bytes of the instruction. This mode
+    allows the index register to contain the index or count
+    value and the instruction to contain the base address.
+    This type of indexing allows any location referencing
+    and the index to modify multiple fields resulting in
     reduced coding and execution time.
 
     Bytes: 3

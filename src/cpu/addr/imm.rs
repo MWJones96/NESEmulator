@@ -1,8 +1,8 @@
-/* 
+/*
     Immediate
 
-    In immediate addressing, the operand is contained 
-    in the second byte of the instruction, with no 
+    In immediate addressing, the operand is contained
+    in the second byte of the instruction, with no
     further memory addressing required.
 
     Bytes: 2

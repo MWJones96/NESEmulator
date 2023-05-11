@@ -1,13 +1,13 @@
-/* 
+/*
     Relative
 
-    Relative addressing is used only with branch instructions and 
+    Relative addressing is used only with branch instructions and
     establishes a destination for the conditional branch.
 
-    The second byte of-the instruction becomes the operand which 
-    is an “Offset" added to the contents of the lower eight bits 
-    of the program counter when the counter is set at the next 
-    instruction. The range of the offset is —128 to +127 bytes 
+    The second byte of-the instruction becomes the operand which
+    is an “Offset" added to the contents of the lower eight bits
+    of the program counter when the counter is set at the next
+    instruction. The range of the offset is —128 to +127 bytes
     from the next instruction.
 
     Bytes: 2

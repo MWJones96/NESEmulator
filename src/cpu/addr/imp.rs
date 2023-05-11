@@ -1,8 +1,8 @@
-/* 
+/*
     Implied
 
-    In the implied addressing mode, the address containing the 
-    operand is implicitly stated in the operation code of the 
+    In the implied addressing mode, the address containing the
+    operand is implicitly stated in the operation code of the
     instruction.
 
     Bytes: 1

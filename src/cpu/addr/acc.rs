@@ -1,7 +1,7 @@
-/* 
+/*
     Accumulator
 
-    This form of addressing is represented with a one byte 
+    This form of addressing is represented with a one byte
     instruction, implying an operation on the accumulator.
 
     Bytes: 1

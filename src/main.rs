@@ -3,11 +3,7 @@ use cpu::CPU;
 
 mod bus;
 mod cpu;
-mod file_reader;
-
-pub fn get_bytes_from_rom_file(path: String) -> Vec<u8> {
-    Vec::new()
-}
+mod util;
 
 fn main() {
     let mut cpu = CPU::new();

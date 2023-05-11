@@ -129,7 +129,7 @@ impl CPU {
 
                 let polled_i_flag = match opcode {
                     0x28 | 0x58 | 0x78 => i_flag_before,
-                    _ => i_flag_after
+                    _ => i_flag_after,
                 };
                 //We only poll for interrupts in non-interrupt routines
                 //(i.e. regular instructions)
@@ -890,8 +890,11 @@ mod cpu_tests {
             .return_const(0x20);
 
         bus.expect_read().with(eq(0x2040)).once().return_const(0x28); //PLP
-        bus.expect_read().with(eq(0x1fe)).once().return_const(0b1111_1111);
-        
+        bus.expect_read()
+            .with(eq(0x1fe))
+            .once()
+            .return_const(0b1111_1111);
+
         bus.expect_read().return_const(0x0);
 
         cpu.system_irq(true);
