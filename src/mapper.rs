@@ -20,3 +20,19 @@ pub fn mapper_factory(mapper: u8) -> Box<dyn Mapper> {
         mapper => panic!("Mapper {mapper} has not been implemented")
     }
 }
+
+#[cfg(test)]
+mod mapper_tests {
+    use super::*;
+
+    #[test]
+    fn test_mapper_factory_with_mapper0() {
+        mapper_factory(0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_mapper_factory_with_unimplemented_mapper() {
+        mapper_factory(0xff);
+    }
+}
