@@ -1,4 +1,4 @@
-use super::{CHRRomMapper, PRGRomMapper, Mapper};
+use super::{CHRRomMapper, Mapper, PRGRomMapper};
 
 pub struct Mapper0<'a> {
     prg_rom: &'a [u8],
@@ -10,10 +10,7 @@ impl<'a> Mapper0<'a> {
         assert!(prg_rom.len() % 16384 == 0);
         assert!(chr_rom.len() % 8192 == 0);
 
-        Self {
-            prg_rom,
-            chr_rom,
-        }
+        Self { prg_rom, chr_rom }
     }
 }
 
@@ -34,8 +31,7 @@ impl PRGRomMapper for Mapper0<'_> {
         self.prg_rom[prg_rom_addr]
     }
 
-    fn write(&mut self, addr: u16, data: u8) {
-    }
+    fn write(&mut self, addr: u16, data: u8) {}
 }
 
 impl CHRRomMapper for Mapper0<'_> {
