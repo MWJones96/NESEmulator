@@ -16,6 +16,8 @@ fn main() {
     let chr_rom = extract_chr_rom(&header, &bytes);
 
     let mut mapper = mapper_factory(header.mapper_num, prg_rom, chr_rom);
+    let mut cpu = CPU::new();
+    let mut main_bus = MainBus::new();
 
     println!("{:?}", chr_rom);
 }
