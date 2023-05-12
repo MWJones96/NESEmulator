@@ -20,7 +20,7 @@ impl CPU {
     }
 
     pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
-        bus.write(0x100 + (self.sp as u16), self.get_status_byte(false));
+        bus.write(0x100 + (self.sp as u16), self.get_status_byte(true));
         self.sp = self.sp.wrapping_sub(1);
     }
 }
@@ -46,7 +46,7 @@ mod php_tests {
         cpu.c = true;
 
         bus.expect_write()
-            .with(eq(0x1ff), eq(0b0010_0101))
+            .with(eq(0x1ff), eq(0b0011_0101))
             .times(1)
             .return_const(());
 
