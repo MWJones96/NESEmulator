@@ -69,7 +69,7 @@ impl CPU {
             c: false, //Bit 0
 
             current_instruction: CurrentInstruction {
-                remaining_cycles: 8,
+                remaining_cycles: 7,
                 instruction_type: InstructionType::Reset,
             },
 
@@ -412,7 +412,7 @@ mod cpu_tests {
 
         assert_eq!(
             CurrentInstruction {
-                remaining_cycles: 8,
+                remaining_cycles: 7,
                 instruction_type: InstructionType::Reset
             },
             cpu.current_instruction
@@ -547,7 +547,7 @@ mod cpu_tests {
 
         bus.expect_read().with(eq(0x2041)).once().return_const(0xff);
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -590,7 +590,7 @@ mod cpu_tests {
 
         assert_eq!(
             CurrentInstruction {
-                remaining_cycles: 8,
+                remaining_cycles: 7,
                 instruction_type: InstructionType::Reset
             },
             cpu.current_instruction
@@ -616,7 +616,7 @@ mod cpu_tests {
 
         bus.expect_read().with(eq(0x2041)).once().return_const(0x00);
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -655,7 +655,7 @@ mod cpu_tests {
 
         assert_eq!(true, cpu.pending_nmi);
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -702,7 +702,7 @@ mod cpu_tests {
 
         bus.expect_write().return_const(());
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -738,7 +738,7 @@ mod cpu_tests {
 
         bus.expect_write().return_const(());
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -781,7 +781,7 @@ mod cpu_tests {
 
         cpu.system_irq(true);
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -844,7 +844,7 @@ mod cpu_tests {
 
         cpu.system_irq(true);
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
@@ -899,7 +899,7 @@ mod cpu_tests {
 
         cpu.system_irq(true);
 
-        for _ in 0..8 {
+        for _ in 0..7 {
             cpu.clock(&mut bus);
         }
 
