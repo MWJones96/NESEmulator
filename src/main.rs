@@ -15,7 +15,7 @@ fn main() {
     let prg_rom = extract_prg_rom(&header, &bytes);
     let chr_rom = extract_chr_rom(&header, &bytes);
 
-    let mut mapper = mapper_factory(header.mapper_num);
+    let mut mapper = mapper_factory(header.mapper_num, prg_rom, chr_rom);
     PRGRomMapper::write(mapper.as_mut(), 0x0, 0x0);
 
     println!("{:?}", chr_rom);
