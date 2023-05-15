@@ -19,7 +19,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::AddrModeResult;
 
 impl CPU {
-    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
         self.abs_helper(addr, self.y, super::AddrMode::ABSY, bus)
     }
 }

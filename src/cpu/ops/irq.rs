@@ -5,7 +5,7 @@ impl CPU {
         7
     }
 
-    pub(in crate::cpu) fn irq(&mut self, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn irq(&mut self, bus: &mut impl CPUBus) {
         let pc_high: u8 = (self.pc >> 8) as u8;
         let pc_low: u8 = self.pc as u8;
 

@@ -27,7 +27,7 @@ impl CPU {
         6
     }
 
-    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         //Set return address to last byte of JSR
         let return_addr = self.pc.wrapping_sub(1);
 

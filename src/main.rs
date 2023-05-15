@@ -13,7 +13,6 @@ mod mapper;
 mod util;
 
 fn main() {
-    /*
     let bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -21,8 +20,7 @@ fn main() {
 
     let mut mapper = mapper_factory(header.mapper_num, prg_rom, chr_rom);
     let mut cpu = CPU::new();
-    let mut main_bus = MainBus::new(cpu, mapper);
+    //let mut main_bus = MainBus::new(cpu, mapper);
 
     println!("{:?}", chr_rom);
-    */
 }

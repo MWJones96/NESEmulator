@@ -95,7 +95,7 @@ impl CPU {
         }
     }
 
-    pub fn clock(&mut self, bus: &mut dyn CPUBus) {
+    pub fn clock(&mut self, bus: &mut impl CPUBus) {
         self.current_instruction.remaining_cycles -= 1;
 
         if self.current_instruction.remaining_cycles == 0 {
@@ -105,7 +105,7 @@ impl CPU {
 }
 
 impl CPU {
-    fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
+    fn execute_operation(&mut self, bus: &mut impl CPUBus) {
         match self.current_instruction.instruction_type {
             InstructionType::Reset => {
                 self.reset(bus);
@@ -140,7 +140,7 @@ impl CPU {
 
     fn poll_for_interrupts_or_fetch_next_instruction(
         &mut self,
-        bus: &mut dyn CPUBus,
+        bus: &mut impl CPUBus,
         i_flag: bool,
     ) {
         if self.pending_nmi {
@@ -158,7 +158,7 @@ impl CPU {
         }
     }
 
-    fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
+    fn fetch_next_instruction(&mut self, bus: &mut impl CPUBus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
         if opcode == 0x0 {
             self.fetch_byte(bus); //Discard next byte for BRK
@@ -185,14 +185,14 @@ impl CPU {
             | (self.c as u8) << 0
     }
 
-    fn fetch_byte(&mut self, bus: &dyn CPUBus) -> u8 {
+    fn fetch_byte(&mut self, bus: &impl CPUBus) -> u8 {
         let data = bus.read(self.pc);
         self.pc = self.pc.wrapping_add(1);
 
         data
     }
 
-    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn CPUBus) -> u16 {
+    fn fetch_two_bytes_as_u16(&mut self, bus: &impl CPUBus) -> u16 {
         let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
         let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
         self.pc = self.pc.wrapping_add(2);
@@ -202,7 +202,7 @@ impl CPU {
 }
 
 impl CPU {
-    fn fetch_addr_mode(&mut self, opcode: u8, bus: &dyn CPUBus) -> AddrModeResult {
+    fn fetch_addr_mode(&mut self, opcode: u8, bus: &impl CPUBus) -> AddrModeResult {
         match opcode {
             0x00 | 0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08
             | 0x68 | 0x28 | 0x40 | 0x60 | 0x38 | 0xF8 | 0x78 | 0xAA | 0xA8 | 0xBA | 0x8A | 0x9A
@@ -322,7 +322,7 @@ impl CPU {
         }
     }
 
-    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         match opcode {
             0x00 => self.brk(mode, bus),
             0x08 => self.php(mode, bus),

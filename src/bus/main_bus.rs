@@ -12,7 +12,7 @@ pub struct MainBus {
 }
 
 impl MainBus {
-    pub fn new(cpu: CPU, mapper: Rc<dyn PRGRomMapper>) -> Self {
+    pub fn new(cpu: CPU, mapper: Rc<impl PRGRomMapper + 'static>) -> Self {
         Self {
             cpu,
             mapper,

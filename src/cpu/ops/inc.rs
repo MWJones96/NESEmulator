@@ -27,7 +27,7 @@ impl CPU {
         }
     }
 
-    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         let data = mode.data.unwrap().wrapping_add(1);
         let addr = mode.addr.unwrap();
 

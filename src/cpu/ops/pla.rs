@@ -25,7 +25,7 @@ impl CPU {
         4
     }
 
-    pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &impl CPUBus) {
         self.sp = self.sp.wrapping_add(1);
 
         self.a = bus.read(0x100 + (self.sp as u16));

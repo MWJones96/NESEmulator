@@ -23,7 +23,7 @@ impl CPU {
         7
     }
 
-    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &mut impl CPUBus) {
         let pc_lsb = (self.pc & 0xff) as u8;
         let pc_msb = (self.pc >> 8) as u8;
 

@@ -19,7 +19,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::{AddrMode, AddrModeResult};
 
 impl CPU {
-    pub(in crate::cpu) fn zpy(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zpy(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.y) as u16;
 
         AddrModeResult {

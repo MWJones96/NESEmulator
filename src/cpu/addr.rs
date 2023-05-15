@@ -45,7 +45,7 @@ impl CPU {
         addr: u16,
         register: u8,
         mode: AddrMode,
-        bus: &dyn CPUBus,
+        bus: &impl CPUBus,
     ) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(register as u16);
