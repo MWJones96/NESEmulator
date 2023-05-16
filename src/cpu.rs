@@ -154,7 +154,6 @@ impl CPU {
                 instruction_type: InstructionType::IRQ,
             };
         } else {
-            println!("{:04X?}", self.pc);
             self.current_instruction = self.fetch_next_instruction(bus);
         }
     }

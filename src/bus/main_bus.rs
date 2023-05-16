@@ -26,7 +26,7 @@ impl CPUBus for MainBus<'_> {
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
             0x8000..=0xffff => self.mapper.read(addr),
-            _ => 0x0,
+            _ => 0x0, //Open Bus Read
         }
     }
 
@@ -34,7 +34,7 @@ impl CPUBus for MainBus<'_> {
         match addr {
             0x0000..=0x1fff => { self.ram[(addr & 0x7ff) as usize] = data; },
             0x8000..=0xffff => {  },
-            _ => {},
+            _ => {}, //Open Bus Write
         }
     }
 }

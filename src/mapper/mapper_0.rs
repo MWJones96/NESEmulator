@@ -31,7 +31,7 @@ impl PRGRomMapper for Mapper0<'_> {
         self.prg_rom[prg_rom_addr]
     }
 
-    fn write(&mut self, addr: u16, data: u8) {}
+    fn write(&mut self, _addr: u16, _data: u8) {}
 }
 
 impl CHRRomMapper for Mapper0<'_> {

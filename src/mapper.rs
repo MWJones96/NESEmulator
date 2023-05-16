@@ -1,6 +1,5 @@
 use self::mapper_0::Mapper0;
 use mockall::automock;
-use std::rc::Rc;
 
 mod mapper_0;
 
