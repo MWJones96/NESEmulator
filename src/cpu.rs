@@ -349,6 +349,7 @@ impl CPU {
             0x68 => self.pla(mode, bus),
             0x69 | 0x6D | 0x7D | 0x79 | 0x65 | 0x75 | 0x61 | 0x71 => self.adc(mode),
             0x6A | 0x6E | 0x7E | 0x66 | 0x76 => self.ror(mode, bus),
+            0x6B => self.arr(mode, bus),
             0x70 => self.bvs(mode),
             0x78 => self.sei(mode),
             0x88 => self.dey(mode),

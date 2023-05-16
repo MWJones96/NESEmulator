@@ -1,6 +1,6 @@
 use nes_emu::bus::main_bus::MainBus;
-use nes_emu::cpu::CPU;
 use nes_emu::cpu::bus::CPUBus;
+use nes_emu::cpu::CPU;
 use nes_emu::mapper::mapper_factory;
 use nes_emu::util::extract_chr_rom;
 use nes_emu::util::extract_header;

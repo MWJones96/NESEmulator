@@ -32,9 +32,11 @@ impl CPUBus for MainBus<'_> {
 
     fn write(&mut self, addr: u16, data: u8) {
         match addr {
-            0x0000..=0x1fff => { self.ram[(addr & 0x7ff) as usize] = data; },
-            0x8000..=0xffff => {  },
-            _ => {}, //Open Bus Write
+            0x0000..=0x1fff => {
+                self.ram[(addr & 0x7ff) as usize] = data;
+            }
+            0x8000..=0xffff => {}
+            _ => {} //Open Bus Write
         }
     }
 }

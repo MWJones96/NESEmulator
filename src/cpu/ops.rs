@@ -1,6 +1,7 @@
 mod adc;
-mod anc; //Unofficial
+mod anc; //Undocumented
 mod and;
+mod arr; //Undocumented
 mod asl;
 mod bcc;
 mod bcs;
