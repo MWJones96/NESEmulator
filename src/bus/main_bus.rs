@@ -5,29 +5,42 @@ use crate::{
     mapper::PRGRomMapper,
 };
 
-pub struct MainBus {
-    cpu: CPU,
-    mapper: Rc<dyn PRGRomMapper>,
+pub struct MainBus<'a> {
+    mapper: &'a dyn PRGRomMapper,
     ram: [u8; 0x800],
 }
 
-impl MainBus {
-    pub fn new(cpu: CPU, mapper: Rc<impl PRGRomMapper + 'static>) -> Self {
+impl<'a> MainBus<'a> {
+    pub fn new(mapper: &'a impl PRGRomMapper) -> Self {
         Self {
-            cpu,
             mapper,
             ram: [0; 0x800],
         }
     }
+
+    pub fn clock(&mut self, cpu: &mut CPU) {
+        cpu.clock(self);
+    }
 }
 
-impl CPUBus for MainBus {
+impl CPUBus for MainBus<'_> {
     fn read(&self, addr: u16) -> u8 {
-        self.ram[(addr & 0x7ff) as usize]
+        println!("Reading from addr {}", addr);
+
+        match addr {
+            0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
+            0x8000..=0xffff => self.mapper.read(addr),
+            _ => 0x0,
+        }
     }
 
     fn write(&mut self, addr: u16, data: u8) {
-        self.ram[(addr & 0x7ff) as usize] = data;
+        println!("write bus");
+        match addr {
+            0x0000..=0x1fff => { self.ram[(addr & 0x7ff) as usize] = data; },
+            0x8000..=0xffff => {  },
+            _ => {},
+        }
     }
 }
 
@@ -39,9 +52,8 @@ mod main_bus_tests {
 
     #[test]
     fn test_cpu_bus_read() {
-        let cpu = CPU::new();
         let mapper = MockPRGRomMapper::new();
-        let mut main_bus = MainBus::new(cpu, Rc::new(mapper));
+        let mut main_bus = MainBus::new(&mapper);
 
         main_bus.ram[0x0] = 0xff;
 
@@ -53,10 +65,9 @@ mod main_bus_tests {
 
     #[test]
     fn test_cpu_bus_write() {
-        let cpu = CPU::new();
         let mapper = MockPRGRomMapper::new();
-        let mut main_bus = MainBus::new(cpu, Rc::new(mapper));
-        
+        let mut main_bus = MainBus::new(&mapper);
+
         main_bus.write(0x1, 0x34);
         assert_eq!(0x34, main_bus.ram[0x1]);
 
