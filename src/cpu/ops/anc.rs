@@ -29,7 +29,7 @@ impl CPU {
 
         self.z = self.a == 0;
         self.n = (self.a & 0x80) != 0;
-        self.c = (self.a & 0x80) != 0;
+        self.c = self.n;
     }
 }
 

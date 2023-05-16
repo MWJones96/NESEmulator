@@ -328,6 +328,7 @@ impl CPU {
             0x08 => self.php(mode, bus),
             0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora(mode),
             0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl(mode, bus),
+            0x0B | 0x2B => self.anc(mode),
             0x10 => self.bpl(mode),
             0x18 => self.clc(mode),
             0x20 => self.jsr(mode, bus),
