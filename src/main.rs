@@ -13,15 +13,18 @@ mod mapper;
 mod util;
 
 fn main() {
-    let bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
+    let mut bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
+    bytes[16 + 16380] = 0x0;
+
     let header = extract_header(&bytes);
-    let prg_rom = extract_prg_rom(&header, &bytes);
+    let mut prg_rom = extract_prg_rom(&header, &bytes);
     let chr_rom = extract_chr_rom(&header, &bytes);
 
     let mapper = mapper_factory(header.mapper_num, prg_rom, chr_rom);
     let mut cpu = CPU::new();
     let mut main_bus = MainBus::new(&mapper);
 
-    println!("{:02x?}", mapper.read(0xfffc));
-    println!("{:02x?}", mapper.read(0xfffd));
+    for _ in 0..1_000_000 {
+        main_bus.clock(&mut cpu);
+    }
 }

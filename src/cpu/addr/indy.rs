@@ -25,7 +25,7 @@ impl CPU {
             (bus.read(high_byte_addr as u16) as u16) << 8 | (bus.read(low_byte_addr as u16) as u16);
 
         let page_before = (resolved_addr >> 8) as u8;
-        let resolved_addr = resolved_addr + self.y as u16;
+        let resolved_addr = resolved_addr.wrapping_add(self.y as u16);
         let page_after = (resolved_addr >> 8) as u8;
 
         AddrModeResult {

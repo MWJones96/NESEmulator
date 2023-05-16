@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::{
     cpu::{bus::CPUBus, CPU},
     mapper::PRGRomMapper,
@@ -25,8 +23,6 @@ impl<'a> MainBus<'a> {
 
 impl CPUBus for MainBus<'_> {
     fn read(&self, addr: u16) -> u8 {
-        println!("Reading from addr {}", addr);
-
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
             0x8000..=0xffff => self.mapper.read(addr),
@@ -35,7 +31,6 @@ impl CPUBus for MainBus<'_> {
     }
 
     fn write(&mut self, addr: u16, data: u8) {
-        println!("write bus");
         match addr {
             0x0000..=0x1fff => { self.ram[(addr & 0x7ff) as usize] = data; },
             0x8000..=0xffff => {  },
