@@ -20,7 +20,7 @@ fn test_nestest_rom() {
     let mut cpu = CPU::new();
     let mut main_bus = MainBus::new(&mapper);
 
-    for _ in 0..26_560 {
+    for _ in 0..=26_560 {
         main_bus.clock(&mut cpu);
     }
 
