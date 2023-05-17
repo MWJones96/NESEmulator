@@ -1,16 +1,14 @@
-use super::{CHRRomMapper, Mapper, PRGRomMapper};
+use super::{Mapper, PRGRomMapper};
 
 pub struct Mapper0<'a> {
     prg_rom: &'a [u8],
-    chr_rom: &'a [u8],
 }
 
 impl<'a> Mapper0<'a> {
-    pub fn new(prg_rom: &'a [u8], chr_rom: &'a [u8]) -> Mapper0<'a> {
+    pub fn new(prg_rom: &'a [u8]) -> Mapper0<'a> {
         assert!(prg_rom.len() % 16384 == 0);
-        assert!(chr_rom.len() % 8192 == 0);
 
-        Self { prg_rom, chr_rom }
+        Self { prg_rom }
     }
 }
 
@@ -34,16 +32,6 @@ impl PRGRomMapper for Mapper0<'_> {
     fn write(&mut self, _addr: u16, _data: u8) {}
 }
 
-impl CHRRomMapper for Mapper0<'_> {
-    fn read(&self, addr: u16) -> u8 {
-        todo!()
-    }
-
-    fn write(&mut self, addr: u16, data: u8) {
-        todo!()
-    }
-}
-
 #[cfg(test)]
 mod mapper0_tests {
     use super::*;
@@ -51,11 +39,10 @@ mod mapper0_tests {
     #[test]
     fn test_mapper0_one_prg_rom_bank() {
         let mut prg_rom: [u8; 16384] = [0; 16384];
-        let chr_rom: [u8; 0] = [];
 
         prg_rom[0] = 0xff;
 
-        let mapper = Mapper0::new(&prg_rom, &chr_rom);
+        let mapper = Mapper0::new(&prg_rom);
 
         //Memory is mirrored
         assert_eq!(0xff, PRGRomMapper::read(&mapper, 0x8000));
@@ -65,12 +52,11 @@ mod mapper0_tests {
     #[test]
     fn test_mapper0_two_prg_rom_banks() {
         let mut prg_rom: [u8; 2 * 16384] = [0; 2 * 16384];
-        let chr_rom: [u8; 0] = [];
 
         prg_rom[0] = 0xff;
         prg_rom[0x4000] = 0xee;
 
-        let mapper = Mapper0::new(&prg_rom, &chr_rom);
+        let mapper = Mapper0::new(&prg_rom);
 
         //Memory is not mirrored
         assert_eq!(0xff, PRGRomMapper::read(&mapper, 0x8000));

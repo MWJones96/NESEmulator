@@ -21,7 +21,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn anc_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn anc_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
