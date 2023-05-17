@@ -8,10 +8,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn nop_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn nop(&self, _mode: &AddrModeResult) {
         //No operation
     }

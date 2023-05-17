@@ -21,10 +21,12 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn pla_cycles(&self, _mode: &AddrModeResult) -> u8 {
         4
     }
 
+    #[inline]
     pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &impl CPUBus) {
         self.sp = self.sp.wrapping_add(1);
 

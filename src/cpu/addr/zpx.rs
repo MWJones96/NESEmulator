@@ -19,6 +19,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::AddrModeResult;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn zpx(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.x) as u16;
 

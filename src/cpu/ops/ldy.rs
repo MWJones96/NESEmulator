@@ -16,10 +16,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn ldy_cycles(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
+    #[inline]
     pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult) {
         self.y = mode.data.unwrap();
         self.n = (self.y & 0x80) > 0;

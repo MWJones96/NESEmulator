@@ -26,10 +26,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn cpx_cycles(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
+    #[inline]
     pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult) {
         let data = mode.data.unwrap();
         let result = self.x.wrapping_add(!data).wrapping_add(1);

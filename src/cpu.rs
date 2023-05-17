@@ -105,6 +105,7 @@ impl CPU {
 }
 
 impl CPU {
+    #[inline]
     fn execute_operation(&mut self, bus: &mut impl CPUBus) {
         match self.current_instruction.instruction_type {
             InstructionType::Reset => {
@@ -138,6 +139,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     fn poll_for_interrupts_or_fetch_next_instruction(
         &mut self,
         bus: &mut impl CPUBus,
@@ -158,6 +160,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     fn fetch_next_instruction(&mut self, bus: &mut impl CPUBus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
         if opcode == 0x0 {
@@ -174,6 +177,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     fn get_status_byte(&self, brk: bool) -> u8 {
         (self.n as u8) << 7
             | (self.v as u8) << 6
@@ -185,6 +189,7 @@ impl CPU {
             | (self.c as u8) << 0
     }
 
+    #[inline]
     fn fetch_byte(&mut self, bus: &impl CPUBus) -> u8 {
         let data = bus.read(self.pc);
         self.pc = self.pc.wrapping_add(1);
@@ -192,6 +197,7 @@ impl CPU {
         data
     }
 
+    #[inline]
     fn fetch_two_bytes_as_u16(&mut self, bus: &impl CPUBus) -> u16 {
         let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
         let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;

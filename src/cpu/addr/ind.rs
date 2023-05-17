@@ -22,6 +22,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::{AddrMode, AddrModeResult};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn ind(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
         let low_byte = bus.read(addr) as u16;
         let high_byte =

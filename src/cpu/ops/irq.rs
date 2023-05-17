@@ -1,10 +1,12 @@
 use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn irq_cycles(&self) -> u8 {
         7
     }
 
+    #[inline]
     pub(in crate::cpu) fn irq(&mut self, bus: &mut impl CPUBus) {
         let pc_high: u8 = (self.pc >> 8) as u8;
         let pc_low: u8 = self.pc as u8;

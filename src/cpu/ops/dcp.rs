@@ -41,7 +41,7 @@ impl CPU {
 
         let cmp = self.a.wrapping_sub(data_to_write);
         self.n = (cmp & 0x80) != 0;
-        self.z = self.a == data_to_write;
+        self.z = data_to_write == self.a;
         self.c = data_to_write <= self.a;
     }
 }

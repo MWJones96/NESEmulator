@@ -15,10 +15,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn sei_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn sei(&mut self, _mode: &AddrModeResult) {
         self.i = true;
     }

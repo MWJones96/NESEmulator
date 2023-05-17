@@ -1,10 +1,12 @@
 use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn reset_cycles(&self) -> u8 {
         7
     }
 
+    #[inline]
     pub(in crate::cpu) fn reset(&mut self, bus: &impl CPUBus) {
         let low_byte = bus.read(CPU::RESET_VECTOR) as u16;
         let high_byte = bus.read(CPU::RESET_VECTOR + 1) as u16;

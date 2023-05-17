@@ -15,6 +15,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::AddrModeResult;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn abs(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr)),

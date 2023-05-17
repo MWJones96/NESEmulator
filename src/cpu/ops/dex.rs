@@ -15,10 +15,12 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn dex_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn dex(&mut self, _mode: &AddrModeResult) {
         self.x = self.x.wrapping_sub(1);
 

@@ -22,6 +22,7 @@ use crate::cpu::{
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn ror_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ACC => 2,
@@ -30,6 +31,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         let before = mode.data.unwrap();
         let after: u8 = ((self.c as u8) << 7) | before >> 1;

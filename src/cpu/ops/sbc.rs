@@ -23,10 +23,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn sbc_cycles(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
+    #[inline]
     pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult) {
         self.adc(&self.imm(!mode.data.unwrap()))
     }

@@ -17,10 +17,12 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn pha_cycles(&self, _mode: &AddrModeResult) -> u8 {
         3
     }
 
+    #[inline]
     pub(in crate::cpu) fn pha(&mut self, _mode: &AddrModeResult, bus: &mut impl CPUBus) {
         bus.write(0x100 + (self.sp as u16), self.a);
         self.sp = self.sp.wrapping_sub(1);

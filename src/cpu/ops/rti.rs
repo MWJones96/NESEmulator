@@ -22,10 +22,12 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn rti_cycles(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
+    #[inline]
     pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &impl CPUBus) {
         let reg = bus.read(0x100 + (self.sp.wrapping_add(1) as u16));
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;

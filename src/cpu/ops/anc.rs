@@ -20,10 +20,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn anc_cycles(&self, mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn anc(&mut self, mode: &AddrModeResult) {
         self.a &= mode.data.unwrap();
 

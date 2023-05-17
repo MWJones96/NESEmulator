@@ -18,6 +18,7 @@ use crate::cpu::CPU;
 use super::AddrModeResult;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn rel(&self, offset: u8) -> AddrModeResult {
         let page_before = (self.pc >> 8) as u8;
         let resolved_offset = if (offset & 0x80) > 0 {

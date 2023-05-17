@@ -23,10 +23,12 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn jsr_cycles(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
+    #[inline]
     pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         //Set return address to last byte of JSR
         let return_addr = self.pc.wrapping_sub(1);

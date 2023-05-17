@@ -16,10 +16,12 @@ use crate::cpu::addr::AddrModeResult;
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn cld_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn cld(&mut self, _mode: &AddrModeResult) {
         self.d = false;
     }

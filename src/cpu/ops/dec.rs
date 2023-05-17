@@ -16,6 +16,7 @@
 use crate::cpu::{addr::AddrMode, addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn dec_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ABSX => 7,
@@ -23,6 +24,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         let result = mode.data.unwrap().wrapping_sub(1);
         bus.write(mode.addr.unwrap(), result);

@@ -11,10 +11,12 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn jmp_cycles(&self, mode: &AddrModeResult) -> u8 {
         1 + mode.cycles
     }
 
+    #[inline]
     pub(in crate::cpu) fn jmp(&mut self, mode: &AddrModeResult) {
         self.pc = mode.addr.unwrap();
     }

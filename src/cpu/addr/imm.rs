@@ -13,6 +13,7 @@ use crate::cpu::CPU;
 use super::AddrModeResult;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn imm(&self, imm: u8) -> AddrModeResult {
         AddrModeResult {
             data: Some(imm),

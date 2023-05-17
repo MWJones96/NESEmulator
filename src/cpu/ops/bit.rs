@@ -18,10 +18,12 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn bit_cycles(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
+    #[inline]
     pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult) {
         let data = mode.data.unwrap();
 

@@ -18,10 +18,12 @@
 use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn iny_cycles(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn iny(&mut self, _mode: &AddrModeResult) {
         self.y = self.y.wrapping_add(1);
 

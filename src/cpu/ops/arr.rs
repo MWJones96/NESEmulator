@@ -29,10 +29,12 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn arr_cycles(&self, mode: &AddrModeResult) -> u8 {
         2
     }
 
+    #[inline]
     pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         self.and(mode);
         self.ror(&self.acc(), bus);
