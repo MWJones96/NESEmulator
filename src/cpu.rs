@@ -202,13 +202,15 @@ impl CPU {
 }
 
 impl CPU {
+    #[inline]
     fn fetch_addr_mode(&mut self, opcode: u8, bus: &impl CPUBus) -> AddrModeResult {
         match opcode {
             0x00 | 0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08
             | 0x68 | 0x28 | 0x40 | 0x60 | 0x38 | 0xF8 | 0x78 | 0xAA | 0xA8 | 0xBA | 0x8A | 0x9A
             | 0x98 => self.imp(),
             0x0A | 0x4A | 0x2A | 0x6A => self.acc(),
-            0x69 | 0x29 | 0xC9 | 0xE0 | 0xC0 | 0x49 | 0xA9 | 0xA2 | 0xA0 | 0x09 | 0xE9 => {
+            0x69 | 0x29 | 0xC9 | 0xE0 | 0xC0 | 0x49 | 0xA9 | 0xA2 | 0xA0 | 0x09 | 0xE9 | 0x0B
+            | 0x2B | 0x6B | 0x4B => {
                 let byte = self.fetch_byte(bus);
                 self.imm(byte)
             }
@@ -260,12 +262,14 @@ impl CPU {
         }
     }
 
+    #[inline]
     fn get_number_of_cycles(&self, opcode: u8, mode: &AddrModeResult) -> u8 {
         match opcode {
             0x00 => self.brk_cycles(mode),
             0x08 => self.php_cycles(mode),
             0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora_cycles(mode),
             0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl_cycles(mode),
+            0x0B | 0x2B => self.anc_cycles(mode),
             0x10 => self.bpl_cycles(mode),
             0x18 => self.clc_cycles(mode),
             0x20 => self.jsr_cycles(mode),
@@ -279,6 +283,7 @@ impl CPU {
             0x48 => self.pha_cycles(mode),
             0x49 | 0x4D | 0x5D | 0x59 | 0x45 | 0x55 | 0x41 | 0x51 => self.eor_cycles(mode),
             0x4A | 0x4E | 0x5E | 0x46 | 0x56 => self.lsr_cycles(mode),
+            0x4B => self.asr_cycles(mode),
             0x4C | 0x6C => self.jmp_cycles(mode),
             0x50 => self.bvc_cycles(mode),
             0x58 => self.cli_cycles(mode),
@@ -286,6 +291,7 @@ impl CPU {
             0x68 => self.pla_cycles(mode),
             0x69 | 0x6D | 0x7D | 0x79 | 0x65 | 0x75 | 0x61 | 0x71 => self.adc_cycles(mode),
             0x6A | 0x6E | 0x7E | 0x66 | 0x76 => self.ror_cycles(mode),
+            0x6B => self.arr_cycles(mode),
             0x70 => self.bvs_cycles(mode),
             0x78 => self.sei_cycles(mode),
             0x88 => self.dey_cycles(mode),
@@ -322,6 +328,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         match opcode {
             0x00 => self.brk(mode, bus),
@@ -342,6 +349,7 @@ impl CPU {
             0x48 => self.pha(mode, bus),
             0x49 | 0x4D | 0x5D | 0x59 | 0x45 | 0x55 | 0x41 | 0x51 => self.eor(mode),
             0x4A | 0x4E | 0x5E | 0x46 | 0x56 => self.lsr(mode, bus),
+            0x4B => self.asr(mode, bus),
             0x4C | 0x6C => self.jmp(mode),
             0x50 => self.bvc(mode),
             0x58 => self.cli(mode),

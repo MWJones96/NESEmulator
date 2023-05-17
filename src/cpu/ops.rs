@@ -3,6 +3,7 @@ mod anc; //Undocumented
 mod and;
 mod arr; //Undocumented
 mod asl;
+mod asr; //Undocumented
 mod bcc;
 mod bcs;
 mod beq;
