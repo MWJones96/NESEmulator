@@ -1027,5 +1027,12 @@ mod cpu_tests {
             InstructionType::Jam,
             cpu.current_instruction.instruction_type
         );
+
+        cpu.system_reset();
+
+        assert_eq!(CurrentInstruction {
+            remaining_cycles: 7,
+            instruction_type: InstructionType::Reset
+        }, cpu.current_instruction);
     }
 }
