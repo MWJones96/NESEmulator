@@ -21,7 +21,7 @@ mod clv;
 mod cmp;
 mod cpx;
 mod cpy;
-mod dcp;
+mod dcp; //Undocumented
 mod dec;
 mod dex;
 mod dey;
@@ -29,6 +29,7 @@ mod eor;
 mod inc;
 mod inx;
 mod iny;
+mod isc; //Undocumented
 mod jmp;
 mod jsr;
 mod lda;
