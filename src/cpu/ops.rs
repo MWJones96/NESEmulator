@@ -33,6 +33,7 @@ mod isc; //Undocumented
 mod jam; //Undocumented
 mod jmp;
 mod jsr;
+mod las; //Undocumented
 mod lda;
 mod ldx;
 mod ldy;

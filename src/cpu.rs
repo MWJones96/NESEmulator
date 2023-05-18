@@ -245,7 +245,7 @@ impl CPU {
                 let abs_addr = self.fetch_two_bytes_as_u16(bus);
                 self.absx(abs_addr, bus)
             }
-            0x79 | 0x39 | 0xD9 | 0x59 | 0xB9 | 0xBE | 0x19 | 0xF9 | 0x99 | 0xDB | 0xFB => {
+            0x79 | 0x39 | 0xD9 | 0x59 | 0xB9 | 0xBE | 0x19 | 0xF9 | 0x99 | 0xDB | 0xFB | 0xBB => {
                 let abs_addr = self.fetch_two_bytes_as_u16(bus);
                 self.absy(abs_addr, bus)
             }
@@ -334,6 +334,7 @@ impl CPU {
             0xB0 => self.bcs_cycles(mode),
             0xB8 => self.clv_cycles(mode),
             0xBA => self.tsx_cycles(mode),
+            0xBB => self.las_cycles(mode),
             0xC0 | 0xCC | 0xC4 => self.cpy_cycles(mode),
             0xC8 => self.iny_cycles(mode),
             0xC9 | 0xCD | 0xDD | 0xD9 | 0xC5 | 0xD5 | 0xC1 | 0xD1 => self.cmp_cycles(mode),
@@ -402,6 +403,7 @@ impl CPU {
             0xB0 => self.bcs(mode),
             0xB8 => self.clv(mode),
             0xBA => self.tsx(mode),
+            0xBB => self.las(mode),
             0xC0 | 0xCC | 0xC4 => self.cpy(mode),
             0xC8 => self.iny(mode),
             0xC9 | 0xCD | 0xDD | 0xD9 | 0xC5 | 0xD5 | 0xC1 | 0xD1 => self.cmp(mode),
@@ -1030,9 +1032,12 @@ mod cpu_tests {
 
         cpu.system_reset();
 
-        assert_eq!(CurrentInstruction {
-            remaining_cycles: 7,
-            instruction_type: InstructionType::Reset
-        }, cpu.current_instruction);
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 7,
+                instruction_type: InstructionType::Reset
+            },
+            cpu.current_instruction
+        );
     }
 }
