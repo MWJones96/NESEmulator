@@ -7,6 +7,7 @@ mod ops;
 
 #[derive(PartialEq, Debug)]
 enum InstructionType {
+    Jam,
     Reset,
     NMI,
     IRQ,
@@ -108,6 +109,9 @@ impl CPU {
     #[inline]
     fn execute_operation(&mut self, bus: &mut impl CPUBus) {
         match self.current_instruction.instruction_type {
+            InstructionType::Jam => {
+                self.current_instruction.remaining_cycles = 0xff;
+            }
             InstructionType::Reset => {
                 self.reset(bus);
                 self.current_instruction = self.fetch_next_instruction(bus);
@@ -168,12 +172,21 @@ impl CPU {
         }
         let addressing_mode = self.fetch_addr_mode(opcode, bus);
 
-        CurrentInstruction {
-            remaining_cycles: self.get_number_of_cycles(opcode, &addressing_mode),
-            instruction_type: InstructionType::Instruction {
-                opcode,
-                addressing_mode,
-            },
+        let cycles = self.get_number_of_cycles(opcode, &addressing_mode);
+        if cycles == 0 {
+            //Jam
+            CurrentInstruction {
+                remaining_cycles: 0xff,
+                instruction_type: InstructionType::Jam,
+            }
+        } else {
+            CurrentInstruction {
+                remaining_cycles: cycles,
+                instruction_type: InstructionType::Instruction {
+                    opcode,
+                    addressing_mode,
+                },
+            }
         }
     }
 
@@ -213,7 +226,8 @@ impl CPU {
         match opcode {
             0x00 | 0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08
             | 0x68 | 0x28 | 0x40 | 0x60 | 0x38 | 0xF8 | 0x78 | 0xAA | 0xA8 | 0xBA | 0x8A | 0x9A
-            | 0x98 => self.imp(),
+            | 0x98 | 0x02 | 0x12 | 0x22 | 0x32 | 0x42 | 0x52 | 0x62 | 0x72 | 0x92 | 0xB2 | 0xD2
+            | 0xF2 => self.imp(),
             0x0A | 0x4A | 0x2A | 0x6A => self.acc(),
             0x69 | 0x29 | 0xC9 | 0xE0 | 0xC0 | 0x49 | 0xA9 | 0xA2 | 0xA0 | 0x09 | 0xE9 | 0x0B
             | 0x2B | 0x6B | 0x4B => {
@@ -273,6 +287,9 @@ impl CPU {
     fn get_number_of_cycles(&self, opcode: u8, mode: &AddrModeResult) -> u8 {
         match opcode {
             0x00 => self.brk_cycles(mode),
+            0x02 | 0x12 | 0x22 | 0x32 | 0x42 | 0x52 | 0x62 | 0x72 | 0x92 | 0xB2 | 0xD2 | 0xF2 => {
+                self.jam_cycles()
+            }
             0x08 => self.php_cycles(mode),
             0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora_cycles(mode),
             0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl_cycles(mode),
@@ -948,6 +965,67 @@ mod cpu_tests {
                 instruction_type: InstructionType::IRQ
             },
             cpu.current_instruction
+        );
+    }
+
+    #[test]
+    fn test_jam() {
+        let mut cpu = CPU::new();
+        let mut bus = MockCPUBus::new();
+
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR))
+            .once()
+            .return_const(0x40);
+        bus.expect_read()
+            .with(eq(CPU::RESET_VECTOR + 1))
+            .once()
+            .return_const(0x20);
+
+        bus.expect_read().with(eq(0x2040)).once().return_const(0x2);
+        bus.expect_read().return_const(0x0);
+
+        for _ in 0..7 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            CurrentInstruction {
+                remaining_cycles: 0xff,
+                instruction_type: InstructionType::Jam
+            },
+            cpu.current_instruction
+        );
+
+        for _ in 0..10_000 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            InstructionType::Jam,
+            cpu.current_instruction.instruction_type
+        );
+
+        cpu.system_nmi();
+
+        for _ in 0..10_000 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            InstructionType::Jam,
+            cpu.current_instruction.instruction_type
+        );
+
+        cpu.system_irq(true);
+
+        for _ in 0..10_000 {
+            cpu.clock(&mut bus);
+        }
+
+        assert_eq!(
+            InstructionType::Jam,
+            cpu.current_instruction.instruction_type
         );
     }
 }

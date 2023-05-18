@@ -30,6 +30,7 @@ mod inc;
 mod inx;
 mod iny;
 mod isc; //Undocumented
+mod jam; //Undocumented
 mod jmp;
 mod jsr;
 mod lda;
