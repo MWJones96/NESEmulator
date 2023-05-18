@@ -1,21 +1,21 @@
-/* 
-    ISC - Increment Memory By One then SBC then Subtract Memory 
+/*
+    ISC - Increment Memory By One then SBC then Subtract Memory
     from Accumulator with Borrow
     Operation: M + 1 → M, A - M - ~C → A
 
-    This undocumented instruction adds 1 to the contents of the 
-    addressed memory loca­tion. It then subtracts the value of the 
-    result in memory and borrow from the value of the accumulator, 
-    using two's complement arithmetic, and stores the result in 
+    This undocumented instruction adds 1 to the contents of the
+    addressed memory loca­tion. It then subtracts the value of the
+    result in memory and borrow from the value of the accumulator,
+    using two's complement arithmetic, and stores the result in
     the accumulator.
 
-    This instruction affects the accumulator. The carry flag is 
-    set if the result is greater than or equal to 0. The carry 
-    flag is reset when the result is less than 0, indicating a 
-    borrow. The over­flow flag is set when the result exceeds 
-    +127 or -127, otherwise it is reset. The negative flag is 
-    set if the result in the accumulator has bit 7 on, otherwise 
-    it is reset. The Z flag is set if the result in the 
+    This instruction affects the accumulator. The carry flag is
+    set if the result is greater than or equal to 0. The carry
+    flag is reset when the result is less than 0, indicating a
+    borrow. The over­flow flag is set when the result exceeds
+    +127 or -127, otherwise it is reset. The negative flag is
+    set if the result in the accumulator has bit 7 on, otherwise
+    it is reset. The Z flag is set if the result in the
     accumulator is 0, otherwise it is reset.
 */
 
@@ -124,8 +124,11 @@ mod isc_tests {
         cpu.c = true; //No borrow
 
         bus.expect_read().with(eq(0x0)).once().return_const(0x0);
-        bus.expect_write().with(eq(0x0), eq(0x1)).once().return_const(());
-    
+        bus.expect_write()
+            .with(eq(0x0), eq(0x1))
+            .once()
+            .return_const(());
+
         cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.z);
     }
@@ -138,8 +141,11 @@ mod isc_tests {
         cpu.c = true; //No borrow
 
         bus.expect_read().with(eq(0x0)).once().return_const(0x0);
-        bus.expect_write().with(eq(0x0), eq(0x1)).once().return_const(());
-    
+        bus.expect_write()
+            .with(eq(0x0), eq(0x1))
+            .once()
+            .return_const(());
+
         cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.n);
         assert_eq!(0xff, cpu.a);
@@ -153,8 +159,11 @@ mod isc_tests {
         cpu.c = true; //No borrow
 
         bus.expect_read().with(eq(0x0)).once().return_const(0x0);
-        bus.expect_write().with(eq(0x0), eq(0x1)).once().return_const(());
-    
+        bus.expect_write()
+            .with(eq(0x0), eq(0x1))
+            .once()
+            .return_const(());
+
         cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.v);
         assert_eq!(0x7f, cpu.a);
@@ -168,8 +177,11 @@ mod isc_tests {
         cpu.c = true; //No borrow
 
         bus.expect_read().with(eq(0x0)).once().return_const(0xfe);
-        bus.expect_write().with(eq(0x0), eq(0xff)).once().return_const(());
-    
+        bus.expect_write()
+            .with(eq(0x0), eq(0xff))
+            .once()
+            .return_const(());
+
         cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.v);
         assert_eq!(0x80, cpu.a);
@@ -183,8 +195,11 @@ mod isc_tests {
         cpu.c = false; //Borrow
 
         bus.expect_read().with(eq(0x0)).once().return_const(0x0);
-        bus.expect_write().with(eq(0x0), eq(0x1)).once().return_const(());
-    
+        bus.expect_write()
+            .with(eq(0x0), eq(0x1))
+            .once()
+            .return_const(());
+
         cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.c);
         assert_eq!(0x0, cpu.a);
