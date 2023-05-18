@@ -34,6 +34,7 @@ mod jam; //Undocumented
 mod jmp;
 mod jsr;
 mod las; //Undocumented
+mod lax; //Undocumented
 mod lda;
 mod ldx;
 mod ldy;
