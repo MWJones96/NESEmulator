@@ -51,6 +51,7 @@ mod ror;
 mod rra; //Undocumented
 mod rti;
 mod rts;
+mod sax; //Undocumented
 mod sbc;
 mod sec;
 mod sed;
