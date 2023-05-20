@@ -45,6 +45,7 @@ mod pha;
 mod php;
 mod pla;
 mod plp;
+mod rla; //Undocumented
 mod rol;
 mod ror;
 mod rti;
