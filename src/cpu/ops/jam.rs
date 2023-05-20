@@ -14,6 +14,11 @@ impl CPU {
     pub(in crate::cpu) fn jam_cycles(&self) -> u8 {
         0
     }
+
+    #[inline]
+    pub(in crate::cpu) fn _jam() {
+        //Should never be called
+    }
 }
 
 #[cfg(test)]

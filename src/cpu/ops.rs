@@ -53,6 +53,7 @@ mod rti;
 mod rts;
 mod sax; //Undocumented
 mod sbc;
+mod sbx; //Undocumented
 mod sec;
 mod sed;
 mod sei;

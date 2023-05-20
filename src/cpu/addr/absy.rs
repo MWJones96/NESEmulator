@@ -16,12 +16,21 @@
 
 use crate::cpu::{bus::CPUBus, CPU};
 
-use super::AddrModeResult;
+use super::{AddrMode, AddrModeResult};
 
 impl CPU {
     #[inline]
     pub(in crate::cpu) fn absy(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
-        self.abs_helper(addr, self.y, super::AddrMode::ABSY, bus)
+        let page_before: u8 = (addr >> 8) as u8;
+        let resolved_addr = addr.wrapping_add(self.y as u16);
+        let page_after: u8 = (resolved_addr >> 8) as u8;
+
+        AddrModeResult {
+            data: Some(bus.read(resolved_addr)),
+            cycles: 2 + ((page_before != page_after) as u8),
+            mode: AddrMode::ABSY,
+            addr: Some(resolved_addr),
+        }
     }
 }
 

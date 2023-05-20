@@ -1,20 +1,16 @@
-/* 
+/*
     SAX - Store Accumulator "AND" Index Register X in Memory
     Operation: A ∧ X → M
 
-    The undocumented SAX instruction performs a bit-by-bit AND 
-    operation of the value of the accumulator and the value of 
+    The undocumented SAX instruction performs a bit-by-bit AND
+    operation of the value of the accumulator and the value of
     the index register X and stores the result in memory.
 
-    No flags or registers in the microprocessor are affected by 
+    No flags or registers in the microprocessor are affected by
     the store operation.
 */
 
-use crate::cpu::{
-    addr::{AddrMode, AddrModeResult},
-    bus::CPUBus,
-    CPU,
-};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -80,7 +76,10 @@ mod sax_tests {
 
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
-        bus.expect_write().with(eq(0x0), eq(0x0)).once().return_const(());
+        bus.expect_write()
+            .with(eq(0x0), eq(0x0))
+            .once()
+            .return_const(());
 
         cpu.sax(&cpu.zp(0x0, &bus), &mut bus);
     }
