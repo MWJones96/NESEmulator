@@ -48,6 +48,7 @@ mod plp;
 mod rla; //Undocumented
 mod rol;
 mod ror;
+mod rra; //Undocumented
 mod rti;
 mod rts;
 mod sbc;

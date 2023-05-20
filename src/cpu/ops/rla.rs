@@ -22,6 +22,7 @@ use crate::cpu::{
 };
 
 impl CPU {
+    #[inline]
     pub(in crate::cpu) fn rla_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrMode::ABSX => 7,
@@ -31,6 +32,7 @@ impl CPU {
         }
     }
 
+    #[inline]
     pub(in crate::cpu) fn rla(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         let data = mode.data.unwrap();
         let data_to_write = data << 1 | (self.c as u8);
