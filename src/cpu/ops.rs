@@ -57,6 +57,7 @@ mod sbx; //Undocumented
 mod sec;
 mod sed;
 mod sei;
+mod sha; //Undocumented
 mod sta;
 mod stx;
 mod sty;
