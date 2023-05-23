@@ -247,7 +247,7 @@ impl CPU {
                 self.absx(abs_addr, bus)
             }
             0x79 | 0x39 | 0xD9 | 0x59 | 0xB9 | 0xBE | 0x19 | 0xF9 | 0x99 | 0xDB | 0xFB | 0xBB
-            | 0xBF | 0x3B | 0x7B | 0x9F | 0x9B => {
+            | 0xBF | 0x3B | 0x7B | 0x9F | 0x9B | 0x9E => {
                 let abs_addr = self.fetch_two_bytes_as_u16(bus);
                 self.absy(abs_addr, bus)
             }
@@ -336,6 +336,7 @@ impl CPU {
             0x98 => self.tya_cycles(mode),
             0x9A => self.txs_cycles(mode),
             0x9B => self.shs_cycles(mode),
+            0x9E => self.shx_cycles(mode),
             0x9F | 0x93 => self.sha_cycles(mode),
             0xA2 | 0xAE | 0xBE | 0xA6 | 0xB6 => self.ldx_cycles(mode),
             0xA8 => self.tay_cycles(mode),
@@ -414,6 +415,7 @@ impl CPU {
             0x98 => self.tya(mode),
             0x9A => self.txs(mode),
             0x9B => self.shs(mode, bus),
+            0x9E => self.shx(mode, bus),
             0x9F | 0x93 => self.sha(mode, bus),
             0xA2 | 0xAE | 0xBE | 0xA6 | 0xB6 => self.ldx(mode),
             0xA8 => self.tay(mode),

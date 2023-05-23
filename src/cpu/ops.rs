@@ -59,6 +59,7 @@ mod sed;
 mod sei;
 mod sha; //Undocumented
 mod shs; //Undocumented
+mod shx; //Undocumented
 mod sta;
 mod stx;
 mod sty;
