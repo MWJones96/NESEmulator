@@ -61,6 +61,7 @@ mod sha; //Undocumented
 mod shs; //Undocumented
 mod shx; //Undocumented
 mod shy; //Undocumented
+mod slo; //Undocumented
 mod sta;
 mod stx;
 mod sty;
