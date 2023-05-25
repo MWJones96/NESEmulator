@@ -19,6 +19,7 @@ impl CPU {
             cycles: 0,
             mode: super::AddrMode::ACC,
             addr: None,
+            bytes: 1,
         }
     }
 }
@@ -39,7 +40,8 @@ mod acc_tests {
                 data: Some(0xcc),
                 cycles: 0,
                 mode: crate::cpu::addr::AddrMode::ACC,
-                addr: None
+                addr: None,
+                bytes: 1,
             },
             cpu.acc()
         );

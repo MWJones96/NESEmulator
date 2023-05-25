@@ -35,6 +35,7 @@ impl CPU {
             cycles: 4,
             mode: AddrMode::IND,
             addr: Some(resolved_addr),
+            bytes: 3,
         }
     }
 }
@@ -68,7 +69,8 @@ mod ind_tests {
                 data: None,
                 cycles: 4,
                 mode: AddrMode::IND,
-                addr: Some(0x2040)
+                addr: Some(0x2040),
+                bytes: 3,
             },
             ind
         );
@@ -95,7 +97,8 @@ mod ind_tests {
                 data: None,
                 cycles: 4,
                 mode: AddrMode::IND,
-                addr: Some(0x2040)
+                addr: Some(0x2040),
+                bytes: 3,
             },
             ind
         );

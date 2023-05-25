@@ -20,6 +20,7 @@ impl CPU {
             cycles: 0,
             mode: AddrMode::IMP,
             addr: None,
+            bytes: 1,
         }
     }
 }
@@ -38,7 +39,8 @@ mod imp_tests {
                 data: None,
                 cycles: 0,
                 mode: AddrMode::IMP,
-                addr: None
+                addr: None,
+                bytes: 1,
             },
             imp
         );

@@ -34,6 +34,7 @@ impl CPU {
             cycles: (page_before != page_after) as u8,
             mode: super::AddrMode::REL,
             addr: Some(resolved_addr),
+            bytes: 2,
         }
     }
 }
@@ -53,7 +54,8 @@ mod rel_tests {
                 data: None,
                 cycles: 0,
                 mode: crate::cpu::addr::AddrMode::REL,
-                addr: Some(0x1)
+                addr: Some(0x1),
+                bytes: 2,
             },
             result
         );
@@ -70,7 +72,8 @@ mod rel_tests {
                 data: None,
                 cycles: 0,
                 mode: crate::cpu::addr::AddrMode::REL,
-                addr: Some(0x1233)
+                addr: Some(0x1233),
+                bytes: 2,
             },
             result
         );
@@ -87,7 +90,8 @@ mod rel_tests {
                 data: None,
                 cycles: 1,
                 mode: crate::cpu::addr::AddrMode::REL,
-                addr: Some(0x1)
+                addr: Some(0x1),
+                bytes: 2,
             },
             result
         );
@@ -104,7 +108,8 @@ mod rel_tests {
                 data: None,
                 cycles: 1,
                 mode: crate::cpu::addr::AddrMode::REL,
-                addr: Some(0xfffe)
+                addr: Some(0xfffe),
+                bytes: 2,
             },
             result
         );

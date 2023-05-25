@@ -30,6 +30,7 @@ impl CPU {
             cycles: 2 + ((page_before != page_after) as u8),
             mode: AddrMode::ABSX,
             addr: Some(resolved_addr),
+            bytes: 3,
         }
     }
 }
@@ -56,7 +57,8 @@ mod absx_tests {
                 data: Some(0x88),
                 cycles: 2,
                 mode: crate::cpu::addr::AddrMode::ABSX,
-                addr: Some(0x2)
+                addr: Some(0x2),
+                bytes: 3,
             },
             result
         );
@@ -77,7 +79,8 @@ mod absx_tests {
                 data: Some(0x88),
                 cycles: 3,
                 mode: AddrMode::ABSX,
-                addr: Some(0x1)
+                addr: Some(0x1),
+                bytes: 3
             },
             result
         );

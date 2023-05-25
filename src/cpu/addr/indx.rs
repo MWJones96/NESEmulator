@@ -32,6 +32,7 @@ impl CPU {
             cycles: 4,
             mode: AddrMode::INDX,
             addr: Some(resolved_addr),
+            bytes: 2,
         }
     }
 }
@@ -60,7 +61,8 @@ mod indx_tests {
                 data: Some(0xaa),
                 cycles: 4,
                 mode: crate::cpu::addr::AddrMode::INDX,
-                addr: Some(0x8877)
+                addr: Some(0x8877),
+                bytes: 2,
             },
             result
         );

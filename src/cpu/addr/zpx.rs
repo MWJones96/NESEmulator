@@ -28,6 +28,7 @@ impl CPU {
             cycles: 2,
             mode: super::AddrMode::ZPX,
             addr: Some(resolved_addr),
+            bytes: 2,
         }
     }
 }
@@ -53,7 +54,8 @@ mod zpx_tests {
                 data: Some(0x77),
                 cycles: 2,
                 mode: crate::cpu::addr::AddrMode::ZPX,
-                addr: Some(0x1)
+                addr: Some(0x1),
+                bytes: 2,
             },
             result
         );

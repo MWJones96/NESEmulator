@@ -22,6 +22,7 @@ impl CPU {
             cycles: 2,
             mode: super::AddrMode::ABS,
             addr: Some(addr),
+            bytes: 3,
         }
     }
 }
@@ -46,7 +47,8 @@ mod abs_tests {
                 data: Some(0x88),
                 cycles: 2,
                 mode: crate::cpu::addr::AddrMode::ABS,
-                addr: Some(0xffff)
+                addr: Some(0xffff),
+                bytes: 3,
             },
             result
         );

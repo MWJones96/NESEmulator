@@ -22,6 +22,7 @@ impl CPU {
             cycles: 1,
             mode: super::AddrMode::ZP,
             addr: Some(addr as u16),
+            bytes: 2,
         }
     }
 }
@@ -46,7 +47,8 @@ mod zp_tests {
                 data: Some(0x77),
                 cycles: 1,
                 mode: crate::cpu::addr::AddrMode::ZP,
-                addr: Some(0x0)
+                addr: Some(0x0),
+                bytes: 2,
             },
             result
         );

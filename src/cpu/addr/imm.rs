@@ -20,6 +20,7 @@ impl CPU {
             cycles: 0,
             mode: super::AddrMode::IMM,
             addr: None,
+            bytes: 2,
         }
     }
 }
@@ -40,7 +41,8 @@ mod imm_tests {
                 data: Some(0x88),
                 cycles: 0,
                 mode: crate::cpu::addr::AddrMode::IMM,
-                addr: None
+                addr: None,
+                bytes: 2,
             },
             imm
         );

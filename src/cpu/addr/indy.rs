@@ -34,6 +34,7 @@ impl CPU {
             cycles: 3 + ((page_before != page_after) as u8),
             mode: AddrMode::INDY,
             addr: Some(resolved_addr),
+            bytes: 2,
         }
     }
 }
@@ -62,7 +63,8 @@ mod indy_tests {
                 data: Some(0xbb),
                 cycles: 3,
                 mode: crate::cpu::addr::AddrMode::INDY,
-                addr: Some(0x8879)
+                addr: Some(0x8879),
+                bytes: 2,
             },
             result
         );
@@ -85,7 +87,8 @@ mod indy_tests {
                 data: Some(0xcc),
                 cycles: 4,
                 mode: crate::cpu::addr::AddrMode::INDY,
-                addr: Some(0x8976)
+                addr: Some(0x8976),
+                bytes: 2,
             },
             result
         );

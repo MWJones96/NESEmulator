@@ -35,4 +35,5 @@ pub(in crate::cpu) struct AddrModeResult {
     pub data: Option<u8>,
     pub cycles: u8,
     pub mode: AddrMode,
+    pub bytes: u8,
 }

@@ -5,6 +5,26 @@ pub mod bus;
 mod addr;
 mod ops;
 
+pub struct CPULogger;
+
+impl CPULogger {
+    pub fn get_current_instruction_and_cpu_state(&self, cpu: &CPU) -> String {
+        match cpu.current_instruction.instruction_type {
+            InstructionType::Instruction {
+                opcode,
+                addressing_mode,
+            } => {
+                format!(
+                    "{:04X}  {:02X}",
+                    cpu.pc.wrapping_sub(addressing_mode.bytes as u16),
+                    opcode
+                )
+            }
+            _ => "".to_owned(),
+        }
+    }
+}
+
 #[derive(PartialEq, Debug)]
 enum InstructionType {
     Jam,
@@ -635,7 +655,8 @@ mod cpu_tests {
                         addr: None,
                         data: Some(0xff),
                         cycles: 0,
-                        mode: addr::AddrMode::IMM
+                        mode: addr::AddrMode::IMM,
+                        bytes: 2
                     }
                 }
             },
