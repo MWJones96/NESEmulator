@@ -29,7 +29,7 @@ impl CPU {
         let result = mode.data.unwrap().wrapping_sub(1);
         bus.write(mode.addr.unwrap(), result);
 
-        self.n = (result & 0x80) > 0;
+        self.n = (result & 0x80) != 0;
         self.z = result == 0;
     }
 }
