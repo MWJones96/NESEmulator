@@ -72,6 +72,7 @@ mod tsx;
 mod txa;
 mod txs;
 mod tya;
+mod xaa; //Undocumented
 
 mod irq;
 mod nmi;
