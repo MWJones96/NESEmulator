@@ -71,6 +71,26 @@ impl CPU {
     const RESET_VECTOR: u16 = 0xfffc;
     const IRQ_VECTOR: u16 = 0xfffe;
 
+    #[rustfmt::skip]
+    const LOOKUP_TABLE: [(&str); 256] = [
+        ("BRK"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("PHP"), ("ORA"), ("ASL"), ("ANC"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
+        ("BPL"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("CLC"), ("ORA"), ("NOP"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
+        ("JSR"), ("ORA"), ("JAM"), ("RLA"), ("BIT"), ("AND"), ("ROL"), ("RLA"), ("PLP"), ("AND"), ("ROL"), ("ANC"), ("BIT"), ("AND"), ("ROL"), ("RLA"),
+        ("BMI"), ("AND"), ("JAM"), ("RLA"), ("NOP"), ("AND"), ("ROL"), ("RLA"), ("SEC"), ("AND"), ("NOP"), ("RLA"), ("NOP"), ("AND"), ("ROL"), ("RLA"),
+        ("RTI"), ("EOR"), ("JAM"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"), ("PHA"), ("EOR"), ("LSR"), ("ASR"), ("JMP"), ("EOR"), ("LSR"), ("SRE"),
+        ("BVC"), ("EOR"), ("JAM"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"), ("CLI"), ("EOR"), ("NOP"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"),
+        ("RTS"), ("ADC"), ("JAM"), ("RRA"), ("NOP"), ("ADC"), ("ROR"), ("RRA"), ("PLA"), ("ADC"), ("ROR"), ("ARR"), ("JMP"), ("ADC"), ("ROR"), ("RRA"),
+        ("BVS"), ("ADC"), ("JAM"), ("RRA"), ("NOP"), ("ADC"), ("ROR"), ("RRA"), ("SEI"), ("ADC"), ("NOP"), ("RRA"), ("NOP"), ("ADC"), ("ROR"), ("RRA"),
+        ("NOP"), ("STA"), ("NOP"), ("SAX"), ("STY"), ("STA"), ("STX"), ("SAX"), ("DEY"), ("NOP"), ("TXA"), ("XAA"), ("STY"), ("STA"), ("STX"), ("SAX"),
+        ("BCC"), ("STA"), ("JAM"), ("SHA"), ("STY"), ("STA"), ("STX"), ("SAX"), ("TYA"), ("STA"), ("TXS"), ("SHS"), ("SHY"), ("STA"), ("SHX"), ("SHA"),
+        ("LDY"), ("LDA"), ("LDX"), ("LAX"), ("LDY"), ("LDA"), ("LDX"), ("LAX"), ("TAY"), ("LDA"), ("TAX"), ("LAX"), ("LDY"), ("LDA"), ("LDX"), ("LAX"),
+        ("BCS"), ("LDA"), ("JAM"), ("LAX"), ("LDY"), ("LDA"), ("LDX"), ("LAX"), ("CLV"), ("LDA"), ("TSX"), ("LAS"), ("LDY"), ("LDA"), ("LDX"), ("LAX"),
+        ("CPY"), ("CMP"), ("NOP"), ("DCP"), ("CPY"), ("CMP"), ("DEC"), ("DCP"), ("INY"), ("CMP"), ("DEX"), ("SBX"), ("CPY"), ("CMP"), ("DEC"), ("DCP"),
+        ("BNE"), ("CMP"), ("JAM"), ("DCP"), ("NOP"), ("CMP"), ("DEC"), ("DCP"), ("CLD"), ("CMP"), ("NOP"), ("DCP"), ("NOP"), ("CMP"), ("DEC"), ("DCP"),
+        ("CPX"), ("SBC"), ("NOP"), ("ISC"), ("CPX"), ("SBC"), ("INC"), ("ISC"), ("INX"), ("SBC"), ("NOP"), ("SBC"), ("CPX"), ("SBC"), ("INC"), ("ISC"),
+        ("BEQ"), ("SBC"), ("JAM"), ("ISC"), ("NOP"), ("SBC"), ("INC"), ("ISC"), ("SED"), ("SBC"), ("NOP"), ("ISC"), ("NOP"), ("SBC"), ("INC"), ("ISC"),
+    ];
+
     pub fn new() -> Self {
         Self {
             pc: 0,
