@@ -20,7 +20,7 @@
 */
 
 use crate::cpu::{
-    addr::{AddrMode, AddrModeResult},
+    addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
     CPU,
 };
@@ -29,8 +29,8 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn sha_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrMode::ABSY => 5,
-            AddrMode::INDY => 6,
+            AddrModeType::ABSY => 5,
+            AddrModeType::INDY => 6,
             addr => panic!("Addressing mode {:?} not implemented for SHA", addr),
         }
     }
@@ -41,11 +41,11 @@ impl CPU {
         let ax = self.a & self.x;
 
         match mode.mode {
-            AddrMode::ABSY => {
+            AddrModeType::ABSY => {
                 let v = ((write_addr.wrapping_sub(self.y as u16) >> 8) as u8).wrapping_add(1);
                 bus.write(write_addr, ax & v);
             }
-            AddrMode::INDY => {
+            AddrModeType::INDY => {
                 let v = bus.read(write_addr.wrapping_sub(self.y as u16)) + 1;
                 bus.write(write_addr, ax & v);
             }

@@ -19,7 +19,7 @@
 
 use crate::cpu::{bus::CPUBus, CPU};
 
-use super::{AddrMode, AddrModeResult};
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -33,7 +33,7 @@ impl CPU {
         AddrModeResult {
             data: None,
             cycles: 4,
-            mode: AddrMode::IND,
+            mode: AddrModeType::IND,
             addr: Some(resolved_addr),
             bytes: 3,
         }
@@ -68,7 +68,7 @@ mod ind_tests {
             AddrModeResult {
                 data: None,
                 cycles: 4,
-                mode: AddrMode::IND,
+                mode: AddrModeType::IND,
                 addr: Some(0x2040),
                 bytes: 3,
             },
@@ -96,9 +96,9 @@ mod ind_tests {
             AddrModeResult {
                 data: None,
                 cycles: 4,
-                mode: AddrMode::IND,
+                mode: AddrModeType::IND,
                 addr: Some(0x2040),
-                bytes: 3,
+                bytes: 3
             },
             ind
         );

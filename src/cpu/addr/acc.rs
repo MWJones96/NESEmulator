@@ -9,7 +9,7 @@
 
 use crate::cpu::CPU;
 
-use super::AddrModeResult;
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -17,7 +17,7 @@ impl CPU {
         AddrModeResult {
             data: Some(self.a),
             cycles: 0,
-            mode: super::AddrMode::ACC,
+            mode: AddrModeType::ACC,
             addr: None,
             bytes: 1,
         }
@@ -39,7 +39,7 @@ mod acc_tests {
             AddrModeResult {
                 data: Some(0xcc),
                 cycles: 0,
-                mode: crate::cpu::addr::AddrMode::ACC,
+                mode: AddrModeType::ACC,
                 addr: None,
                 bytes: 1,
             },

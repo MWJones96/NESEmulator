@@ -16,7 +16,7 @@
 
 use crate::cpu::{bus::CPUBus, CPU};
 
-use super::AddrModeResult;
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -26,7 +26,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 2,
-            mode: super::AddrMode::ZPX,
+            mode: AddrModeType::ZPX,
             addr: Some(resolved_addr),
             bytes: 2,
         }
@@ -53,7 +53,7 @@ mod zpx_tests {
             AddrModeResult {
                 data: Some(0x77),
                 cycles: 2,
-                mode: crate::cpu::addr::AddrMode::ZPX,
+                mode: AddrModeType::ZPX,
                 addr: Some(0x1),
                 bytes: 2,
             },

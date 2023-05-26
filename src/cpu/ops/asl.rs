@@ -15,7 +15,7 @@
 */
 
 use crate::cpu::{
-    addr::{AddrMode, AddrModeResult},
+    addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
 };
 
@@ -25,8 +25,8 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn asl_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrMode::ACC => 2,
-            AddrMode::ABSX => 7,
+            AddrModeType::ACC => 2,
+            AddrModeType::ABSX => 7,
             _ => 4 + mode.cycles,
         }
     }

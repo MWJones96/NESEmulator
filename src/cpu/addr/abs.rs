@@ -12,7 +12,7 @@
 
 use crate::cpu::{bus::CPUBus, CPU};
 
-use super::AddrModeResult;
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -20,7 +20,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(addr)),
             cycles: 2,
-            mode: super::AddrMode::ABS,
+            mode: AddrModeType::ABS,
             addr: Some(addr),
             bytes: 3,
         }
@@ -32,7 +32,7 @@ mod abs_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::bus::MockCPUBus;
+    use crate::cpu::{addr::AddrModeType, bus::MockCPUBus};
 
     #[test]
     fn test_abs_addressing_mode() {
@@ -46,7 +46,7 @@ mod abs_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 2,
-                mode: crate::cpu::addr::AddrMode::ABS,
+                mode: AddrModeType::ABS,
                 addr: Some(0xffff),
                 bytes: 3,
             },

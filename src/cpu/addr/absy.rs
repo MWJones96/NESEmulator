@@ -16,7 +16,7 @@
 
 use crate::cpu::{bus::CPUBus, CPU};
 
-use super::{AddrMode, AddrModeResult};
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -28,7 +28,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 2 + ((page_before != page_after) as u8),
-            mode: AddrMode::ABSY,
+            mode: AddrModeType::ABSY,
             addr: Some(resolved_addr),
             bytes: 3,
         }
@@ -56,8 +56,8 @@ mod absy_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 2,
-                mode: crate::cpu::addr::AddrMode::ABSY,
                 addr: Some(0x2),
+                mode: AddrModeType::ABSY,
                 bytes: 3,
             },
             result
@@ -78,7 +78,7 @@ mod absy_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 3,
-                mode: crate::cpu::addr::AddrMode::ABSY,
+                mode: AddrModeType::ABSY,
                 addr: Some(0x1),
                 bytes: 3,
             },

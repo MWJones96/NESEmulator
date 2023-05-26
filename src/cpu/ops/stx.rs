@@ -9,7 +9,7 @@
 */
 
 use crate::cpu::{
-    addr::{AddrMode, AddrModeResult},
+    addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
 };
 
@@ -19,7 +19,7 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn stx_cycles(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrMode::ABSY => 4,
+            AddrModeType::ABSY => 4,
             _ => 2 + mode.cycles,
         }
     }

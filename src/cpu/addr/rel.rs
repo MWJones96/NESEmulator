@@ -15,7 +15,7 @@
 
 use crate::cpu::CPU;
 
-use super::AddrModeResult;
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -32,7 +32,7 @@ impl CPU {
         AddrModeResult {
             data: None,
             cycles: (page_before != page_after) as u8,
-            mode: super::AddrMode::REL,
+            mode: AddrModeType::REL,
             addr: Some(resolved_addr),
             bytes: 2,
         }
@@ -41,6 +41,8 @@ impl CPU {
 
 #[cfg(test)]
 mod rel_tests {
+    use crate::cpu::addr::AddrModeType;
+
     use super::*;
 
     #[test]
@@ -53,7 +55,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 0,
-                mode: crate::cpu::addr::AddrMode::REL,
+                mode: AddrModeType::REL,
                 addr: Some(0x1),
                 bytes: 2,
             },
@@ -71,7 +73,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 0,
-                mode: crate::cpu::addr::AddrMode::REL,
+                mode: AddrModeType::REL,
                 addr: Some(0x1233),
                 bytes: 2,
             },
@@ -89,7 +91,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 1,
-                mode: crate::cpu::addr::AddrMode::REL,
+                mode: AddrModeType::REL,
                 addr: Some(0x1),
                 bytes: 2,
             },
@@ -107,7 +109,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 1,
-                mode: crate::cpu::addr::AddrMode::REL,
+                mode: AddrModeType::REL,
                 addr: Some(0xfffe),
                 bytes: 2,
             },

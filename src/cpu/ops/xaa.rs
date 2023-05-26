@@ -40,6 +40,9 @@ impl CPU {
             .choose(&mut rand::thread_rng())
             .unwrap() as u8;
         self.a = (self.a | magic_constant) & self.x & mode.data.unwrap();
+
+        self.n = (self.a & 0x80) != 0;
+        self.z = self.a == 0;
     }
 }
 

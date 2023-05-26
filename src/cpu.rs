@@ -655,7 +655,7 @@ mod cpu_tests {
                         addr: None,
                         data: Some(0xff),
                         cycles: 0,
-                        mode: addr::AddrMode::IMM,
+                        mode: addr::AddrModeType::IMM,
                         bytes: 2
                     }
                 }

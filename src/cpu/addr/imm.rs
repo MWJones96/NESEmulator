@@ -10,7 +10,7 @@
 
 use crate::cpu::CPU;
 
-use super::AddrModeResult;
+use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
@@ -18,7 +18,7 @@ impl CPU {
         AddrModeResult {
             data: Some(imm),
             cycles: 0,
-            mode: super::AddrMode::IMM,
+            mode: AddrModeType::IMM,
             addr: None,
             bytes: 2,
         }
@@ -27,7 +27,7 @@ impl CPU {
 
 #[cfg(test)]
 mod imm_tests {
-    use crate::cpu::addr::AddrModeResult;
+    use crate::cpu::addr::{AddrModeResult, AddrModeType};
 
     use super::*;
 
@@ -40,7 +40,7 @@ mod imm_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 0,
-                mode: crate::cpu::addr::AddrMode::IMM,
+                mode: AddrModeType::IMM,
                 addr: None,
                 bytes: 2,
             },
