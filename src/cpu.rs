@@ -5,26 +5,6 @@ pub mod bus;
 mod addr;
 mod ops;
 
-pub struct CPULogger;
-
-impl CPULogger {
-    pub fn get_current_instruction_and_cpu_state(&self, cpu: &CPU) -> String {
-        match cpu.current_instruction.instruction_type {
-            InstructionType::Instruction {
-                opcode,
-                addressing_mode,
-            } => {
-                format!(
-                    "{:04X}  {:02X}",
-                    cpu.pc.wrapping_sub(addressing_mode.bytes as u16),
-                    opcode
-                )
-            }
-            _ => "".to_owned(),
-        }
-    }
-}
-
 #[derive(PartialEq, Debug)]
 enum InstructionType {
     Jam,
@@ -64,6 +44,24 @@ pub struct CPU {
 
     pending_nmi: bool,
     pending_irq: bool,
+}
+
+impl ToString for CPU {
+    fn to_string(&self) -> String {
+        match self.current_instruction.instruction_type {
+            InstructionType::Instruction {
+                opcode,
+                addressing_mode,
+            } => {
+                format!(
+                    "{:04X}  {:02X}",
+                    self.pc.wrapping_sub(addressing_mode.bytes as u16),
+                    opcode
+                )
+            }
+            _ => "".to_owned(),
+        }
+    }
 }
 
 impl CPU {

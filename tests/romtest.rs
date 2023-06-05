@@ -4,15 +4,11 @@ use std::io::BufRead;
 
 use nes_emu::bus::main_bus::MainBus;
 use nes_emu::cpu::bus::CPUBus;
-use nes_emu::cpu::CPULogger;
 use nes_emu::cpu::CPU;
 use nes_emu::mapper::mapper_factory;
 use nes_emu::util::extract_header;
 use nes_emu::util::extract_prg_rom;
 use nes_emu::util::read_bytes_from_file;
-
-#[test]
-fn test_nes_logger_for_nestest_rom() {}
 
 #[test]
 fn test_nestest_rom() {
@@ -34,12 +30,8 @@ fn test_nestest_rom() {
         cpu.clock(&mut main_bus);
     }
 
-    let logger = CPULogger;
     for line in ref_log_file {
-        assert_eq!(
-            line.unwrap(),
-            logger.get_current_instruction_and_cpu_state(&cpu)
-        );
+        assert_eq!(line.unwrap(), cpu.to_string());
     }
 
     assert_eq!(0x0, main_bus.read(0x2));
