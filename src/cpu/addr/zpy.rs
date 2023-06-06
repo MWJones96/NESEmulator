@@ -29,6 +29,8 @@ impl CPU {
             mode: AddrModeType::ZPY,
             addr: Some(resolved_addr),
             bytes: 2,
+            operands: format!("{:02X}", addr),
+            repr: format!("${:02X},Y", addr),
         }
     }
 }
@@ -56,6 +58,8 @@ mod zpy_tests {
                 mode: AddrModeType::ZPY,
                 addr: Some(0x1),
                 bytes: 2,
+                operands: "FF".to_owned(),
+                repr: "$FF,Y".to_owned()
             },
             result
         );

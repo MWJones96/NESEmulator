@@ -36,6 +36,8 @@ impl CPU {
             mode: AddrModeType::IND,
             addr: Some(resolved_addr),
             bytes: 3,
+            operands: format!("{:02X} {:02X}", (addr & 0xff) as u8, (addr >> 8) as u8),
+            repr: format!("(${:04X})", addr),
         }
     }
 }
@@ -71,6 +73,8 @@ mod ind_tests {
                 mode: AddrModeType::IND,
                 addr: Some(0x2040),
                 bytes: 3,
+                operands: "00 00".to_owned(),
+                repr: "($0000)".to_owned()
             },
             ind
         );
@@ -98,7 +102,9 @@ mod ind_tests {
                 cycles: 4,
                 mode: AddrModeType::IND,
                 addr: Some(0x2040),
-                bytes: 3
+                bytes: 3,
+                operands: "FF 80".to_owned(),
+                repr: "($80FF)".to_owned()
             },
             ind
         );

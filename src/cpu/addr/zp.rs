@@ -23,6 +23,8 @@ impl CPU {
             mode: AddrModeType::ZP,
             addr: Some(addr as u16),
             bytes: 2,
+            operands: format!("{:02X}", addr),
+            repr: format!("${:02X}", addr),
         }
     }
 }
@@ -49,6 +51,8 @@ mod zp_tests {
                 mode: AddrModeType::ZP,
                 addr: Some(0x0),
                 bytes: 2,
+                operands: "00".to_owned(),
+                repr: "$00".to_owned()
             },
             result
         );

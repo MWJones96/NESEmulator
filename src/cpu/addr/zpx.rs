@@ -29,6 +29,8 @@ impl CPU {
             mode: AddrModeType::ZPX,
             addr: Some(resolved_addr),
             bytes: 2,
+            operands: format!("{:02X}", addr),
+            repr: format!("${:02X},X", addr),
         }
     }
 }
@@ -56,6 +58,8 @@ mod zpx_tests {
                 mode: AddrModeType::ZPX,
                 addr: Some(0x1),
                 bytes: 2,
+                operands: "FF".to_owned(),
+                repr: "$FF,X".to_owned()
             },
             result
         );

@@ -21,6 +21,8 @@ impl CPU {
             mode: AddrModeType::IMP,
             addr: None,
             bytes: 1,
+            operands: "".to_owned(),
+            repr: "".to_owned(),
         }
     }
 }
@@ -41,6 +43,8 @@ mod imp_tests {
                 mode: AddrModeType::IMP,
                 addr: None,
                 bytes: 1,
+                operands: "".to_owned(),
+                repr: "".to_owned()
             },
             imp
         );

@@ -35,6 +35,8 @@ impl CPU {
             mode: AddrModeType::INDY,
             addr: Some(resolved_addr),
             bytes: 2,
+            operands: format!("{:02X}", addr),
+            repr: format!("(${:02X}),Y", addr),
         }
     }
 }
@@ -65,6 +67,8 @@ mod indy_tests {
                 mode: AddrModeType::INDY,
                 addr: Some(0x8879),
                 bytes: 2,
+                operands: "FF".to_owned(),
+                repr: "($FF),Y".to_owned()
             },
             result
         );
@@ -89,6 +93,8 @@ mod indy_tests {
                 mode: AddrModeType::INDY,
                 addr: Some(0x8976),
                 bytes: 2,
+                operands: "FF".to_owned(),
+                repr: "($FF),Y".to_owned()
             },
             result
         );

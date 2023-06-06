@@ -31,6 +31,8 @@ impl CPU {
             mode: AddrModeType::ABSX,
             addr: Some(resolved_addr),
             bytes: 3,
+            operands: format!("{:02X} {:02X}", (addr & 0xff) as u8, (addr >> 8) as u8),
+            repr: format!("${:04X},X", addr),
         }
     }
 }
@@ -59,6 +61,8 @@ mod absx_tests {
                 addr: Some(0x2),
                 mode: AddrModeType::ABSX,
                 bytes: 3,
+                operands: "00 00".to_owned(),
+                repr: "$0000,X".to_owned()
             },
             result
         );
@@ -80,7 +84,9 @@ mod absx_tests {
                 cycles: 3,
                 mode: AddrModeType::ABSX,
                 addr: Some(0x1),
-                bytes: 3
+                bytes: 3,
+                operands: "FF FF".to_owned(),
+                repr: "$FFFF,X".to_owned()
             },
             result
         );

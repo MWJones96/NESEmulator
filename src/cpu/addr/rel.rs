@@ -35,6 +35,8 @@ impl CPU {
             mode: AddrModeType::REL,
             addr: Some(resolved_addr),
             bytes: 2,
+            operands: format!("{:02X}", offset),
+            repr: format!("${:04X}", resolved_addr),
         }
     }
 }
@@ -58,6 +60,8 @@ mod rel_tests {
                 mode: AddrModeType::REL,
                 addr: Some(0x1),
                 bytes: 2,
+                operands: "01".to_owned(),
+                repr: "$0001".to_owned()
             },
             result
         );
@@ -76,6 +80,8 @@ mod rel_tests {
                 mode: AddrModeType::REL,
                 addr: Some(0x1233),
                 bytes: 2,
+                operands: "FF".to_owned(),
+                repr: "$1233".to_owned()
             },
             result
         );
@@ -94,6 +100,8 @@ mod rel_tests {
                 mode: AddrModeType::REL,
                 addr: Some(0x1),
                 bytes: 2,
+                operands: "02".to_owned(),
+                repr: "$0001".to_owned()
             },
             result
         );
@@ -112,6 +120,8 @@ mod rel_tests {
                 mode: AddrModeType::REL,
                 addr: Some(0xfffe),
                 bytes: 2,
+                operands: "FE".to_owned(),
+                repr: "$FFFE".to_owned()
             },
             result
         );

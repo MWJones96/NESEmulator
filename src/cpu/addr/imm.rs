@@ -21,6 +21,8 @@ impl CPU {
             mode: AddrModeType::IMM,
             addr: None,
             bytes: 2,
+            operands: format!("{:02X}", imm),
+            repr: format!("#${:02X}", imm),
         }
     }
 }
@@ -43,6 +45,8 @@ mod imm_tests {
                 mode: AddrModeType::IMM,
                 addr: None,
                 bytes: 2,
+                operands: "88".to_owned(),
+                repr: "#$88".to_owned()
             },
             imm
         );

@@ -23,6 +23,8 @@ impl CPU {
             mode: AddrModeType::ABS,
             addr: Some(addr),
             bytes: 3,
+            operands: format!("{:02X} {:02X}", (addr & 0xff) as u8, (addr >> 8) as u8),
+            repr: format!("${:04X}", addr),
         }
     }
 }
@@ -49,6 +51,8 @@ mod abs_tests {
                 mode: AddrModeType::ABS,
                 addr: Some(0xffff),
                 bytes: 3,
+                operands: "FF FF".to_owned(),
+                repr: "$FFFF".to_owned()
             },
             result
         );

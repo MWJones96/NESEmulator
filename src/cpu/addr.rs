@@ -29,29 +29,13 @@ pub(in crate::cpu) enum AddrModeType {
     IMP,
 }
 
-pub(in crate::cpu) trait AddrMode {
-    fn addr_mode_cycles(&self) -> u8;
-    fn num_bytes(&self) -> u8;
-    fn operands(&self) -> Vec<u8>;
-    fn mode(&self) -> AddrModeType;
-
-    fn get_operands_string(&self) -> String;
-    fn get_addr_mode_string(&self) -> String;
-}
-
-pub(in crate::cpu) trait DataAccessAddrMode: AddrMode {
-    fn data(&self) -> u8;
-}
-
-pub(in crate::cpu) trait AddrAccessAddrMode: AddrMode {
-    fn addr(&self) -> u16;
-}
-
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub(in crate::cpu) struct AddrModeResult {
     pub addr: Option<u16>,
     pub data: Option<u8>,
     pub cycles: u8,
     pub mode: AddrModeType,
     pub bytes: u8,
+    pub operands: String,
+    pub repr: String,
 }

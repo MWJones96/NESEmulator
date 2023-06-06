@@ -5,7 +5,7 @@ pub mod bus;
 mod addr;
 mod ops;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 enum InstructionType {
     Jam,
     Reset,
@@ -13,11 +13,11 @@ enum InstructionType {
     IRQ,
     Instruction {
         opcode: u8,
-        addressing_mode: AddrModeResult,
+        addr_mode: AddrModeResult,
     },
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 struct CurrentInstruction {
     remaining_cycles: u8,
     instruction_type: InstructionType,
@@ -48,10 +48,10 @@ pub struct CPU {
 
 impl ToString for CPU {
     fn to_string(&self) -> String {
-        match self.current_instruction.instruction_type {
+        match &self.current_instruction.instruction_type {
             InstructionType::Instruction {
                 opcode,
-                addressing_mode,
+                addr_mode: addressing_mode,
             } => {
                 format!(
                     "{:04X}  {:02X}",
@@ -70,7 +70,7 @@ impl CPU {
     const IRQ_VECTOR: u16 = 0xfffe;
 
     #[rustfmt::skip]
-    const LOOKUP_TABLE: [(&str); 256] = [
+    const LOOKUP_TABLE: [&str; 256] = [
         ("BRK"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("PHP"), ("ORA"), ("ASL"), ("ANC"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
         ("BPL"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("CLC"), ("ORA"), ("NOP"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
         ("JSR"), ("ORA"), ("JAM"), ("RLA"), ("BIT"), ("AND"), ("ROL"), ("RLA"), ("PLP"), ("AND"), ("ROL"), ("ANC"), ("BIT"), ("AND"), ("ROL"), ("RLA"),
@@ -146,7 +146,8 @@ impl CPU {
 impl CPU {
     #[inline]
     fn execute_operation(&mut self, bus: &mut impl CPUBus) {
-        match self.current_instruction.instruction_type {
+        let current_instruction = self.current_instruction.clone();
+        match current_instruction.instruction_type {
             InstructionType::Jam => {
                 self.current_instruction.remaining_cycles = 0xff;
             }
@@ -164,7 +165,7 @@ impl CPU {
             }
             InstructionType::Instruction {
                 opcode,
-                addressing_mode,
+                addr_mode: addressing_mode,
             } => {
                 let i_flag_before = self.i;
                 self.execute(opcode, &addressing_mode, bus);
@@ -223,7 +224,7 @@ impl CPU {
                 remaining_cycles: cycles,
                 instruction_type: InstructionType::Instruction {
                     opcode,
-                    addressing_mode,
+                    addr_mode: addressing_mode,
                 },
             }
         }
@@ -669,12 +670,14 @@ mod cpu_tests {
                 remaining_cycles: 2,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x69,
-                    addressing_mode: AddrModeResult {
+                    addr_mode: AddrModeResult {
                         addr: None,
                         data: Some(0xff),
                         cycles: 0,
                         mode: addr::AddrModeType::IMM,
-                        bytes: 2
+                        bytes: 2,
+                        operands: "FF".to_owned(),
+                        repr: "#$FF".to_owned()
                     }
                 }
             },
@@ -696,7 +699,7 @@ mod cpu_tests {
             remaining_cycles: 1,
             instruction_type: InstructionType::Instruction {
                 opcode: 0x0,
-                addressing_mode: cpu.imp(),
+                addr_mode: cpu.imp(),
             },
         };
 
@@ -739,7 +742,7 @@ mod cpu_tests {
                 remaining_cycles: 7,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x00,
-                    addressing_mode: cpu.imp()
+                    addr_mode: cpu.imp()
                 }
             },
             cpu.current_instruction
@@ -778,7 +781,7 @@ mod cpu_tests {
                 remaining_cycles: 2,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x69,
-                    addressing_mode: cpu.imm(0x69)
+                    addr_mode: cpu.imm(0x69)
                 }
             },
             cpu.current_instruction
@@ -868,7 +871,7 @@ mod cpu_tests {
                 remaining_cycles: 7,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x0,
-                    addressing_mode: cpu.imp()
+                    addr_mode: cpu.imp()
                 }
             },
             cpu.current_instruction
@@ -904,7 +907,7 @@ mod cpu_tests {
                 remaining_cycles: 2,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x58,
-                    addressing_mode: cpu.imp()
+                    addr_mode: cpu.imp()
                 }
             },
             cpu.current_instruction
@@ -920,7 +923,7 @@ mod cpu_tests {
                 remaining_cycles: 2,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x58,
-                    addressing_mode: cpu.imp()
+                    addr_mode: cpu.imp()
                 }
             },
             cpu.current_instruction
@@ -969,7 +972,7 @@ mod cpu_tests {
                 remaining_cycles: 2,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x78,
-                    addressing_mode: cpu.imp()
+                    addr_mode: cpu.imp()
                 }
             },
             cpu.current_instruction
@@ -1024,7 +1027,7 @@ mod cpu_tests {
                 remaining_cycles: 4,
                 instruction_type: InstructionType::Instruction {
                     opcode: 0x28,
-                    addressing_mode: cpu.imp()
+                    addr_mode: cpu.imp()
                 }
             },
             cpu.current_instruction

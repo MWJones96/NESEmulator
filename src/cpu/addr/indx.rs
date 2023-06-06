@@ -33,6 +33,8 @@ impl CPU {
             mode: AddrModeType::INDX,
             addr: Some(resolved_addr),
             bytes: 2,
+            operands: format!("{:02X}", addr),
+            repr: format!("(${:02X},X)", addr),
         }
     }
 }
@@ -63,6 +65,8 @@ mod indx_tests {
                 mode: AddrModeType::INDX,
                 addr: Some(0x8877),
                 bytes: 2,
+                operands: "FF".to_owned(),
+                repr: "($FF,X)".to_owned()
             },
             result
         );

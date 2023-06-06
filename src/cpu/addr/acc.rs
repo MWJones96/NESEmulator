@@ -20,6 +20,8 @@ impl CPU {
             mode: AddrModeType::ACC,
             addr: None,
             bytes: 1,
+            operands: "".to_owned(),
+            repr: "A".to_owned(),
         }
     }
 }
@@ -42,6 +44,8 @@ mod acc_tests {
                 mode: AddrModeType::ACC,
                 addr: None,
                 bytes: 1,
+                operands: "".to_owned(),
+                repr: "A".to_owned()
             },
             cpu.acc()
         );
