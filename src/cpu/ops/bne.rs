@@ -20,7 +20,7 @@ impl CPU {
         if !self.z {
             2 + 1 + mode.cycles
         } else {
-            2 + mode.cycles
+            2
         }
     }
 
@@ -51,7 +51,7 @@ mod bne_tests {
 
         cpu.pc = 0x12ff;
         cpu.z = true;
-        assert_eq!(3, cpu.bne_cycles(&cpu.rel(0xa)));
+        assert_eq!(2, cpu.bne_cycles(&cpu.rel(0xa)));
     }
 
     #[test]

@@ -25,7 +25,7 @@ impl CPU {
         if !self.n {
             2 + 1 + mode.cycles
         } else {
-            2 + mode.cycles
+            2
         }
     }
 
@@ -56,7 +56,7 @@ mod bpl_tests {
 
         cpu.pc = 0x12ff;
         cpu.n = true;
-        assert_eq!(3, cpu.bpl_cycles(&cpu.rel(0xa)));
+        assert_eq!(2, cpu.bpl_cycles(&cpu.rel(0xa)));
     }
 
     #[test]

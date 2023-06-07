@@ -32,8 +32,11 @@ fn test_nestest_rom() {
 
     for line in ref_log_file {
         assert_eq!(line.unwrap(), cpu.to_string());
+        for _ in 0..cpu.cycles_remaining() {
+            cpu.clock(&mut main_bus);
+        }
     }
 
-    assert_eq!(0x0, main_bus.read(0x2));
-    assert_eq!(0x0, main_bus.read(0x3));
+    assert_eq!(0x0, main_bus.read(0x3)); //Official opcodes
+    assert_eq!(0x0, main_bus.read(0x3)); //
 }

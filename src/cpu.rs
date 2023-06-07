@@ -44,19 +44,28 @@ pub struct CPU {
 
     pending_nmi: bool,
     pending_irq: bool,
+
+    #[allow(arithmetic_overflow)]
+    elapsed_cycles: u64,
 }
 
 impl ToString for CPU {
     fn to_string(&self) -> String {
         match &self.current_instruction.instruction_type {
-            InstructionType::Instruction {
-                opcode,
-                addr_mode: addressing_mode,
-            } => {
+            InstructionType::Instruction { opcode, addr_mode } => {
                 format!(
-                    "{:04X}  {:02X}",
-                    self.pc.wrapping_sub(addressing_mode.bytes as u16),
-                    opcode
+                    "{:04X}  {:02X} {: <6} {} {: <27} A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X} CYC:{}",
+                    self.pc.wrapping_sub(addr_mode.bytes as u16),
+                    *opcode,
+                    addr_mode.operands,
+                    CPU::LOOKUP_TABLE[*opcode as usize],
+                    addr_mode.repr,
+                    self.a,
+                    self.x,
+                    self.y,
+                    self.get_status_byte(false),
+                    self.sp,
+                    self.elapsed_cycles
                 )
             }
             _ => "".to_owned(),
@@ -73,7 +82,7 @@ impl CPU {
     const LOOKUP_TABLE: [&str; 256] = [
         ("BRK"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("PHP"), ("ORA"), ("ASL"), ("ANC"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
         ("BPL"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("CLC"), ("ORA"), ("NOP"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
-        ("JSR"), ("ORA"), ("JAM"), ("RLA"), ("BIT"), ("AND"), ("ROL"), ("RLA"), ("PLP"), ("AND"), ("ROL"), ("ANC"), ("BIT"), ("AND"), ("ROL"), ("RLA"),
+        ("JSR"), ("AND"), ("JAM"), ("RLA"), ("BIT"), ("AND"), ("ROL"), ("RLA"), ("PLP"), ("AND"), ("ROL"), ("ANC"), ("BIT"), ("AND"), ("ROL"), ("RLA"),
         ("BMI"), ("AND"), ("JAM"), ("RLA"), ("NOP"), ("AND"), ("ROL"), ("RLA"), ("SEC"), ("AND"), ("NOP"), ("RLA"), ("NOP"), ("AND"), ("ROL"), ("RLA"),
         ("RTI"), ("EOR"), ("JAM"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"), ("PHA"), ("EOR"), ("LSR"), ("ASR"), ("JMP"), ("EOR"), ("LSR"), ("SRE"),
         ("BVC"), ("EOR"), ("JAM"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"), ("CLI"), ("EOR"), ("NOP"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"),
@@ -114,6 +123,8 @@ impl CPU {
 
             pending_nmi: false,
             pending_irq: false,
+
+            elapsed_cycles: 0,
         }
     }
 
@@ -135,11 +146,16 @@ impl CPU {
     }
 
     pub fn clock(&mut self, bus: &mut impl CPUBus) {
+        self.elapsed_cycles += 1;
         self.current_instruction.remaining_cycles -= 1;
 
         if self.current_instruction.remaining_cycles == 0 {
             self.execute_operation(bus);
         }
+    }
+
+    pub fn cycles_remaining(&self) -> u8 {
+        self.current_instruction.remaining_cycles
     }
 }
 
@@ -325,7 +341,6 @@ impl CPU {
                 let offset = self.fetch_byte(bus);
                 self.rel(offset)
             }
-            _ => panic!("Opcode {:#02x} is not implemented", opcode),
         }
     }
 
@@ -411,7 +426,6 @@ impl CPU {
             0xEF | 0xFF | 0xFB | 0xE7 | 0xF7 | 0xE3 | 0xF3 => self.isc_cycles(mode),
             0xF0 => self.beq_cycles(mode),
             0xF8 => self.sed_cycles(mode),
-            _ => panic!("Opcode {:#02x} is not implemented", opcode),
         }
     }
 

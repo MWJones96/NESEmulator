@@ -23,9 +23,6 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn txs(&mut self, _mode: &AddrModeResult) {
         self.sp = self.x;
-
-        self.n = (self.sp & 0x80) > 0;
-        self.z = self.sp == 0;
     }
 }
 
@@ -47,23 +44,5 @@ mod txs_tests {
         cpu.txs(&cpu.imp());
         assert_eq!(0xcc, cpu.sp);
         assert_eq!(0xcc, cpu.x);
-    }
-
-    #[test]
-    fn test_txs_negative_flag() {
-        let mut cpu = CPU::new();
-        cpu.x = 0x80;
-
-        cpu.txs(&cpu.imp());
-        assert_eq!(true, cpu.n);
-    }
-
-    #[test]
-    fn test_txs_zero_flag() {
-        let mut cpu = CPU::new();
-        cpu.sp = 0xff;
-
-        cpu.txs(&cpu.imp());
-        assert_eq!(true, cpu.z);
     }
 }

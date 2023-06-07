@@ -20,7 +20,7 @@ impl CPU {
         if !self.v {
             2 + 1 + mode.cycles
         } else {
-            2 + mode.cycles
+            2
         }
     }
 
@@ -51,7 +51,7 @@ mod bvc_tests {
 
         cpu.pc = 0x12ff;
         cpu.v = true;
-        assert_eq!(3, cpu.bvc_cycles(&cpu.rel(0xa)));
+        assert_eq!(2, cpu.bvc_cycles(&cpu.rel(0xa)));
     }
 
     #[test]

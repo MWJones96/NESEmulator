@@ -21,7 +21,7 @@ impl CPU {
         if self.z {
             2 + 1 + mode.cycles
         } else {
-            2 + mode.cycles
+            2
         }
     }
 
@@ -48,7 +48,7 @@ mod beq_tests {
         let mut cpu = CPU::new();
         cpu.pc = 0x1234;
 
-        assert_eq!(3, cpu.beq_cycles(&cpu.rel(0xaa)));
+        assert_eq!(2, cpu.beq_cycles(&cpu.rel(0xaa)));
     }
 
     #[test]

@@ -24,6 +24,9 @@ impl CPU {
 
         self.a = data;
         self.x = data;
+
+        self.n = (self.a & 0x80) != 0;
+        self.z = self.a == 0;
     }
 }
 
@@ -129,5 +132,16 @@ mod lax_tests {
 
         assert_eq!(0xee, cpu.a);
         assert_eq!(0xee, cpu.x);
+
+        assert_eq!(true, cpu.n);
+        assert_eq!(false, cpu.z);
+
+        cpu.lax(&cpu.imm(0x0));
+
+        assert_eq!(0x0, cpu.a);
+        assert_eq!(0x0, cpu.x);
+
+        assert_eq!(false, cpu.n);
+        assert_eq!(true, cpu.z);
     }
 }
