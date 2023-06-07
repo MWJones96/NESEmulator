@@ -16,7 +16,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn sed_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn sedc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -31,10 +31,10 @@ mod sed_tests {
     use super::*;
 
     #[test]
-    fn test_sed_correct_number_of_cycles() {
+    fn test_sed_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.sed_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.sedc(&cpu._imp()));
     }
 
     #[test]

@@ -25,7 +25,7 @@ use crate::cpu::{
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn rra_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn rrac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::ABSX => 7,
             AddrModeType::ABSY => 7,
@@ -53,66 +53,66 @@ mod rra_tests {
     use super::*;
 
     #[test]
-    fn test_rra_zp_correct_number_of_cycles() {
+    fn test_rra_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.rra_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(5, cpu.rrac(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_rra_zpx_correct_number_of_cycles() {
+    fn test_rra_zpx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.rra_cycles(&cpu._zpx(0x0, &bus)));
+        assert_eq!(6, cpu.rrac(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
-    fn test_rra_abs_correct_number_of_cycles() {
+    fn test_rra_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.rra_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(6, cpu.rrac(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
-    fn test_rra_absx_correct_number_of_cycles() {
+    fn test_rra_absx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.rra_cycles(&cpu._absx(0x0, &bus)));
+        assert_eq!(7, cpu.rrac(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
-    fn test_rra_absy_correct_number_of_cycles() {
+    fn test_rra_absy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.rra_cycles(&cpu._absy(0x0, &bus)));
+        assert_eq!(7, cpu.rrac(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
-    fn test_rra_indx_correct_number_of_cycles() {
+    fn test_rra_indx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.rra_cycles(&cpu._indx(0x0, &bus)));
+        assert_eq!(8, cpu.rrac(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
-    fn test_rra_indy_correct_number_of_cycles() {
+    fn test_rra_indy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.rra_cycles(&cpu._indy(0x0, &bus)));
+        assert_eq!(8, cpu.rrac(&cpu._indy(0x0, &bus)));
     }
 
     #[test]

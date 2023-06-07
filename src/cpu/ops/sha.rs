@@ -27,7 +27,7 @@ use crate::cpu::{
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn sha_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn shac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::ABSY => 5,
             AddrModeType::INDY => 6,
@@ -62,21 +62,21 @@ mod sha_tests {
     use crate::cpu::bus::MockCPUBus;
 
     #[test]
-    fn test_sha_absy_correct_number_of_cycles() {
+    fn test_sha_absy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.sha_cycles(&cpu._absy(0x0, &bus)));
+        assert_eq!(5, cpu.shac(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
-    fn test_sha_indy_correct_number_of_cycles() {
+    fn test_sha_indy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sha_cycles(&cpu._indy(0x0, &bus)));
+        assert_eq!(6, cpu.shac(&cpu._indy(0x0, &bus)));
     }
 
     #[test]

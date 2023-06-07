@@ -19,7 +19,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn tsx_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn tsxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -37,9 +37,9 @@ mod tsx_tests {
     use super::*;
 
     #[test]
-    fn test_tsx_returns_correct_number_of_cycles() {
+    fn test_tsx_returns_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.tsx_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.tsxc(&cpu._imp()));
     }
 
     #[test]

@@ -17,7 +17,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn rts_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn rtsc(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
@@ -41,10 +41,10 @@ mod rts_tests {
     use super::*;
 
     #[test]
-    fn test_rts_correct_number_of_cycles() {
+    fn test_rts_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(6, cpu.rts_cycles(&cpu._imp()));
+        assert_eq!(6, cpu.rtsc(&cpu._imp()));
     }
 
     #[test]

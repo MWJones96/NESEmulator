@@ -15,7 +15,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn bcc_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn bccc(&self, mode: &AddrModeResult) -> u8 {
         if !self.c {
             2 + 1 + mode.cycles
         } else {
@@ -41,7 +41,7 @@ mod bcc_tests {
 
         cpu.pc = 0x1234;
         cpu.c = true;
-        assert_eq!(2, cpu.bcc_cycles(&cpu._rel(0x1)));
+        assert_eq!(2, cpu.bccc(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -50,7 +50,7 @@ mod bcc_tests {
 
         cpu.pc = 0x12ff;
         cpu.c = true;
-        assert_eq!(2, cpu.bcc_cycles(&cpu._rel(0xa)));
+        assert_eq!(2, cpu.bccc(&cpu._rel(0xa)));
     }
 
     #[test]
@@ -59,7 +59,7 @@ mod bcc_tests {
         cpu.pc = 0x81;
         cpu.c = false;
 
-        assert_eq!(3, cpu.bcc_cycles(&cpu._rel(0x80)));
+        assert_eq!(3, cpu.bccc(&cpu._rel(0x80)));
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod bcc_tests {
         cpu.pc = 0x8081;
         cpu.c = false;
 
-        assert_eq!(4, cpu.bcc_cycles(&cpu._rel(0x7f)));
+        assert_eq!(4, cpu.bccc(&cpu._rel(0x7f)));
     }
 
     #[test]

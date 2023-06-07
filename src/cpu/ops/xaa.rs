@@ -30,7 +30,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn xaa_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn xaac(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -53,9 +53,9 @@ mod xaa_tests {
     use super::*;
 
     #[test]
-    fn test_xaa_correct_number_of_cycles() {
+    fn test_xaa_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.xaa_cycles(&cpu._imm(0x00)));
+        assert_eq!(2, cpu.xaac(&cpu._imm(0x00)));
     }
 
     #[test]

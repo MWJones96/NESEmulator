@@ -14,7 +14,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn lax_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn laxc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -39,36 +39,36 @@ mod lax_tests {
     use super::*;
 
     #[test]
-    fn test_lax_imm_correct_number_of_cycles() {
+    fn test_lax_imm_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.lax_cycles(&cpu._imm(0x0)));
+        assert_eq!(2, cpu.laxc(&cpu._imm(0x0)));
     }
 
     #[test]
-    fn test_lax_zp_correct_number_of_cycles() {
+    fn test_lax_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.lax_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(3, cpu.laxc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_lax_zpy_correct_number_of_cycles() {
+    fn test_lax_zpy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.lax_cycles(&cpu._zpy(0x0, &bus)));
+        assert_eq!(4, cpu.laxc(&cpu._zpy(0x0, &bus)));
     }
 
     #[test]
-    fn test_lax_abs_correct_number_of_cycles() {
+    fn test_lax_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.lax_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(4, cpu.laxc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.lax_cycles(&cpu._absy(0x0, &bus)));
+        assert_eq!(4, cpu.laxc(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -88,17 +88,17 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.lax_cycles(&cpu._absy(0x34, &bus)));
+        assert_eq!(5, cpu.laxc(&cpu._absy(0x34, &bus)));
     }
 
     #[test]
-    fn test_lax_cycles_indx_correct_number_of_cycles() {
+    fn test_lax_cycles_indx_correct_number_ofc() {
         let cpu = CPU::new();
 
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.lax_cycles(&cpu._indx(0x0, &bus)));
+        assert_eq!(6, cpu.laxc(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.lax_cycles(&cpu._indy(0x0, &bus)));
+        assert_eq!(5, cpu.laxc(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -121,7 +121,7 @@ mod lax_tests {
         bus.expect_read().with(eq(0x12)).return_const(0x12);
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.lax_cycles(&cpu._indy(0x34, &bus)));
+        assert_eq!(6, cpu.laxc(&cpu._indy(0x34, &bus)));
     }
 
     #[test]

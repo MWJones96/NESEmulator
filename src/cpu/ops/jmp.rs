@@ -12,7 +12,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn jmp_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn jmpc(&self, mode: &AddrModeResult) -> u8 {
         1 + mode.cycles
     }
 
@@ -29,23 +29,23 @@ mod jmp_tests {
     use super::*;
 
     #[test]
-    fn test_jmp_abs_correct_number_of_cycles() {
+    fn test_jmp_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.jmp_cycles(&cpu._abs(0x0000, &bus)));
+        assert_eq!(3, cpu.jmpc(&cpu._abs(0x0000, &bus)));
     }
 
     #[test]
-    fn test_jmp_ind_correct_number_of_cycles() {
+    fn test_jmp_ind_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.jmp_cycles(&cpu._ind(0x0000, &bus)));
+        assert_eq!(5, cpu.jmpc(&cpu._ind(0x0000, &bus)));
     }
 
     #[test]

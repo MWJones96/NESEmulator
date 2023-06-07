@@ -2,7 +2,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn reset_cycles(&self) -> u8 {
+    pub(in crate::cpu) fn resetc(&self) -> u8 {
         7
     }
 
@@ -26,9 +26,9 @@ mod reset_tests {
     use super::*;
 
     #[test]
-    fn test_reset_correct_number_of_cycles() {
+    fn test_reset_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(7, cpu.reset_cycles())
+        assert_eq!(7, cpu.resetc())
     }
 
     #[test]

@@ -24,7 +24,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn cpy_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn cpyc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -46,28 +46,28 @@ mod cpy_tests {
     use super::*;
 
     #[test]
-    fn test_cpy_imm_correct_number_of_cycles() {
+    fn test_cpy_imm_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.cpy_cycles(&cpu._imm(0x0)));
+        assert_eq!(2, cpu.cpyc(&cpu._imm(0x0)));
     }
 
     #[test]
-    fn test_cpy_zp_correct_number_of_cycles() {
+    fn test_cpy_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.cpy_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(3, cpu.cpyc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_cpy_abs_correct_number_of_cycles() {
+    fn test_cpy_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cpy_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(4, cpu.cpyc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]

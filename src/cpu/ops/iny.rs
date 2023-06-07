@@ -19,7 +19,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn iny_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn inyc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -37,9 +37,9 @@ mod iny_tests {
     use super::*;
 
     #[test]
-    fn test_iny_returns_correct_number_of_cycles() {
+    fn test_iny_returns_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.iny_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.inyc(&cpu._imp()));
     }
 
     #[test]

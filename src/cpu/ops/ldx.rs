@@ -17,7 +17,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn ldx_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn ldxc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -36,39 +36,39 @@ mod ldx_tests {
     use super::*;
 
     #[test]
-    fn test_ldx_imm_correct_cycles() {
+    fn test_ldx_imm_correctc() {
         let cpu = CPU::new();
-        let cycles: u8 = cpu.ldx_cycles(&cpu._imm(0x0));
+        let cycles: u8 = cpu.ldxc(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
     #[test]
-    fn test_ldx_zp_correct_cycles() {
+    fn test_ldx_zp_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu._zp(0x0, &bus));
+        let cycles: u8 = cpu.ldxc(&cpu._zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
     #[test]
-    fn test_ldx_zpy_correct_cycles() {
+    fn test_ldx_zpy_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu._zpy(0x0, &bus));
+        let cycles: u8 = cpu.ldxc(&cpu._zpy(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
     #[test]
-    fn test_ldx_abs_correct_cycles() {
+    fn test_ldx_abs_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu._abs(0x0, &bus));
+        let cycles: u8 = cpu.ldxc(&cpu._abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -78,7 +78,7 @@ mod ldx_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu._absy(0x88, &bus));
+        let cycles: u8 = cpu.ldxc(&cpu._absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -89,7 +89,7 @@ mod ldx_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.ldx_cycles(&cpu._absy(0x88, &bus));
+        let cycles: u8 = cpu.ldxc(&cpu._absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 

@@ -24,7 +24,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn sbc_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn sbcc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -43,39 +43,39 @@ mod sbc_tests {
     use super::*;
 
     #[test]
-    fn test_sbc_imm_correct_cycles() {
+    fn test_sbc_imm_correctc() {
         let cpu = CPU::new();
-        let cycles: u8 = cpu.sbc_cycles(&cpu._imm(0x0));
+        let cycles: u8 = cpu.sbcc(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
     #[test]
-    fn test_sbc_zp_correct_cycles() {
+    fn test_sbc_zp_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._zp(0x0, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
     #[test]
-    fn test_sbc_zpx_correct_cycles() {
+    fn test_sbc_zpx_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._zpx(0x0, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._zpx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
     #[test]
-    fn test_sbc_abs_correct_cycles() {
+    fn test_sbc_abs_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._abs(0x0, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -85,7 +85,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._absx(0x0, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._absx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -96,7 +96,7 @@ mod sbc_tests {
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._absx(0x88, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._absx(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -106,7 +106,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._absy(0x88, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -117,17 +117,17 @@ mod sbc_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.sbc_cycles(&cpu._absy(0x88, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
     #[test]
-    fn test_sbc_indx_correct_cycles() {
+    fn test_sbc_indx_correctc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._indx(0x88, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._indx(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -137,7 +137,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu._indy(0x88, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._indy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -151,7 +151,7 @@ mod sbc_tests {
         bus.expect_read().with(eq(0x2310)).return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.sbc_cycles(&cpu._indy(0x88, &bus));
+        let cycles: u8 = cpu.sbcc(&cpu._indy(0x88, &bus));
         assert_eq!(6, cycles);
     }
 

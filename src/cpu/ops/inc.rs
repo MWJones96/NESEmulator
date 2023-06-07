@@ -21,7 +21,7 @@ use crate::cpu::{
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn inc_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn incc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::ABSX => 7,
             _ => 4 + mode.cycles,
@@ -49,7 +49,7 @@ mod inc_tests {
     use super::*;
 
     #[test]
-    fn test_inc_zp_correct_number_of_cycles() {
+    fn test_inc_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -57,11 +57,11 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(5, cpu.inc_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(5, cpu.incc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_inc_zpx_correct_number_of_cycles() {
+    fn test_inc_zpx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -69,11 +69,11 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.inc_cycles(&cpu._zpx(0x0, &bus)));
+        assert_eq!(6, cpu.incc(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
-    fn test_inc_abs_correct_number_of_cycles() {
+    fn test_inc_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -81,11 +81,11 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.inc_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(6, cpu.incc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
-    fn test_inc_absx_correct_number_of_cycles() {
+    fn test_inc_absx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -93,7 +93,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(7, cpu.inc_cycles(&cpu._absx(0x0, &bus)));
+        assert_eq!(7, cpu.incc(&cpu._absx(0x0, &bus)));
     }
 
     #[test]

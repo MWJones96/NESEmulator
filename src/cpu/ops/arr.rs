@@ -30,7 +30,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn arr_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn arrc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -51,9 +51,9 @@ mod arr_tests {
     use super::*;
 
     #[test]
-    fn test_arr_imm_correct_cycles() {
+    fn test_arr_imm_correctc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.arr_cycles(&cpu._imm(0xff)));
+        assert_eq!(2, cpu.arrc(&cpu._imm(0xff)));
     }
 
     #[test]

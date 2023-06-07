@@ -7,11 +7,11 @@
     nor NMIs. It will handle a RESET though.
 */
 
-use crate::cpu::CPU;
+use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn jam_cycles(&self) -> u8 {
+    pub(in crate::cpu) fn jamc(&self, _mode: &AddrModeResult) -> u8 {
         0
     }
 
@@ -26,8 +26,8 @@ mod jam_tests {
     use super::*;
 
     #[test]
-    fn test_jam_correct_number_of_cycles() {
+    fn test_jam_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(0, cpu.jam_cycles());
+        assert_eq!(0, cpu.jamc(&cpu._imp()));
     }
 }

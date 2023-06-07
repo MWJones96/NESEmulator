@@ -18,7 +18,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn clv_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn clvc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -33,10 +33,10 @@ mod clv_tests {
     use super::*;
 
     #[test]
-    fn test_clv_correct_number_of_cycles() {
+    fn test_clv_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.clv_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.clvc(&cpu._imp()));
     }
 
     #[test]

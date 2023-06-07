@@ -20,7 +20,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn brk_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn brkc(&self, _mode: &AddrModeResult) -> u8 {
         7
     }
 
@@ -51,13 +51,13 @@ mod brk_tests {
     use super::*;
 
     #[test]
-    fn test_brk_correct_number_of_cycles() {
+    fn test_brk_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.brk_cycles(&cpu._imp()));
+        assert_eq!(7, cpu.brkc(&cpu._imp()));
     }
 
     #[test]

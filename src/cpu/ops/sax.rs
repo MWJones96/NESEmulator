@@ -14,7 +14,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn sax_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn saxc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -33,39 +33,39 @@ mod sax_tests {
     use super::*;
 
     #[test]
-    fn test_sax_zp_correct_number_of_cycles() {
+    fn test_sax_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.sax_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(3, cpu.saxc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_sax_zpy_correct_number_of_cycles() {
+    fn test_sax_zpy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sax_cycles(&cpu._zpy(0x0, &bus)));
+        assert_eq!(4, cpu.saxc(&cpu._zpy(0x0, &bus)));
     }
 
     #[test]
-    fn test_sax_abs_correct_number_of_cycles() {
+    fn test_sax_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sax_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(4, cpu.saxc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
-    fn test_sax_indx_correct_number_of_cycles() {
+    fn test_sax_indx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sax_cycles(&cpu._indx(0x0, &bus)));
+        assert_eq!(6, cpu.saxc(&cpu._indx(0x0, &bus)));
     }
 
     #[test]

@@ -23,7 +23,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn ror_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn rorc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::ACC => 2,
             AddrModeType::ABSX => 7,
@@ -61,7 +61,7 @@ mod ror_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        assert_eq!(2, cpu.ror_cycles(&cpu._acc()));
+        assert_eq!(2, cpu.rorc(&cpu._acc()));
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod ror_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
-        assert_eq!(5, cpu.ror_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(5, cpu.rorc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod ror_tests {
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
 
-        assert_eq!(6, cpu.ror_cycles(&cpu._zpx(0x0, &bus)));
+        assert_eq!(6, cpu.rorc(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod ror_tests {
             .times(1)
             .return_const(0xaa);
 
-        assert_eq!(6, cpu.ror_cycles(&cpu._abs(0xffff, &bus)));
+        assert_eq!(6, cpu.rorc(&cpu._abs(0xffff, &bus)));
     }
 
     #[test]
@@ -107,7 +107,7 @@ mod ror_tests {
 
         bus.expect_read().with(eq(0x1)).times(1).return_const(0x88);
 
-        assert_eq!(7, cpu.ror_cycles(&cpu._absx(0xffff, &bus)));
+        assert_eq!(7, cpu.rorc(&cpu._absx(0xffff, &bus)));
     }
 
     #[test]

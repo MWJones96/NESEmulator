@@ -16,7 +16,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn sec_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn secc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -31,10 +31,10 @@ mod sec_tests {
     use super::*;
 
     #[test]
-    fn test_sec_correct_number_of_cycles() {
+    fn test_sec_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.sec_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.secc(&cpu._imp()));
     }
 
     #[test]

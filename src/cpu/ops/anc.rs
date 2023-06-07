@@ -21,7 +21,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn anc_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn ancc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -40,9 +40,9 @@ mod anc_tests {
     use super::*;
 
     #[test]
-    fn test_anc_imm_correct_cycles() {
+    fn test_anc_imm_correctc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.anc_cycles(&cpu._imm(0xff)));
+        assert_eq!(2, cpu.ancc(&cpu._imm(0xff)));
     }
 
     #[test]

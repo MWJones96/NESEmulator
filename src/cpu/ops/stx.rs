@@ -17,7 +17,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn stx_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn stxc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::ABSY => 4,
             _ => 2 + mode.cycles,
@@ -39,34 +39,34 @@ mod stx_tests {
     use super::*;
 
     #[test]
-    fn test_stx_zp_correct_number_of_cycles() {
+    fn test_stx_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.stx_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(3, cpu.stxc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_stx_abs_correct_number_of_cycles() {
+    fn test_stx_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.stx_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(4, cpu.stxc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
-    fn test_stx_absy_correct_number_of_cycles() {
+    fn test_stx_absy_correct_number_ofc() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.stx_cycles(&cpu._absy(0xffff, &bus)));
+        assert_eq!(4, cpu.stxc(&cpu._absy(0xffff, &bus)));
     }
 
     #[test]

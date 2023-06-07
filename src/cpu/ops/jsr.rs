@@ -24,7 +24,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn jsr_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn jsrc(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
@@ -53,13 +53,13 @@ mod jsr_tests {
     use super::*;
 
     #[test]
-    fn test_jsr_correct_number_of_cycles() {
+    fn test_jsr_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.jsr_cycles(&cpu._abs(0x0000, &bus)));
+        assert_eq!(6, cpu.jsrc(&cpu._abs(0x0000, &bus)));
     }
 
     #[test]

@@ -2,7 +2,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn irq_cycles(&self) -> u8 {
+    pub(in crate::cpu) fn irqc(&self) -> u8 {
         7
     }
 
@@ -33,9 +33,9 @@ mod irq_tests {
     use super::*;
 
     #[test]
-    fn test_irq_returns_correct_number_of_cycles() {
+    fn test_irq_returns_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(7, cpu.irq_cycles());
+        assert_eq!(7, cpu.irqc());
     }
 
     #[test]

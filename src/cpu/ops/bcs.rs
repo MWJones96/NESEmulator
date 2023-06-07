@@ -14,7 +14,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn bcs_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn bcsc(&self, mode: &AddrModeResult) -> u8 {
         if self.c {
             2 + 1 + mode.cycles
         } else {
@@ -37,7 +37,7 @@ mod bcs_tests {
     #[test]
     fn test_bcs_no_branch_no_page_cross() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.bcs_cycles(&cpu._rel(0x1)));
+        assert_eq!(2, cpu.bcsc(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -45,7 +45,7 @@ mod bcs_tests {
         let mut cpu = CPU::new();
         cpu.pc = 0x1234;
 
-        assert_eq!(2, cpu.bcs_cycles(&cpu._rel(0xaa)));
+        assert_eq!(2, cpu.bcsc(&cpu._rel(0xaa)));
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod bcs_tests {
         let mut cpu = CPU::new();
         cpu.c = true;
 
-        assert_eq!(3, cpu.bcs_cycles(&cpu._rel(0x7f)));
+        assert_eq!(3, cpu.bcsc(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -62,7 +62,7 @@ mod bcs_tests {
         cpu.c = true;
         cpu.pc = 0x12ff;
 
-        assert_eq!(4, cpu.bcs_cycles(&cpu._rel(0x7f)));
+        assert_eq!(4, cpu.bcsc(&cpu._rel(0x7f)));
     }
 
     #[test]

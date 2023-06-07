@@ -20,7 +20,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn asr_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn asrc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -38,9 +38,9 @@ mod asr_tests {
     use super::*;
 
     #[test]
-    fn test_asr_imm_correct_cycles() {
+    fn test_asr_imm_correctc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.asr_cycles(&cpu._imm(0xff)));
+        assert_eq!(2, cpu.asrc(&cpu._imm(0xff)));
     }
 
     #[test]

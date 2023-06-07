@@ -15,7 +15,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn cli_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn clic(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -30,10 +30,10 @@ mod cli_tests {
     use super::*;
 
     #[test]
-    fn test_cli_correct_number_of_cycles() {
+    fn test_cli_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.cli_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.clic(&cpu._imp()));
     }
 
     #[test]

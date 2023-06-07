@@ -20,7 +20,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn dey_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn deyc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -38,9 +38,9 @@ mod dey_tests {
     use super::*;
 
     #[test]
-    fn test_dey_returns_correct_number_of_cycles() {
+    fn test_dey_returns_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.dey_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.deyc(&cpu._imp()));
     }
 
     #[test]

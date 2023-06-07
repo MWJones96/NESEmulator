@@ -20,7 +20,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn sbx_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn sbxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -39,9 +39,9 @@ mod sbx_tests {
     use super::*;
 
     #[test]
-    fn test_sbx_imm_correct_number_of_cycles() {
+    fn test_sbx_imm_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.sbx_cycles(&cpu._imm(0x0)))
+        assert_eq!(2, cpu.sbxc(&cpu._imm(0x0)))
     }
 
     #[test]

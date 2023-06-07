@@ -2,7 +2,7 @@ use crate::cpu::{bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn nmi_cycles(&self) -> u8 {
+    pub(in crate::cpu) fn nmic(&self) -> u8 {
         7
     }
 
@@ -35,9 +35,9 @@ mod nmi_tests {
     use super::*;
 
     #[test]
-    fn test_nmi_correct_number_of_cycles() {
+    fn test_nmi_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(7, cpu.nmi_cycles())
+        assert_eq!(7, cpu.nmic())
     }
 
     #[test]

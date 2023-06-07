@@ -16,7 +16,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn php_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn phpc(&self, _mode: &AddrModeResult) -> u8 {
         3
     }
 
@@ -36,9 +36,9 @@ mod php_tests {
     use super::*;
 
     #[test]
-    fn test_php_correct_number_of_cycles() {
+    fn test_php_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(3, cpu.php_cycles(&cpu._imp()));
+        assert_eq!(3, cpu.phpc(&cpu._imp()));
     }
 
     #[test]

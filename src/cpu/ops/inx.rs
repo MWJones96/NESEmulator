@@ -19,7 +19,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn inx_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn inxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -37,9 +37,9 @@ mod inx_tests {
     use super::*;
 
     #[test]
-    fn test_inx_returns_correct_number_of_cycles() {
+    fn test_inx_returns_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.inx_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.inxc(&cpu._imp()));
     }
 
     #[test]

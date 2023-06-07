@@ -15,7 +15,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn shx_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn shxc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
 
@@ -36,12 +36,12 @@ mod shx_tests {
     use super::*;
 
     #[test]
-    fn test_shx_cycles() {
+    fn test_shxc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.shx_cycles(&cpu._absy(0x0, &bus)));
+        assert_eq!(5, cpu.shxc(&cpu._absy(0x0, &bus)));
     }
 
     #[test]

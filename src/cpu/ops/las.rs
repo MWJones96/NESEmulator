@@ -16,7 +16,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn las_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn lasc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -42,7 +42,7 @@ mod las_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.las_cycles(&cpu._absy(0x0, &bus)));
+        assert_eq!(4, cpu.lasc(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod las_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.las_cycles(&cpu._absy(0x34, &bus)));
+        assert_eq!(5, cpu.lasc(&cpu._absy(0x34, &bus)));
     }
 
     #[test]

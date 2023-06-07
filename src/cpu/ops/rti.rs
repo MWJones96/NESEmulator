@@ -23,7 +23,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn rti_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn rtic(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
@@ -55,10 +55,10 @@ mod rti_tests {
     use super::*;
 
     #[test]
-    fn test_rti_correct_number_of_cycles() {
+    fn test_rti_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(6, cpu.rti_cycles(&cpu._imp()));
+        assert_eq!(6, cpu.rtic(&cpu._imp()));
     }
 
     #[test]

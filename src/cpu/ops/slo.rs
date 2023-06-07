@@ -22,7 +22,7 @@ use crate::cpu::{
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn slo_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn sloc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::ABSX => 7,
             AddrModeType::ABSY => 7,
@@ -52,66 +52,66 @@ mod slo_tests {
     use super::*;
 
     #[test]
-    fn test_slo_zp_correct_number_of_cycles() {
+    fn test_slo_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.slo_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(5, cpu.sloc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_slo_zpx_correct_number_of_cycles() {
+    fn test_slo_zpx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.slo_cycles(&cpu._zpx(0x0, &bus)));
+        assert_eq!(6, cpu.sloc(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
-    fn test_slo_abs_correct_number_of_cycles() {
+    fn test_slo_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.slo_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(6, cpu.sloc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
-    fn test_slo_absx_correct_number_of_cycles() {
+    fn test_slo_absx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.slo_cycles(&cpu._absx(0x0, &bus)));
+        assert_eq!(7, cpu.sloc(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
-    fn test_slo_absy_correct_number_of_cycles() {
+    fn test_slo_absy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.slo_cycles(&cpu._absy(0x0, &bus)));
+        assert_eq!(7, cpu.sloc(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
-    fn test_slo_indx_correct_number_of_cycles() {
+    fn test_slo_indx_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.slo_cycles(&cpu._indx(0x0, &bus)));
+        assert_eq!(8, cpu.sloc(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
-    fn test_slo_indy_correct_number_of_cycles() {
+    fn test_slo_indy_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.slo_cycles(&cpu._indy(0x0, &bus)));
+        assert_eq!(8, cpu.sloc(&cpu._indy(0x0, &bus)));
     }
 
     #[test]

@@ -16,7 +16,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn bne_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn bnec(&self, mode: &AddrModeResult) -> u8 {
         if !self.z {
             2 + 1 + mode.cycles
         } else {
@@ -42,7 +42,7 @@ mod bne_tests {
 
         cpu.pc = 0x1234;
         cpu.z = true;
-        assert_eq!(2, cpu.bne_cycles(&cpu._rel(0x1)));
+        assert_eq!(2, cpu.bnec(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -51,7 +51,7 @@ mod bne_tests {
 
         cpu.pc = 0x12ff;
         cpu.z = true;
-        assert_eq!(2, cpu.bne_cycles(&cpu._rel(0xa)));
+        assert_eq!(2, cpu.bnec(&cpu._rel(0xa)));
     }
 
     #[test]
@@ -60,7 +60,7 @@ mod bne_tests {
         cpu.pc = 0x81;
         cpu.z = false;
 
-        assert_eq!(3, cpu.bne_cycles(&cpu._rel(0x80)));
+        assert_eq!(3, cpu.bnec(&cpu._rel(0x80)));
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod bne_tests {
         cpu.pc = 0x8081;
         cpu.z = false;
 
-        assert_eq!(4, cpu.bne_cycles(&cpu._rel(0x7f)));
+        assert_eq!(4, cpu.bnec(&cpu._rel(0x7f)));
     }
 
     #[test]

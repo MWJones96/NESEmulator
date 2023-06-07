@@ -21,7 +21,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn bpl_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn bplc(&self, mode: &AddrModeResult) -> u8 {
         if !self.n {
             2 + 1 + mode.cycles
         } else {
@@ -47,7 +47,7 @@ mod bpl_tests {
 
         cpu.pc = 0x1234;
         cpu.n = true;
-        assert_eq!(2, cpu.bpl_cycles(&cpu._rel(0x1)));
+        assert_eq!(2, cpu.bplc(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -56,7 +56,7 @@ mod bpl_tests {
 
         cpu.pc = 0x12ff;
         cpu.n = true;
-        assert_eq!(2, cpu.bpl_cycles(&cpu._rel(0xa)));
+        assert_eq!(2, cpu.bplc(&cpu._rel(0xa)));
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod bpl_tests {
         cpu.pc = 0x81;
         cpu.n = false;
 
-        assert_eq!(3, cpu.bpl_cycles(&cpu._rel(0x80)));
+        assert_eq!(3, cpu.bplc(&cpu._rel(0x80)));
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod bpl_tests {
         cpu.pc = 0x8081;
         cpu.n = false;
 
-        assert_eq!(4, cpu.bpl_cycles(&cpu._rel(0x7f)));
+        assert_eq!(4, cpu.bplc(&cpu._rel(0x7f)));
     }
 
     #[test]

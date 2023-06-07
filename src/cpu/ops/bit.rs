@@ -19,7 +19,7 @@ use crate::cpu::{addr::AddrModeResult, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn bit_cycles(&self, mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn bitc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
@@ -42,23 +42,23 @@ mod bit_tests {
     use super::*;
 
     #[test]
-    fn test_bit_zp_correct_number_of_cycles() {
+    fn test_bit_zp_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        assert_eq!(3, cpu.bit_cycles(&cpu._zp(0x0, &bus)));
+        assert_eq!(3, cpu.bitc(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
-    fn test_bit_abs_correct_number_of_cycles() {
+    fn test_bit_abs_correct_number_ofc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        assert_eq!(4, cpu.bit_cycles(&cpu._abs(0x0, &bus)));
+        assert_eq!(4, cpu.bitc(&cpu._abs(0x0, &bus)));
     }
 
     #[test]

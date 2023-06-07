@@ -15,7 +15,7 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn shy_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn shyc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
 
@@ -36,12 +36,12 @@ mod shy_tests {
     use super::*;
 
     #[test]
-    fn test_shy_cycles() {
+    fn test_shyc() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.shy_cycles(&cpu._absx(0x0, &bus)));
+        assert_eq!(5, cpu.shyc(&cpu._absx(0x0, &bus)));
     }
 
     #[test]

@@ -19,7 +19,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn plp_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn plpc(&self, _mode: &AddrModeResult) -> u8 {
         4
     }
 
@@ -46,9 +46,9 @@ mod plp_tests {
     use super::*;
 
     #[test]
-    fn test_plp_correct_number_of_cycles() {
+    fn test_plp_correct_number_ofc() {
         let cpu = CPU::new();
-        assert_eq!(4, cpu.plp_cycles(&cpu._imp()));
+        assert_eq!(4, cpu.plpc(&cpu._imp()));
     }
 
     #[test]

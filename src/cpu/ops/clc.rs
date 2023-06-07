@@ -17,7 +17,7 @@ use super::super::CPU;
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn clc_cycles(&self, _mode: &AddrModeResult) -> u8 {
+    pub(in crate::cpu) fn clcc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
@@ -32,10 +32,10 @@ mod clc_tests {
     use super::*;
 
     #[test]
-    fn test_clc_correct_number_of_cycles() {
+    fn test_clc_correct_number_ofc() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.clc_cycles(&cpu._imp()));
+        assert_eq!(2, cpu.clcc(&cpu._imp()));
     }
 
     #[test]
