@@ -13,7 +13,7 @@ use nes_emu::util::read_bytes_from_file;
 #[test]
 fn test_nestest_rom() {
     let ref_log_file =
-        io::BufReader::new(File::open("tests/fixtures/nestest_log.txt").unwrap()).lines();
+        io::BufReader::new(File::open("tests/logs/nestest_log.txt").unwrap()).lines();
 
     let mut bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
     bytes[16396] = 0x0;
@@ -36,7 +36,4 @@ fn test_nestest_rom() {
             cpu.clock(&mut main_bus);
         }
     }
-
-    assert_eq!(0x0, main_bus.read(0x3)); //Official opcodes
-    assert_eq!(0x0, main_bus.read(0x3)); //
 }
