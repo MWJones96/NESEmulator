@@ -14,7 +14,7 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn imp(&mut self, _bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn imp(&mut self, _bus: &dyn CPUBus) -> AddrModeResult {
         self._imp()
     }
 

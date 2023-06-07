@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn sty(&self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn sty(&self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.y);
     }
 }

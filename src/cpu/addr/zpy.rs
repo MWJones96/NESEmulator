@@ -20,13 +20,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn zpy(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zpy(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._zpy(addr, bus)
     }
 
     #[inline]
-    pub(in crate::cpu) fn _zpy(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _zpy(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.y) as u16;
 
         AddrModeResult {

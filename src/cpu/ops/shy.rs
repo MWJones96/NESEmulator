@@ -20,7 +20,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn shy(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn shy(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let write_addr = mode.addr.unwrap();
         let h = (write_addr.wrapping_sub(self.x as u16) >> 8) as u8;
         bus.write(write_addr, self.y & h.wrapping_add(1));

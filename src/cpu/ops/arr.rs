@@ -35,7 +35,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         self.and(mode);
         self.ror(&self._acc(), bus);
 

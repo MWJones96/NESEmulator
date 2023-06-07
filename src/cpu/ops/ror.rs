@@ -32,7 +32,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let before = mode.data.unwrap();
         let after: u8 = ((self.c as u8) << 7) | before >> 1;
 

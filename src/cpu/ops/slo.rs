@@ -32,7 +32,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn slo(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn slo(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data_to_write = mode.data.unwrap() << 1;
         bus.write(mode.addr.unwrap(), data_to_write);
         self.a |= data_to_write;

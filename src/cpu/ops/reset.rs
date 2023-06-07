@@ -7,7 +7,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn reset(&mut self, bus: &impl CPUBus) {
+    pub(in crate::cpu) fn reset(&mut self, bus: &dyn CPUBus) {
         let low_byte = bus.read(CPU::RESET_VECTOR) as u16;
         let high_byte = bus.read(CPU::RESET_VECTOR + 1) as u16;
 

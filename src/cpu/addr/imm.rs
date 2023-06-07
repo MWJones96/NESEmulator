@@ -14,7 +14,7 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn imm(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn imm(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let data = self.fetch_byte(bus);
         self._imm(data)
     }

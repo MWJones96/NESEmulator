@@ -33,7 +33,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn rol(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn rol(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data: u16 = ((mode.data.unwrap() as u16) << 1) | (self.c as u16);
 
         self.c = data > 0xff;

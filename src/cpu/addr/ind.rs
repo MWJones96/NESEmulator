@@ -23,13 +23,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn ind(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn ind(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_two_bytes_as_u16(bus);
         self._ind(addr, bus)
     }
 
     #[inline]
-    pub(in crate::cpu) fn _ind(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _ind(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
         let low_byte = bus.read(addr) as u16;
         let high_byte =
             bus.read((addr & 0xff00) + ((addr & 0xff) as u8).wrapping_add(1) as u16) as u16;

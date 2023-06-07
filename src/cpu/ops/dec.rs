@@ -25,7 +25,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let result = mode.data.unwrap().wrapping_sub(1);
         bus.write(mode.addr.unwrap(), result);
 

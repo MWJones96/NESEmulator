@@ -33,7 +33,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn dcp(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn dcp(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_sub(1);
 

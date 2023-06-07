@@ -37,7 +37,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn isc(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn isc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_add(1);
         bus.write(mode.addr.unwrap(), data_to_write);

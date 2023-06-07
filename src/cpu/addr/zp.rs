@@ -16,13 +16,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn zp(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zp(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._zp(addr, bus)
     }
 
     #[inline]
-    pub(in crate::cpu) fn _zp(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _zp(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr as u16)),
             cycles: 1,

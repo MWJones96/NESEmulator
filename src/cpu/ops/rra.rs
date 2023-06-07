@@ -35,7 +35,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn rra(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn rra(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let data_to_write = (self.c as u8) << 7 | data >> 1;
         self.c = (data & 0x1) != 0;

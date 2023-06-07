@@ -35,7 +35,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn xaa(&mut self, mode: &AddrModeResult, _bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn xaa(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let magic_constant = *vec![0x00, 0xee, 0xef, 0xfe, 0xff]
             .choose(&mut rand::thread_rng())
             .unwrap() as u8;

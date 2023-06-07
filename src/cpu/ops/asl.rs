@@ -32,7 +32,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data: u16 = (mode.data.unwrap() as u16) << 1;
 
         self.c = data > (u8::MAX as u16);

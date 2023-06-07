@@ -5,6 +5,10 @@ pub mod bus;
 mod addr;
 mod ops;
 
+type AddrFn = fn(&mut CPU, &dyn CPUBus) -> AddrModeResult;
+type CyclesFn = fn(&mut CPU, &AddrModeResult) -> u8;
+type ExecFn = fn(&mut CPU, &mut dyn CPUBus);
+
 #[derive(PartialEq, Debug, Clone)]
 enum InstructionType {
     Jam,
@@ -22,7 +26,6 @@ struct CurrentInstruction {
     remaining_cycles: u8,
     instruction_type: InstructionType,
 }
-
 pub struct CPU {
     pc: u16,
     sp: u8,
@@ -58,7 +61,7 @@ impl ToString for CPU {
                     self.pc.wrapping_sub(addr_mode.bytes as u16),
                     *opcode,
                     addr_mode.operands,
-                    CPU::LOOKUP_TABLE[*opcode as usize],
+                    CPU::LOOKUP_TABLE[*opcode as usize].0,
                     addr_mode.repr,
                     self.a,
                     self.x,
@@ -68,7 +71,10 @@ impl ToString for CPU {
                     self.elapsed_cycles
                 )
             }
-            _ => "".to_owned(),
+            InstructionType::Jam => "JAM".to_owned(),
+            InstructionType::IRQ => "IRQ".to_owned(),
+            InstructionType::NMI => "NMI".to_owned(),
+            InstructionType::Reset => "RESET".to_owned(),
         }
     }
 }
@@ -79,23 +85,23 @@ impl CPU {
     const IRQ_VECTOR: u16 = 0xfffe;
 
     #[rustfmt::skip]
-    const LOOKUP_TABLE: [&str; 256] = [
-        ("BRK"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("PHP"), ("ORA"), ("ASL"), ("ANC"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
-        ("BPL"), ("ORA"), ("JAM"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"), ("CLC"), ("ORA"), ("NOP"), ("SLO"), ("NOP"), ("ORA"), ("ASL"), ("SLO"),
-        ("JSR"), ("AND"), ("JAM"), ("RLA"), ("BIT"), ("AND"), ("ROL"), ("RLA"), ("PLP"), ("AND"), ("ROL"), ("ANC"), ("BIT"), ("AND"), ("ROL"), ("RLA"),
-        ("BMI"), ("AND"), ("JAM"), ("RLA"), ("NOP"), ("AND"), ("ROL"), ("RLA"), ("SEC"), ("AND"), ("NOP"), ("RLA"), ("NOP"), ("AND"), ("ROL"), ("RLA"),
-        ("RTI"), ("EOR"), ("JAM"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"), ("PHA"), ("EOR"), ("LSR"), ("ASR"), ("JMP"), ("EOR"), ("LSR"), ("SRE"),
-        ("BVC"), ("EOR"), ("JAM"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"), ("CLI"), ("EOR"), ("NOP"), ("SRE"), ("NOP"), ("EOR"), ("LSR"), ("SRE"),
-        ("RTS"), ("ADC"), ("JAM"), ("RRA"), ("NOP"), ("ADC"), ("ROR"), ("RRA"), ("PLA"), ("ADC"), ("ROR"), ("ARR"), ("JMP"), ("ADC"), ("ROR"), ("RRA"),
-        ("BVS"), ("ADC"), ("JAM"), ("RRA"), ("NOP"), ("ADC"), ("ROR"), ("RRA"), ("SEI"), ("ADC"), ("NOP"), ("RRA"), ("NOP"), ("ADC"), ("ROR"), ("RRA"),
-        ("NOP"), ("STA"), ("NOP"), ("SAX"), ("STY"), ("STA"), ("STX"), ("SAX"), ("DEY"), ("NOP"), ("TXA"), ("XAA"), ("STY"), ("STA"), ("STX"), ("SAX"),
-        ("BCC"), ("STA"), ("JAM"), ("SHA"), ("STY"), ("STA"), ("STX"), ("SAX"), ("TYA"), ("STA"), ("TXS"), ("SHS"), ("SHY"), ("STA"), ("SHX"), ("SHA"),
-        ("LDY"), ("LDA"), ("LDX"), ("LAX"), ("LDY"), ("LDA"), ("LDX"), ("LAX"), ("TAY"), ("LDA"), ("TAX"), ("LAX"), ("LDY"), ("LDA"), ("LDX"), ("LAX"),
-        ("BCS"), ("LDA"), ("JAM"), ("LAX"), ("LDY"), ("LDA"), ("LDX"), ("LAX"), ("CLV"), ("LDA"), ("TSX"), ("LAS"), ("LDY"), ("LDA"), ("LDX"), ("LAX"),
-        ("CPY"), ("CMP"), ("NOP"), ("DCP"), ("CPY"), ("CMP"), ("DEC"), ("DCP"), ("INY"), ("CMP"), ("DEX"), ("SBX"), ("CPY"), ("CMP"), ("DEC"), ("DCP"),
-        ("BNE"), ("CMP"), ("JAM"), ("DCP"), ("NOP"), ("CMP"), ("DEC"), ("DCP"), ("CLD"), ("CMP"), ("NOP"), ("DCP"), ("NOP"), ("CMP"), ("DEC"), ("DCP"),
-        ("CPX"), ("SBC"), ("NOP"), ("ISC"), ("CPX"), ("SBC"), ("INC"), ("ISC"), ("INX"), ("SBC"), ("NOP"), ("SBC"), ("CPX"), ("SBC"), ("INC"), ("ISC"),
-        ("BEQ"), ("SBC"), ("JAM"), ("ISC"), ("NOP"), ("SBC"), ("INC"), ("ISC"), ("SED"), ("SBC"), ("NOP"), ("ISC"), ("NOP"), ("SBC"), ("INC"), ("ISC"),
+    const LOOKUP_TABLE: [(&str, AddrFn); 256] = [
+        ("BRK", CPU::imm), ("ORA", CPU::indx), ("JAM", CPU::imp), ("SLO", CPU::indx), ("NOP", CPU::zp),  ("ORA", CPU::zp),  ("ASL", CPU::zp),  ("SLO", CPU::zp),  ("PHP", CPU::imp), ("ORA", CPU::imm),  ("ASL", CPU::acc), ("ANC", CPU::imm),  ("NOP", CPU::abs),  ("ORA", CPU::abs),  ("ASL", CPU::abs),  ("SLO", CPU::abs),
+        ("BPL", CPU::rel), ("ORA", CPU::indy), ("JAM", CPU::imp), ("SLO", CPU::indy), ("NOP", CPU::zpx), ("ORA", CPU::zpx), ("ASL", CPU::zpx), ("SLO", CPU::zpx), ("CLC", CPU::imp), ("ORA", CPU::absy), ("NOP", CPU::imp), ("SLO", CPU::absy), ("NOP", CPU::absx), ("ORA", CPU::absx), ("ASL", CPU::absx), ("SLO", CPU::absx),
+        ("JSR", CPU::abs), ("AND", CPU::indx), ("JAM", CPU::imp), ("RLA", CPU::indx), ("BIT", CPU::zp),  ("AND", CPU::zp),  ("ROL", CPU::zp),  ("RLA", CPU::zp),  ("PLP", CPU::imp), ("AND", CPU::imm),  ("ROL", CPU::acc), ("ANC", CPU::imm),  ("BIT", CPU::abs),  ("AND", CPU::abs),  ("ROL", CPU::abs),  ("RLA", CPU::abs),
+        ("BMI", CPU::rel), ("AND", CPU::indy), ("JAM", CPU::imp), ("RLA", CPU::indy), ("NOP", CPU::zpx), ("AND", CPU::zpx), ("ROL", CPU::zpx), ("RLA", CPU::zpx), ("SEC", CPU::imp), ("AND", CPU::absy), ("NOP", CPU::imp), ("RLA", CPU::absy), ("NOP", CPU::absx), ("AND", CPU::absx), ("ROL", CPU::absx), ("RLA", CPU::absx),
+        ("RTI", CPU::imp), ("EOR", CPU::indx), ("JAM", CPU::imp), ("SRE", CPU::indx), ("NOP", CPU::zp),  ("EOR", CPU::zp),  ("LSR", CPU::zp),  ("SRE", CPU::zp),  ("PHA", CPU::imp), ("EOR", CPU::imm),  ("LSR", CPU::acc), ("ASR", CPU::imm),  ("JMP", CPU::abs),  ("EOR", CPU::abs),  ("LSR", CPU::abs),  ("SRE", CPU::abs),
+        ("BVC", CPU::rel), ("EOR", CPU::indy), ("JAM", CPU::imp), ("SRE", CPU::indy), ("NOP", CPU::zpx), ("EOR", CPU::zpx), ("LSR", CPU::zpx), ("SRE", CPU::zpx), ("CLI", CPU::imp), ("EOR", CPU::absy), ("NOP", CPU::imp), ("SRE", CPU::absy), ("NOP", CPU::absx), ("EOR", CPU::absx), ("LSR", CPU::absx), ("SRE", CPU::absx),
+        ("RTS", CPU::imp), ("ADC", CPU::indx), ("JAM", CPU::imp), ("RRA", CPU::indx), ("NOP", CPU::zp),  ("ADC", CPU::zp),  ("ROR", CPU::zp),  ("RRA", CPU::zp),  ("PLA", CPU::imp), ("ADC", CPU::imm),  ("ROR", CPU::acc), ("ARR", CPU::imm),  ("JMP", CPU::ind),  ("ADC", CPU::abs),  ("ROR", CPU::abs),  ("RRA", CPU::abs),
+        ("BVS", CPU::rel), ("ADC", CPU::indy), ("JAM", CPU::imp), ("RRA", CPU::indy), ("NOP", CPU::zpx), ("ADC", CPU::zpx), ("ROR", CPU::zpx), ("RRA", CPU::zpx), ("SEI", CPU::imp), ("ADC", CPU::absy), ("NOP", CPU::imp), ("RRA", CPU::absy), ("NOP", CPU::absx), ("ADC", CPU::absx), ("ROR", CPU::absx), ("RRA", CPU::absx),
+        ("NOP", CPU::imm), ("STA", CPU::indx), ("NOP", CPU::imm), ("SAX", CPU::indx), ("STY", CPU::zp),  ("STA", CPU::zp),  ("STX", CPU::zp),  ("SAX", CPU::zp),  ("DEY", CPU::imp), ("NOP", CPU::imm),  ("TXA", CPU::imp), ("XAA", CPU::imm),  ("STY", CPU::abs),  ("STA", CPU::abs),  ("STX", CPU::abs),  ("SAX", CPU::abs),
+        ("BCC", CPU::rel), ("STA", CPU::indy), ("JAM", CPU::imp), ("SHA", CPU::indy), ("STY", CPU::zpx), ("STA", CPU::zpx), ("STX", CPU::zpy), ("SAX", CPU::zpy), ("TYA", CPU::imp), ("STA", CPU::absy), ("TXS", CPU::imp), ("SHS", CPU::absy), ("SHY", CPU::absx), ("STA", CPU::absx), ("SHX", CPU::absy), ("SHA", CPU::absy),
+        ("LDY", CPU::imm), ("LDA", CPU::indx), ("LDX", CPU::imm), ("LAX", CPU::indx), ("LDY", CPU::zp),  ("LDA", CPU::zp),  ("LDX", CPU::zp),  ("LAX", CPU::zp),  ("TAY", CPU::imp), ("LDA", CPU::imm),  ("TAX", CPU::imp), ("LAX", CPU::imm),  ("LDY", CPU::abs),  ("LDA", CPU::abs),  ("LDX", CPU::abs),  ("LAX", CPU::abs),
+        ("BCS", CPU::rel), ("LDA", CPU::indy), ("JAM", CPU::imp), ("LAX", CPU::indy), ("LDY", CPU::zpx), ("LDA", CPU::zpx), ("LDX", CPU::zpy), ("LAX", CPU::zpy), ("CLV", CPU::imp), ("LDA", CPU::absy), ("TSX", CPU::imp), ("LAS", CPU::absy), ("LDY", CPU::absx), ("LDA", CPU::absx), ("LDX", CPU::absy), ("LAX", CPU::absy),
+        ("CPY", CPU::imm), ("CMP", CPU::indx), ("NOP", CPU::imm), ("DCP", CPU::indx), ("CPY", CPU::zp),  ("CMP", CPU::zp),  ("DEC", CPU::zp),  ("DCP", CPU::zp),  ("INY", CPU::imp), ("CMP", CPU::imm),  ("DEX", CPU::imp), ("SBX", CPU::imm),  ("CPY", CPU::abs),  ("CMP", CPU::abs),  ("DEC", CPU::abs),  ("DCP", CPU::abs),
+        ("BNE", CPU::rel), ("CMP", CPU::indy), ("JAM", CPU::imp), ("DCP", CPU::indy), ("NOP", CPU::zpx), ("CMP", CPU::zpx), ("DEC", CPU::zpx), ("DCP", CPU::zpx), ("CLD", CPU::imp), ("CMP", CPU::absy), ("NOP", CPU::imp), ("DCP", CPU::absy), ("NOP", CPU::absx), ("CMP", CPU::absx), ("DEC", CPU::absx), ("DCP", CPU::absx),
+        ("CPX", CPU::imm), ("SBC", CPU::indx), ("NOP", CPU::imm), ("ISC", CPU::indx), ("CPX", CPU::zp),  ("SBC", CPU::zp),  ("INC", CPU::zp),  ("ISC", CPU::zp),  ("INX", CPU::imp), ("SBC", CPU::imm),  ("NOP", CPU::imp), ("SBC", CPU::imm),  ("CPX", CPU::abs),  ("SBC", CPU::abs),  ("INC", CPU::abs),  ("ISC", CPU::abs),
+        ("BEQ", CPU::rel), ("SBC", CPU::indy), ("JAM", CPU::imp), ("ISC", CPU::indy), ("NOP", CPU::zpx), ("SBC", CPU::zpx), ("INC", CPU::zpx), ("ISC", CPU::zpx), ("SED", CPU::imp), ("SBC", CPU::absy), ("NOP", CPU::imp), ("ISC", CPU::absy), ("NOP", CPU::absx), ("SBC", CPU::absx), ("INC", CPU::absx), ("ISC", CPU::absx),
     ];
 
     pub fn new() -> Self {
@@ -145,7 +151,7 @@ impl CPU {
         }
     }
 
-    pub fn clock(&mut self, bus: &mut impl CPUBus) {
+    pub fn clock(&mut self, bus: &mut dyn CPUBus) {
         self.elapsed_cycles += 1;
         self.current_instruction.remaining_cycles -= 1;
 
@@ -161,7 +167,7 @@ impl CPU {
 
 impl CPU {
     #[inline]
-    fn execute_operation(&mut self, bus: &mut impl CPUBus) {
+    fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
         let current_instruction = self.current_instruction.clone();
         match current_instruction.instruction_type {
             InstructionType::Jam => {
@@ -201,7 +207,7 @@ impl CPU {
     #[inline]
     fn poll_for_interrupts_or_fetch_next_instruction(
         &mut self,
-        bus: &mut impl CPUBus,
+        bus: &mut dyn CPUBus,
         i_flag: bool,
     ) {
         if self.pending_nmi {
@@ -220,12 +226,12 @@ impl CPU {
     }
 
     #[inline]
-    fn fetch_next_instruction(&mut self, bus: &mut impl CPUBus) -> CurrentInstruction {
-        //println!("{:04X?}", self.pc);
+    fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
-        let addressing_mode = self.fetch_addr_mode(opcode, bus);
+        let addr_mode_fn = CPU::LOOKUP_TABLE[opcode as usize].1;
+        let addr_mode = addr_mode_fn(self, bus);
 
-        let cycles = self.get_number_of_cycles(opcode, &addressing_mode);
+        let cycles = self.get_number_of_cycles(opcode, &addr_mode);
         if cycles == 0 {
             //Jam
             CurrentInstruction {
@@ -237,7 +243,7 @@ impl CPU {
                 remaining_cycles: cycles,
                 instruction_type: InstructionType::Instruction {
                     opcode,
-                    addr_mode: addressing_mode,
+                    addr_mode: addr_mode,
                 },
             }
         }
@@ -256,7 +262,7 @@ impl CPU {
     }
 
     #[inline]
-    fn fetch_byte(&mut self, bus: &impl CPUBus) -> u8 {
+    fn fetch_byte(&mut self, bus: &dyn CPUBus) -> u8 {
         let data = bus.read(self.pc);
         self.pc = self.pc.wrapping_add(1);
 
@@ -264,7 +270,7 @@ impl CPU {
     }
 
     #[inline]
-    fn fetch_two_bytes_as_u16(&mut self, bus: &impl CPUBus) -> u16 {
+    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn CPUBus) -> u16 {
         let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
         let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
         self.pc = self.pc.wrapping_add(2);
@@ -274,41 +280,6 @@ impl CPU {
 }
 
 impl CPU {
-    #[inline]
-    fn fetch_addr_mode(&mut self, opcode: u8, bus: &impl CPUBus) -> AddrModeResult {
-        match opcode {
-            0x18 | 0xD8 | 0x58 | 0xB8 | 0xCA | 0x88 | 0xE8 | 0xC8 | 0xEA | 0x48 | 0x08 | 0x68
-            | 0x28 | 0x40 | 0x60 | 0x38 | 0xF8 | 0x78 | 0xAA | 0xA8 | 0xBA | 0x8A | 0x9A | 0x98
-            | 0x02 | 0x12 | 0x22 | 0x32 | 0x42 | 0x52 | 0x62 | 0x72 | 0x92 | 0xB2 | 0xD2 | 0xF2
-            | 0x1A | 0x3A | 0x5A | 0x7A | 0xDA | 0xFA => self.imp(bus),
-            0x0A | 0x4A | 0x2A | 0x6A => self.acc(bus),
-            0x00 | 0x69 | 0x29 | 0xC9 | 0xE0 | 0xC0 | 0x49 | 0xA9 | 0xA2 | 0xA0 | 0x09 | 0xE9
-            | 0x0B | 0x2B | 0x6B | 0x4B | 0xAB | 0x80 | 0x82 | 0x89 | 0xC2 | 0xE2 | 0xEB | 0xCB
-            | 0x8B => self.imm(bus),
-            0x6D | 0x2D | 0x0E | 0x2C | 0xCD | 0xEC | 0xCC | 0xCE | 0x4D | 0xEE | 0x4C | 0x20
-            | 0xAD | 0xAE | 0xAC | 0x4E | 0x0D | 0x2E | 0x6E | 0xED | 0x8D | 0x8E | 0x8C | 0xCF
-            | 0xEF | 0xAF | 0x0C | 0x2F | 0x6F | 0x8F | 0x0F | 0x4F => self.abs(bus),
-            0x7D | 0x3D | 0x1E | 0xDD | 0xDE | 0x5D | 0xFE | 0xBD | 0xBC | 0x5E | 0x1D | 0x3E
-            | 0x7E | 0xFD | 0x9D | 0xDF | 0xFF | 0x1C | 0x3C | 0x5C | 0x7C | 0xDC | 0xFC | 0x3F
-            | 0x7F | 0x9C | 0x1F | 0x5F => self.absx(bus),
-            0x79 | 0x39 | 0xD9 | 0x59 | 0xB9 | 0xBE | 0x19 | 0xF9 | 0x99 | 0xDB | 0xFB | 0xBB
-            | 0xBF | 0x3B | 0x7B | 0x9F | 0x9B | 0x9E | 0x1B | 0x5B => self.absy(bus),
-            0x61 | 0x21 | 0xC1 | 0x41 | 0xA1 | 0x01 | 0xE1 | 0x81 | 0xC3 | 0xE3 | 0xA3 | 0x23
-            | 0x63 | 0x83 | 0x03 | 0x43 => self.indx(bus),
-            0x6C => self.ind(bus),
-            0x65 | 0x25 | 0x06 | 0x24 | 0xC5 | 0xE4 | 0xC4 | 0xC6 | 0x45 | 0xE6 | 0xA5 | 0xA6
-            | 0xA4 | 0x46 | 0x05 | 0x26 | 0x66 | 0xE5 | 0x85 | 0x86 | 0x84 | 0xC7 | 0xE7 | 0xA7
-            | 0x04 | 0x44 | 0x64 | 0x27 | 0x67 | 0x87 | 0x07 | 0x47 => self.zp(bus),
-            0x71 | 0x31 | 0xD1 | 0x51 | 0xB1 | 0x11 | 0xF1 | 0x91 | 0xD3 | 0xF3 | 0xB3 | 0x33
-            | 0x73 | 0x93 | 0x13 | 0x53 => self.indy(bus),
-            0x75 | 0x35 | 0x16 | 0xD5 | 0xD6 | 0x55 | 0xF6 | 0xB5 | 0xB4 | 0x56 | 0x15 | 0x36
-            | 0x76 | 0xF5 | 0x95 | 0x94 | 0xD7 | 0xF7 | 0x14 | 0x34 | 0x54 | 0x74 | 0xD4 | 0xF4
-            | 0x37 | 0x77 | 0x17 | 0x57 => self.zpx(bus),
-            0xB6 | 0x96 | 0xB7 | 0x97 => self.zpy(bus),
-            0x90 | 0xB0 | 0xF0 | 0x30 | 0xD0 | 0x10 | 0x50 | 0x70 => self.rel(bus),
-        }
-    }
-
     #[inline]
     fn get_number_of_cycles(&self, opcode: u8, mode: &AddrModeResult) -> u8 {
         match opcode {
@@ -395,7 +366,7 @@ impl CPU {
     }
 
     #[inline]
-    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         match opcode {
             0x00 => self.brk(mode, bus),
             0x08 => self.php(mode, bus),

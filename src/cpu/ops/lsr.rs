@@ -35,7 +35,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
+    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let before_shift = mode.data.unwrap();
         let after_shift = before_shift >> 1;
 

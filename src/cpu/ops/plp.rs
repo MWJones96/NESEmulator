@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &impl CPUBus) {
+    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         self.sp = self.sp.wrapping_add(1);
         let data = bus.read(0x100 + (self.sp as u16));
 

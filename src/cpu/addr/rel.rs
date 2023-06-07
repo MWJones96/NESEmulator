@@ -19,7 +19,7 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn rel(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn rel(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let offset = self.fetch_byte(bus);
         self._rel(offset)
     }

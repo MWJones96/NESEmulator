@@ -28,7 +28,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &impl CPUBus) {
+    pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
         let reg = bus.read(0x100 + (self.sp.wrapping_add(1) as u16));
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(3) as u16)) as u16;

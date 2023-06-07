@@ -20,13 +20,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn absy(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn absy(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_two_bytes_as_u16(bus);
         self._absy(addr, bus)
     }
 
     #[inline]
-    pub(in crate::cpu) fn _absy(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _absy(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(self.y as u16);
         let page_after: u8 = (resolved_addr >> 8) as u8;
