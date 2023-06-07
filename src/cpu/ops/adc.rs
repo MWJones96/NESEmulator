@@ -55,7 +55,7 @@ mod adc_tests {
     #[test]
     fn test_adc_imm_correct_cycles() {
         let cpu = CPU::new();
-        let cycles: u8 = cpu.adc_cycles(&cpu.imm(0x0));
+        let cycles: u8 = cpu.adc_cycles(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
@@ -65,7 +65,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.zp(0x0, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
@@ -75,7 +75,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.zpx(0x0, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._zpx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -85,7 +85,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.abs(0x0, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -95,7 +95,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.absx(0x0, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._absx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -106,7 +106,7 @@ mod adc_tests {
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.absx(0x88, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._absx(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -116,7 +116,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -127,7 +127,7 @@ mod adc_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.adc_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -137,7 +137,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.indx(0x88, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._indx(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -147,7 +147,7 @@ mod adc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.adc_cycles(&cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._indy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -161,7 +161,7 @@ mod adc_tests {
         bus.expect_read().with(eq(0x2310)).return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.adc_cycles(&cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.adc_cycles(&cpu._indy(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -169,7 +169,7 @@ mod adc_tests {
     fn test_adc_no_carry() {
         let mut cpu = CPU::new();
 
-        cpu.adc(&cpu.imm(0x01_u8));
+        cpu.adc(&cpu._imm(0x01_u8));
 
         assert_eq!(0x01_u8, cpu.a);
         assert_eq!(false, cpu.c);
@@ -180,17 +180,17 @@ mod adc_tests {
         let mut cpu = CPU::new();
         cpu.a = 0x80_u8;
 
-        cpu.adc(&cpu.imm(0x80));
+        cpu.adc(&cpu._imm(0x80));
 
         assert_eq!(0x00_u8, cpu.a);
         assert_eq!(true, cpu.c);
 
-        cpu.adc(&cpu.imm(0x80));
+        cpu.adc(&cpu._imm(0x80));
 
         assert_eq!(0x81, cpu.a);
         assert_eq!(false, cpu.c);
 
-        cpu.adc(&cpu.imm(0x01));
+        cpu.adc(&cpu._imm(0x01));
 
         assert_eq!(0x82, cpu.a);
         assert_eq!(false, cpu.c);
@@ -200,15 +200,15 @@ mod adc_tests {
     fn test_adc_with_carry_zero_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc(&cpu.imm(0x00_u8));
+        cpu.adc(&cpu._imm(0x00_u8));
 
         assert_eq!(true, cpu.z);
 
-        cpu.adc(&cpu.imm(0x80_u8));
+        cpu.adc(&cpu._imm(0x80_u8));
 
         assert_eq!(false, cpu.z);
 
-        cpu.adc(&cpu.imm(0x80_u8));
+        cpu.adc(&cpu._imm(0x80_u8));
 
         assert_eq!(true, cpu.z);
     }
@@ -217,11 +217,11 @@ mod adc_tests {
     fn test_adc_with_negative_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc(&cpu.imm(0b_0111_1111_u8));
+        cpu.adc(&cpu._imm(0b_0111_1111_u8));
 
         assert_eq!(false, cpu.n);
 
-        cpu.adc(&cpu.imm(0b_0000_0001_u8));
+        cpu.adc(&cpu._imm(0b_0000_0001_u8));
 
         assert_eq!(true, cpu.n);
     }
@@ -231,25 +231,25 @@ mod adc_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x7f; //+ve
-        cpu.adc(&cpu.imm(0x1)); //+ve
+        cpu.adc(&cpu._imm(0x1)); //+ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x80; //-ve
-        cpu.adc(&cpu.imm(0x80)); //-ve
+        cpu.adc(&cpu._imm(0x80)); //-ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x1; //+ve
-        cpu.adc(&cpu.imm(0xf0)); //-ve
+        cpu.adc(&cpu._imm(0xf0)); //-ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
         cpu.a = 0xff; //-ve
-        cpu.adc(&cpu.imm(0x2)); //+ve
+        cpu.adc(&cpu._imm(0x2)); //+ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

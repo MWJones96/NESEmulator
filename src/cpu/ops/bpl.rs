@@ -47,7 +47,7 @@ mod bpl_tests {
 
         cpu.pc = 0x1234;
         cpu.n = true;
-        assert_eq!(2, cpu.bpl_cycles(&cpu.rel(0x1)));
+        assert_eq!(2, cpu.bpl_cycles(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -56,7 +56,7 @@ mod bpl_tests {
 
         cpu.pc = 0x12ff;
         cpu.n = true;
-        assert_eq!(2, cpu.bpl_cycles(&cpu.rel(0xa)));
+        assert_eq!(2, cpu.bpl_cycles(&cpu._rel(0xa)));
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod bpl_tests {
         cpu.pc = 0x81;
         cpu.n = false;
 
-        assert_eq!(3, cpu.bpl_cycles(&cpu.rel(0x80)));
+        assert_eq!(3, cpu.bpl_cycles(&cpu._rel(0x80)));
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod bpl_tests {
         cpu.pc = 0x8081;
         cpu.n = false;
 
-        assert_eq!(4, cpu.bpl_cycles(&cpu.rel(0x7f)));
+        assert_eq!(4, cpu.bpl_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod bpl_tests {
 
         cpu.pc = 0x1234;
         cpu.n = true;
-        cpu.bpl(&cpu.rel(0x1));
+        cpu.bpl(&cpu._rel(0x1));
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -93,7 +93,7 @@ mod bpl_tests {
 
         cpu.pc = 0x12ff;
         cpu.n = true;
-        cpu.bpl(&cpu.rel(0xa));
+        cpu.bpl(&cpu._rel(0xa));
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -103,7 +103,7 @@ mod bpl_tests {
         cpu.pc = 0x81;
         cpu.n = false;
 
-        cpu.bpl(&cpu.rel(0x80));
+        cpu.bpl(&cpu._rel(0x80));
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -113,7 +113,7 @@ mod bpl_tests {
         cpu.pc = 0x8081;
         cpu.n = false;
 
-        cpu.bpl(&cpu.rel(0x7f));
+        cpu.bpl(&cpu._rel(0x7f));
         assert_eq!(0x8100, cpu.pc);
     }
 }

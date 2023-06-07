@@ -39,7 +39,7 @@ mod tsx_tests {
     #[test]
     fn test_tsx_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.tsx_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.tsx_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod tsx_tests {
         let mut cpu = CPU::new();
         cpu.sp = 0xcc;
 
-        cpu.tsx(&cpu.imp());
+        cpu.tsx(&cpu._imp());
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.sp);
     }
@@ -57,7 +57,7 @@ mod tsx_tests {
         let mut cpu = CPU::new();
         cpu.sp = 0x80;
 
-        cpu.tsx(&cpu.imp());
+        cpu.tsx(&cpu._imp());
         assert_eq!(true, cpu.n);
     }
 
@@ -67,7 +67,7 @@ mod tsx_tests {
         cpu.x = 0xff;
         cpu.sp = 0x0;
 
-        cpu.tsx(&cpu.imp());
+        cpu.tsx(&cpu._imp());
         assert_eq!(true, cpu.z);
     }
 }

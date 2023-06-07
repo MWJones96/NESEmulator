@@ -57,7 +57,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.sre_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.sre_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -66,7 +66,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sre_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.sre_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sre_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(6, cpu.sre_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -84,7 +84,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.sre_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(7, cpu.sre_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -93,7 +93,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.sre_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(7, cpu.sre_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.sre_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(8, cpu.sre_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -111,7 +111,7 @@ mod sre_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.sre_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(8, cpu.sre_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod sre_tests {
             .once()
             .return_const(());
 
-        cpu.sre(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.sre(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.c);
         assert_eq!(0x7e, cpu.a);
     }
@@ -141,7 +141,7 @@ mod sre_tests {
             .once()
             .return_const(());
 
-        cpu.sre(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.sre(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.n);
         assert_eq!(0x80, cpu.a);
     }
@@ -156,7 +156,7 @@ mod sre_tests {
             .once()
             .return_const(());
 
-        cpu.sre(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.sre(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.z);
         assert_eq!(0x0, cpu.a);
     }

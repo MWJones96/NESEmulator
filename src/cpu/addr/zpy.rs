@@ -20,7 +20,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn zpy(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zpy(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let addr = self.fetch_byte(bus);
+        self._zpy(addr, bus)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _zpy(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.y) as u16;
 
         AddrModeResult {
@@ -50,7 +56,7 @@ mod zpy_tests {
 
         mock_bus.expect_read().with(eq(0x1)).return_const(0x77);
 
-        let result = cpu.zpy(0xff, &mock_bus);
+        let result = cpu._zpy(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0x77),

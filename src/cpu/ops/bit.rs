@@ -48,7 +48,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        assert_eq!(3, cpu.bit_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.bit_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        assert_eq!(4, cpu.bit_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.bit_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x80);
 
-        cpu.bit(&cpu.zp(0x0, &bus));
+        cpu.bit(&cpu._zp(0x0, &bus));
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
@@ -84,7 +84,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x40);
 
-        cpu.bit(&cpu.zp(0x0, &bus));
+        cpu.bit(&cpu._zp(0x0, &bus));
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
@@ -98,7 +98,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        cpu.bit(&cpu.zp(0x0, &bus));
+        cpu.bit(&cpu._zp(0x0, &bus));
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

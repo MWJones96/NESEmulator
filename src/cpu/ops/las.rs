@@ -42,7 +42,7 @@ mod las_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.las_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(4, cpu.las_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod las_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.las_cycles(&cpu.absy(0x34, &bus)));
+        assert_eq!(5, cpu.las_cycles(&cpu._absy(0x34, &bus)));
     }
 
     #[test]
@@ -64,7 +64,7 @@ mod las_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0b1111_1100);
 
-        cpu.las(&cpu.absy(0x0, &bus));
+        cpu.las(&cpu._absy(0x0, &bus));
 
         assert_eq!(0xf0, cpu.a);
         assert_eq!(0xf0, cpu.x);

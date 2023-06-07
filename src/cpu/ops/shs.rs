@@ -45,7 +45,7 @@ mod shs_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.shs_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(5, cpu.shs_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -63,7 +63,7 @@ mod shs_tests {
             .return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.shs(&cpu.absy(0x1234, &bus), &mut bus);
+        cpu.shs(&cpu._absy(0x1234, &bus), &mut bus);
 
         assert_eq!(0x1, cpu.sp);
     }

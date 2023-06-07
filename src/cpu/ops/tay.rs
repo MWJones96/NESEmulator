@@ -38,7 +38,7 @@ mod tay_tests {
     #[test]
     fn test_tay_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.tay_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.tay_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -46,7 +46,7 @@ mod tay_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xcc;
 
-        cpu.tay(&cpu.imp());
+        cpu.tay(&cpu._imp());
         assert_eq!(0xcc, cpu.y);
         assert_eq!(0xcc, cpu.a);
     }
@@ -56,7 +56,7 @@ mod tay_tests {
         let mut cpu = CPU::new();
         cpu.a = 0x80;
 
-        cpu.tay(&cpu.imp());
+        cpu.tay(&cpu._imp());
         assert_eq!(true, cpu.n);
     }
 
@@ -65,7 +65,7 @@ mod tay_tests {
         let mut cpu = CPU::new();
         cpu.y = 0xff;
 
-        cpu.tay(&cpu.imp());
+        cpu.tay(&cpu._imp());
         assert_eq!(true, cpu.z);
     }
 }

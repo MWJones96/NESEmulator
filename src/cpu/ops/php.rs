@@ -38,7 +38,7 @@ mod php_tests {
     #[test]
     fn test_php_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(3, cpu.php_cycles(&cpu.imp()));
+        assert_eq!(3, cpu.php_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -52,7 +52,7 @@ mod php_tests {
             .times(1)
             .return_const(());
 
-        cpu.php(&cpu.imp(), &mut bus);
+        cpu.php(&cpu._imp(), &mut bus);
         assert_eq!(0xfe, cpu.sp);
     }
 
@@ -64,7 +64,7 @@ mod php_tests {
 
         bus.expect_write().return_const(());
 
-        cpu.php(&cpu.imp(), &mut bus);
+        cpu.php(&cpu._imp(), &mut bus);
         assert_eq!(0xff, cpu.sp);
     }
 }

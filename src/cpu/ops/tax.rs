@@ -39,7 +39,7 @@ mod tax_tests {
     #[test]
     fn test_tax_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.tax_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.tax_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod tax_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xcc;
 
-        cpu.tax(&cpu.imp());
+        cpu.tax(&cpu._imp());
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.a);
     }
@@ -57,7 +57,7 @@ mod tax_tests {
         let mut cpu = CPU::new();
         cpu.a = 0x80;
 
-        cpu.tax(&cpu.imp());
+        cpu.tax(&cpu._imp());
         assert_eq!(true, cpu.n);
     }
 
@@ -66,7 +66,7 @@ mod tax_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xff;
 
-        cpu.tax(&cpu.imp());
+        cpu.tax(&cpu._imp());
         assert_eq!(true, cpu.z);
     }
 }

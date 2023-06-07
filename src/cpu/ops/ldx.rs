@@ -38,7 +38,7 @@ mod ldx_tests {
     #[test]
     fn test_ldx_imm_correct_cycles() {
         let cpu = CPU::new();
-        let cycles: u8 = cpu.ldx_cycles(&cpu.imm(0x0));
+        let cycles: u8 = cpu.ldx_cycles(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
@@ -48,7 +48,7 @@ mod ldx_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu.zp(0x0, &bus));
+        let cycles: u8 = cpu.ldx_cycles(&cpu._zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
@@ -58,7 +58,7 @@ mod ldx_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu.zpy(0x0, &bus));
+        let cycles: u8 = cpu.ldx_cycles(&cpu._zpy(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -68,7 +68,7 @@ mod ldx_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu.abs(0x0, &bus));
+        let cycles: u8 = cpu.ldx_cycles(&cpu._abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -78,7 +78,7 @@ mod ldx_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.ldx_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.ldx_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -89,32 +89,32 @@ mod ldx_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.ldx_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.ldx_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
     #[test]
     fn test_ldx_value_goes_to_x_register() {
         let mut cpu = CPU::new();
-        cpu.ldx(&cpu.imm(0xff));
+        cpu.ldx(&cpu._imm(0xff));
         assert_eq!(0xff, cpu.x);
     }
 
     #[test]
     fn test_ldx_negative_flag() {
         let mut cpu = CPU::new();
-        cpu.ldx(&cpu.imm(0x80));
+        cpu.ldx(&cpu._imm(0x80));
         assert_eq!(true, cpu.n);
-        cpu.ldx(&cpu.imm(0x7f));
+        cpu.ldx(&cpu._imm(0x7f));
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_ldx_zero_flag() {
         let mut cpu = CPU::new();
-        cpu.ldx(&cpu.imm(0x0));
+        cpu.ldx(&cpu._imm(0x0));
         assert_eq!(true, cpu.z);
-        cpu.ldx(&cpu.imm(0x1));
+        cpu.ldx(&cpu._imm(0x1));
         assert_eq!(false, cpu.z);
     }
 }

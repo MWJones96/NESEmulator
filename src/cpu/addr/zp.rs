@@ -16,7 +16,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn zp(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zp(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let addr = self.fetch_byte(bus);
+        self._zp(addr, bus)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _zp(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr as u16)),
             cycles: 1,
@@ -43,7 +49,7 @@ mod zp_tests {
         let mut mock_bus = MockCPUBus::new();
         mock_bus.expect_read().with(eq(0x0)).return_const(0x77);
 
-        let result = cpu.zp(0x0, &mock_bus);
+        let result = cpu._zp(0x0, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0x77),

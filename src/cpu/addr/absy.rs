@@ -20,7 +20,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn absy(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn absy(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let addr = self.fetch_two_bytes_as_u16(bus);
+        self._absy(addr, bus)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _absy(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(self.y as u16);
         let page_after: u8 = (resolved_addr >> 8) as u8;
@@ -53,7 +59,7 @@ mod absy_tests {
 
         mock_bus.expect_read().with(eq(0x2)).return_const(0x88);
 
-        let result = cpu.absy(0x0, &mock_bus);
+        let result = cpu._absy(0x0, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0x88),
@@ -77,7 +83,7 @@ mod absy_tests {
 
         mock_bus.expect_read().with(eq(0x1)).return_const(0x88);
 
-        let result = cpu.absy(0xffff, &mock_bus);
+        let result = cpu._absy(0xffff, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0x88),

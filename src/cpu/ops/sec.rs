@@ -34,7 +34,7 @@ mod sec_tests {
     fn test_sec_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.sec_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.sec_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -42,10 +42,10 @@ mod sec_tests {
         let mut cpu = CPU::new();
         cpu.c = false;
 
-        cpu.sec(&cpu.imp());
+        cpu.sec(&cpu._imp());
         assert_eq!(true, cpu.c);
 
-        cpu.sec(&cpu.imp());
+        cpu.sec(&cpu._imp());
         assert_eq!(true, cpu.c);
     }
 }

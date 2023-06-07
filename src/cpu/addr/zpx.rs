@@ -20,7 +20,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn zpx(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zpx(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let addr = self.fetch_byte(bus);
+        self._zpx(addr, bus)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _zpx(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.x) as u16;
 
         AddrModeResult {
@@ -50,7 +56,7 @@ mod zpx_tests {
 
         mock_bus.expect_read().with(eq(0x1)).return_const(0x77);
 
-        let result = cpu.zpx(0xff, &mock_bus);
+        let result = cpu._zpx(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0x77),

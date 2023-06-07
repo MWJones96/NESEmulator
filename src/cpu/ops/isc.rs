@@ -41,7 +41,7 @@ impl CPU {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_add(1);
         bus.write(mode.addr.unwrap(), data_to_write);
-        self.sbc(&self.imm(data_to_write));
+        self.sbc(&self._imm(data_to_write));
     }
 }
 
@@ -59,7 +59,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.isc_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.isc_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.isc_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.isc_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.isc_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(6, cpu.isc_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -86,7 +86,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.isc_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(7, cpu.isc_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.isc_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(7, cpu.isc_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -104,7 +104,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.isc_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(8, cpu.isc_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -113,7 +113,7 @@ mod isc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.isc_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(8, cpu.isc_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -129,7 +129,7 @@ mod isc_tests {
             .once()
             .return_const(());
 
-        cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.isc(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.z);
     }
 
@@ -146,7 +146,7 @@ mod isc_tests {
             .once()
             .return_const(());
 
-        cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.isc(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.n);
         assert_eq!(0xff, cpu.a);
     }
@@ -164,7 +164,7 @@ mod isc_tests {
             .once()
             .return_const(());
 
-        cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.isc(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.v);
         assert_eq!(0x7f, cpu.a);
     }
@@ -182,7 +182,7 @@ mod isc_tests {
             .once()
             .return_const(());
 
-        cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.isc(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.v);
         assert_eq!(0x80, cpu.a);
     }
@@ -200,7 +200,7 @@ mod isc_tests {
             .once()
             .return_const(());
 
-        cpu.isc(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.isc(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.c);
         assert_eq!(0x0, cpu.a);
     }

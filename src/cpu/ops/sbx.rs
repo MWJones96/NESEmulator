@@ -41,7 +41,7 @@ mod sbx_tests {
     #[test]
     fn test_sbx_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.sbx_cycles(&cpu.imm(0x0)))
+        assert_eq!(2, cpu.sbx_cycles(&cpu._imm(0x0)))
     }
 
     #[test]
@@ -50,7 +50,7 @@ mod sbx_tests {
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
-        cpu.sbx(&cpu.imm(0x1));
+        cpu.sbx(&cpu._imm(0x1));
         assert_eq!(0xff, cpu.x);
         assert_eq!(true, cpu.n);
     }
@@ -61,7 +61,7 @@ mod sbx_tests {
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
-        cpu.sbx(&cpu.imm(0x0));
+        cpu.sbx(&cpu._imm(0x0));
         assert_eq!(true, cpu.z);
     }
 
@@ -71,10 +71,10 @@ mod sbx_tests {
         cpu.a = 0b0000_1010;
         cpu.x = 0b0000_1111;
 
-        cpu.sbx(&cpu.imm(0b0000_1010));
+        cpu.sbx(&cpu._imm(0b0000_1010));
         assert_eq!(true, cpu.c);
 
-        cpu.sbx(&cpu.imm(0x1));
+        cpu.sbx(&cpu._imm(0x1));
         assert_eq!(false, cpu.c);
     }
 }

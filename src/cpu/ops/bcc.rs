@@ -41,7 +41,7 @@ mod bcc_tests {
 
         cpu.pc = 0x1234;
         cpu.c = true;
-        assert_eq!(2, cpu.bcc_cycles(&cpu.rel(0x1)));
+        assert_eq!(2, cpu.bcc_cycles(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -50,7 +50,7 @@ mod bcc_tests {
 
         cpu.pc = 0x12ff;
         cpu.c = true;
-        assert_eq!(2, cpu.bcc_cycles(&cpu.rel(0xa)));
+        assert_eq!(2, cpu.bcc_cycles(&cpu._rel(0xa)));
     }
 
     #[test]
@@ -59,7 +59,7 @@ mod bcc_tests {
         cpu.pc = 0x81;
         cpu.c = false;
 
-        assert_eq!(3, cpu.bcc_cycles(&cpu.rel(0x80)));
+        assert_eq!(3, cpu.bcc_cycles(&cpu._rel(0x80)));
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod bcc_tests {
         cpu.pc = 0x8081;
         cpu.c = false;
 
-        assert_eq!(4, cpu.bcc_cycles(&cpu.rel(0x7f)));
+        assert_eq!(4, cpu.bcc_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod bcc_tests {
 
         cpu.pc = 0x1234;
         cpu.c = true;
-        cpu.bcc(&cpu.rel(0x1));
+        cpu.bcc(&cpu._rel(0x1));
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -87,7 +87,7 @@ mod bcc_tests {
 
         cpu.pc = 0x12ff;
         cpu.c = true;
-        cpu.bcc(&cpu.rel(0xa));
+        cpu.bcc(&cpu._rel(0xa));
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -97,7 +97,7 @@ mod bcc_tests {
         cpu.pc = 0x81;
         cpu.c = false;
 
-        cpu.bcc(&cpu.rel(0x80));
+        cpu.bcc(&cpu._rel(0x80));
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -107,7 +107,7 @@ mod bcc_tests {
         cpu.pc = 0x8081;
         cpu.c = false;
 
-        cpu.bcc(&cpu.rel(0x7f));
+        cpu.bcc(&cpu._rel(0x7f));
         assert_eq!(0x8100, cpu.pc);
     }
 }

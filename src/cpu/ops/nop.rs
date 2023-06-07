@@ -28,13 +28,13 @@ mod nop_tests {
     #[test]
     fn test_nop_imp_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.nop_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.nop_cycles(&cpu._imp()));
     }
 
     #[test]
     fn test_nop_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.nop_cycles(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.nop_cycles(&cpu._imm(0x0)));
     }
 
     #[test]
@@ -43,7 +43,7 @@ mod nop_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.nop_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.nop_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -52,7 +52,7 @@ mod nop_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.nop_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(4, cpu.nop_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod nop_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.nop_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.nop_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -70,7 +70,7 @@ mod nop_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.nop_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(4, cpu.nop_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -80,12 +80,12 @@ mod nop_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.nop_cycles(&cpu.absx(0x1234, &bus)));
+        assert_eq!(5, cpu.nop_cycles(&cpu._absx(0x1234, &bus)));
     }
 
     #[test]
     fn test_nop_does_not_crash() {
         let cpu = CPU::new();
-        cpu.nop(&cpu.imp());
+        cpu.nop(&cpu._imp());
     }
 }

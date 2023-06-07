@@ -39,7 +39,7 @@ mod iny_tests {
     #[test]
     fn test_iny_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.iny_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.iny_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod iny_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x80;
 
-        cpu.iny(&cpu.imp());
+        cpu.iny(&cpu._imp());
 
         assert_eq!(0x81, cpu.y);
     }
@@ -57,7 +57,7 @@ mod iny_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x7f;
 
-        cpu.iny(&cpu.imp());
+        cpu.iny(&cpu._imp());
 
         assert_eq!(0x80, cpu.y);
         assert_eq!(true, cpu.n);
@@ -68,7 +68,7 @@ mod iny_tests {
         let mut cpu = CPU::new();
         cpu.y = 0xff;
 
-        cpu.iny(&cpu.imp());
+        cpu.iny(&cpu._imp());
 
         assert_eq!(0x0, cpu.y);
         assert_eq!(true, cpu.z);

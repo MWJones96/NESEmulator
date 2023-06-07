@@ -44,7 +44,7 @@ mod rts_tests {
     fn test_rts_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(6, cpu.rts_cycles(&cpu.imp()));
+        assert_eq!(6, cpu.rts_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod rts_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.rts(&cpu.imp(), &bus);
+        cpu.rts(&cpu._imp(), &bus);
 
         assert_eq!(0x2041, cpu.pc);
         assert_eq!(0xff, cpu.sp);

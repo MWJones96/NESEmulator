@@ -37,7 +37,7 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         self.and(mode);
-        self.ror(&self.acc(), bus);
+        self.ror(&self._acc(), bus);
 
         self.c = (self.a & 0x40) != 0;
         self.v = ((self.a & 0x40) >> 6) != ((self.a & 0x20) >> 5);
@@ -53,7 +53,7 @@ mod arr_tests {
     #[test]
     fn test_arr_imm_correct_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.arr_cycles(&cpu.imm(0xff)));
+        assert_eq!(2, cpu.arr_cycles(&cpu._imm(0xff)));
     }
 
     #[test]
@@ -62,7 +62,7 @@ mod arr_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_1111;
-        cpu.arr(&cpu.imm(0b1111_1111), &mut bus);
+        cpu.arr(&cpu._imm(0b1111_1111), &mut bus);
 
         assert_eq!(0b0000_0111, cpu.a);
     }
@@ -74,7 +74,7 @@ mod arr_tests {
 
         cpu.a = 0b0000_0000;
         cpu.c = true;
-        cpu.arr(&cpu.imm(0b1111_1111), &mut bus);
+        cpu.arr(&cpu._imm(0b1111_1111), &mut bus);
 
         assert_eq!(0b1000_0000, cpu.a);
         assert_eq!(true, cpu.n);
@@ -86,7 +86,7 @@ mod arr_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0000;
-        cpu.arr(&cpu.imm(0b1111_1111), &mut bus);
+        cpu.arr(&cpu._imm(0b1111_1111), &mut bus);
 
         assert_eq!(0b0000_0000, cpu.a);
         assert_eq!(true, cpu.z);
@@ -98,7 +98,7 @@ mod arr_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b1000_0000;
-        cpu.arr(&cpu.imm(0b1000_0000), &mut bus);
+        cpu.arr(&cpu._imm(0b1000_0000), &mut bus);
 
         assert_eq!(0b0100_0000, cpu.a);
         assert_eq!(true, cpu.c);
@@ -110,14 +110,14 @@ mod arr_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b1000_0000;
-        cpu.arr(&cpu.imm(0b1000_0000), &mut bus);
+        cpu.arr(&cpu._imm(0b1000_0000), &mut bus);
 
         assert_eq!(0b0100_0000, cpu.a);
         assert_eq!(true, cpu.v);
 
         cpu.c = false;
         cpu.a = 0b1111_1111;
-        cpu.arr(&cpu.imm(0b1111_1111), &mut bus);
+        cpu.arr(&cpu._imm(0b1111_1111), &mut bus);
 
         assert_eq!(0b0111_1111, cpu.a);
         assert_eq!(false, cpu.v);

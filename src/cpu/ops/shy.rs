@@ -41,7 +41,7 @@ mod shy_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.shy_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(5, cpu.shy_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -57,6 +57,6 @@ mod shy_tests {
             .once()
             .return_const(());
 
-        cpu.shy(&cpu.absx(0x1234, &bus), &mut bus);
+        cpu.shy(&cpu._absx(0x1234, &bus), &mut bus);
     }
 }

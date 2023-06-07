@@ -7,13 +7,18 @@
     Bytes: 1
 */
 
-use crate::cpu::CPU;
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn acc(&self) -> AddrModeResult {
+    pub(in crate::cpu) fn acc(&mut self, _bus: &impl CPUBus) -> AddrModeResult {
+        self._acc()
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _acc(&self) -> AddrModeResult {
         AddrModeResult {
             data: Some(self.a),
             cycles: 0,
@@ -47,7 +52,7 @@ mod acc_tests {
                 operands: "".to_owned(),
                 repr: "A".to_owned()
             },
-            cpu.acc()
+            cpu._acc()
         );
     }
 }

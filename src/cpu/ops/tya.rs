@@ -24,7 +24,7 @@ mod tya_tests {
     #[test]
     fn test_tya_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.tya_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.tya_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -32,7 +32,7 @@ mod tya_tests {
         let mut cpu = CPU::new();
         cpu.y = 0xcc;
 
-        cpu.tya(&cpu.imp());
+        cpu.tya(&cpu._imp());
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.y);
     }
@@ -42,7 +42,7 @@ mod tya_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x80;
 
-        cpu.tya(&cpu.imp());
+        cpu.tya(&cpu._imp());
         assert_eq!(true, cpu.n);
     }
 
@@ -51,7 +51,7 @@ mod tya_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xff;
 
-        cpu.tya(&cpu.imp());
+        cpu.tya(&cpu._imp());
         assert_eq!(true, cpu.z);
     }
 }

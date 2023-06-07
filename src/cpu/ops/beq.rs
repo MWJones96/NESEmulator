@@ -40,7 +40,7 @@ mod beq_tests {
     #[test]
     fn test_beq_no_branch_no_page_cross() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.beq_cycles(&cpu.rel(0x1)));
+        assert_eq!(2, cpu.beq_cycles(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -48,7 +48,7 @@ mod beq_tests {
         let mut cpu = CPU::new();
         cpu.pc = 0x1234;
 
-        assert_eq!(2, cpu.beq_cycles(&cpu.rel(0xaa)));
+        assert_eq!(2, cpu.beq_cycles(&cpu._rel(0xaa)));
     }
 
     #[test]
@@ -56,7 +56,7 @@ mod beq_tests {
         let mut cpu = CPU::new();
         cpu.z = true;
 
-        assert_eq!(3, cpu.beq_cycles(&cpu.rel(0x7f)));
+        assert_eq!(3, cpu.beq_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod beq_tests {
         cpu.z = true;
         cpu.pc = 0x12ff;
 
-        assert_eq!(4, cpu.beq_cycles(&cpu.rel(0x7f)));
+        assert_eq!(4, cpu.beq_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod beq_tests {
 
         cpu.pc = 0x1234;
         cpu.z = false;
-        cpu.beq(&cpu.rel(0x1));
+        cpu.beq(&cpu._rel(0x1));
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -84,7 +84,7 @@ mod beq_tests {
 
         cpu.pc = 0x12ff;
         cpu.z = false;
-        cpu.beq(&cpu.rel(0xa));
+        cpu.beq(&cpu._rel(0xa));
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -94,7 +94,7 @@ mod beq_tests {
         cpu.pc = 0x81;
         cpu.z = true;
 
-        cpu.beq(&cpu.rel(0x80));
+        cpu.beq(&cpu._rel(0x80));
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -104,7 +104,7 @@ mod beq_tests {
         cpu.pc = 0x8081;
         cpu.z = true;
 
-        cpu.beq(&cpu.rel(0x7f));
+        cpu.beq(&cpu._rel(0x7f));
         assert_eq!(0x8100, cpu.pc);
     }
 }

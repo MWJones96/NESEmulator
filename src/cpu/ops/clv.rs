@@ -36,7 +36,7 @@ mod clv_tests {
     fn test_clv_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.clv_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.clv_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -44,10 +44,10 @@ mod clv_tests {
         let mut cpu = CPU::new();
         cpu.v = true;
 
-        cpu.clv(&cpu.imp());
+        cpu.clv(&cpu._imp());
         assert_eq!(false, cpu.v);
 
-        cpu.clv(&cpu.imp());
+        cpu.clv(&cpu._imp());
         assert_eq!(false, cpu.v);
     }
 }

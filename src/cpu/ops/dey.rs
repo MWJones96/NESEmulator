@@ -40,7 +40,7 @@ mod dey_tests {
     #[test]
     fn test_dey_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.dey_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.dey_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -48,7 +48,7 @@ mod dey_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x80;
 
-        cpu.dey(&cpu.imp());
+        cpu.dey(&cpu._imp());
 
         assert_eq!(0x7f, cpu.y);
     }
@@ -58,7 +58,7 @@ mod dey_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x0;
 
-        cpu.dey(&cpu.imp());
+        cpu.dey(&cpu._imp());
 
         assert_eq!(0xff, cpu.y);
         assert_eq!(true, cpu.n);
@@ -69,7 +69,7 @@ mod dey_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x1;
 
-        cpu.dey(&cpu.imp());
+        cpu.dey(&cpu._imp());
 
         assert_eq!(0x0, cpu.y);
         assert_eq!(true, cpu.z);

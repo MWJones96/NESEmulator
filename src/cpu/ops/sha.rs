@@ -67,7 +67,7 @@ mod sha_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.sha_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(5, cpu.sha_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod sha_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sha_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(6, cpu.sha_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -93,7 +93,7 @@ mod sha_tests {
             .once()
             .return_const(());
 
-        cpu.sha(&cpu.absy(0x1234, &bus), &mut bus);
+        cpu.sha(&cpu._absy(0x1234, &bus), &mut bus);
     }
 
     #[test]
@@ -114,6 +114,6 @@ mod sha_tests {
             .once()
             .return_const(());
 
-        cpu.sha(&cpu.indy(0x0, &bus), &mut bus);
+        cpu.sha(&cpu._indy(0x0, &bus), &mut bus);
     }
 }

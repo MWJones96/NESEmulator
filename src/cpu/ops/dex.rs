@@ -36,7 +36,7 @@ mod dex_tests {
     #[test]
     fn test_dex_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.dex_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.dex_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -44,7 +44,7 @@ mod dex_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.dex(&cpu.imp());
+        cpu.dex(&cpu._imp());
 
         assert_eq!(0x7f, cpu.x);
     }
@@ -54,7 +54,7 @@ mod dex_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x0;
 
-        cpu.dex(&cpu.imp());
+        cpu.dex(&cpu._imp());
 
         assert_eq!(0xff, cpu.x);
         assert_eq!(true, cpu.n);
@@ -65,7 +65,7 @@ mod dex_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x1;
 
-        cpu.dex(&cpu.imp());
+        cpu.dex(&cpu._imp());
 
         assert_eq!(0x0, cpu.x);
         assert_eq!(true, cpu.z);

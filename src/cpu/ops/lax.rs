@@ -41,7 +41,7 @@ mod lax_tests {
     #[test]
     fn test_lax_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.lax_cycles(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.lax_cycles(&cpu._imm(0x0)));
     }
 
     #[test]
@@ -50,7 +50,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.lax_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.lax_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -59,7 +59,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.lax_cycles(&cpu.zpy(0x0, &bus)));
+        assert_eq!(4, cpu.lax_cycles(&cpu._zpy(0x0, &bus)));
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.lax_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.lax_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -77,7 +77,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.lax_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(4, cpu.lax_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.lax_cycles(&cpu.absy(0x34, &bus)));
+        assert_eq!(5, cpu.lax_cycles(&cpu._absy(0x34, &bus)));
     }
 
     #[test]
@@ -98,7 +98,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.lax_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(6, cpu.lax_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod lax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.lax_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(5, cpu.lax_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -121,14 +121,14 @@ mod lax_tests {
         bus.expect_read().with(eq(0x12)).return_const(0x12);
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.lax_cycles(&cpu.indy(0x34, &bus)));
+        assert_eq!(6, cpu.lax_cycles(&cpu._indy(0x34, &bus)));
     }
 
     #[test]
     fn test_lax() {
         let mut cpu = CPU::new();
 
-        cpu.lax(&cpu.imm(0xee));
+        cpu.lax(&cpu._imm(0xee));
 
         assert_eq!(0xee, cpu.a);
         assert_eq!(0xee, cpu.x);
@@ -136,7 +136,7 @@ mod lax_tests {
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.z);
 
-        cpu.lax(&cpu.imm(0x0));
+        cpu.lax(&cpu._imm(0x0));
 
         assert_eq!(0x0, cpu.a);
         assert_eq!(0x0, cpu.x);

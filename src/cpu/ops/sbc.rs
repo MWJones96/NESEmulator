@@ -30,7 +30,7 @@ impl CPU {
 
     #[inline]
     pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult) {
-        self.adc(&self.imm(!mode.data.unwrap()))
+        self.adc(&self._imm(!mode.data.unwrap()))
     }
 }
 
@@ -45,7 +45,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_imm_correct_cycles() {
         let cpu = CPU::new();
-        let cycles: u8 = cpu.sbc_cycles(&cpu.imm(0x0));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
@@ -55,7 +55,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.zp(0x0, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
@@ -65,7 +65,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.zpx(0x0, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._zpx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -75,7 +75,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.abs(0x0, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -85,7 +85,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.absx(0x0, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._absx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -96,7 +96,7 @@ mod sbc_tests {
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.absx(0x88, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._absx(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -106,7 +106,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -117,7 +117,7 @@ mod sbc_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.sbc_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -127,7 +127,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.indx(0x88, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._indx(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -137,7 +137,7 @@ mod sbc_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.sbc_cycles(&cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._indy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -151,7 +151,7 @@ mod sbc_tests {
         bus.expect_read().with(eq(0x2310)).return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.sbc_cycles(&cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.sbc_cycles(&cpu._indy(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -161,7 +161,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu.imm(0x2));
+        cpu.sbc(&cpu._imm(0x2));
 
         assert_eq!(0xff, cpu.a);
     }
@@ -172,7 +172,7 @@ mod sbc_tests {
 
         cpu.c = false; //Borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu.imm(0x2));
+        cpu.sbc(&cpu._imm(0x2));
 
         assert_eq!(0xfe, cpu.a);
     }
@@ -183,7 +183,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu.imm(0x2));
+        cpu.sbc(&cpu._imm(0x2));
 
         assert_eq!(true, cpu.n);
     }
@@ -194,7 +194,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu.imm(0x1));
+        cpu.sbc(&cpu._imm(0x1));
 
         assert_eq!(true, cpu.z);
     }
@@ -205,19 +205,19 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu.imm(0x2));
+        cpu.sbc(&cpu._imm(0x2));
 
         assert_eq!(false, cpu.c);
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu.imm(0x1));
+        cpu.sbc(&cpu._imm(0x1));
 
         assert_eq!(true, cpu.c);
 
         cpu.c = true; //No borrow
         cpu.a = 0x2;
-        cpu.sbc(&cpu.imm(0x1));
+        cpu.sbc(&cpu._imm(0x1));
 
         assert_eq!(true, cpu.c);
     }
@@ -229,20 +229,20 @@ mod sbc_tests {
         cpu.c = true;
         cpu.a = 0x7f;
 
-        cpu.sbc(&cpu.imm(0xff));
+        cpu.sbc(&cpu._imm(0xff));
 
         assert_eq!(true, cpu.v);
 
         cpu.c = true;
         cpu.a = 0x80;
 
-        cpu.sbc(&cpu.imm(0x1));
+        cpu.sbc(&cpu._imm(0x1));
         assert_eq!(true, cpu.v);
 
         cpu.c = true;
         cpu.a = 0x1;
 
-        cpu.sbc(&cpu.imm(0x1));
+        cpu.sbc(&cpu._imm(0x1));
         assert_eq!(false, cpu.v);
     }
 }

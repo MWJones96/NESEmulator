@@ -48,7 +48,7 @@ mod plp_tests {
     #[test]
     fn test_plp_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(4, cpu.plp_cycles(&cpu.imp()));
+        assert_eq!(4, cpu.plp_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -62,7 +62,7 @@ mod plp_tests {
             .times(1)
             .return_const(0xff);
 
-        cpu.plp(&cpu.imp(), &bus);
+        cpu.plp(&cpu._imp(), &bus);
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
@@ -85,7 +85,7 @@ mod plp_tests {
             .times(1)
             .return_const(0x00);
 
-        cpu.plp(&cpu.imp(), &bus);
+        cpu.plp(&cpu._imp(), &bus);
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
@@ -105,7 +105,7 @@ mod plp_tests {
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);
 
-        cpu.pla(&cpu.imp(), &bus);
+        cpu.pla(&cpu._imp(), &bus);
         assert_eq!(0x0, cpu.sp);
     }
 }

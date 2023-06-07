@@ -35,7 +35,7 @@ mod jmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.jmp_cycles(&cpu.abs(0x0000, &bus)));
+        assert_eq!(3, cpu.jmp_cycles(&cpu._abs(0x0000, &bus)));
     }
 
     #[test]
@@ -45,7 +45,7 @@ mod jmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.jmp_cycles(&cpu.ind(0x0000, &bus)));
+        assert_eq!(5, cpu.jmp_cycles(&cpu._ind(0x0000, &bus)));
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod jmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.jmp(&cpu.abs(0x1234, &bus));
+        cpu.jmp(&cpu._abs(0x1234, &bus));
         assert_eq!(0x1234, cpu.pc);
     }
 }

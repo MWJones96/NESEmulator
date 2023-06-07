@@ -61,7 +61,7 @@ mod ror_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        assert_eq!(2, cpu.ror_cycles(&cpu.acc()));
+        assert_eq!(2, cpu.ror_cycles(&cpu._acc()));
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod ror_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
-        assert_eq!(5, cpu.ror_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.ror_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod ror_tests {
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
 
-        assert_eq!(6, cpu.ror_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.ror_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod ror_tests {
             .times(1)
             .return_const(0xaa);
 
-        assert_eq!(6, cpu.ror_cycles(&cpu.abs(0xffff, &bus)));
+        assert_eq!(6, cpu.ror_cycles(&cpu._abs(0xffff, &bus)));
     }
 
     #[test]
@@ -107,7 +107,7 @@ mod ror_tests {
 
         bus.expect_read().with(eq(0x1)).times(1).return_const(0x88);
 
-        assert_eq!(7, cpu.ror_cycles(&cpu.absx(0xffff, &bus)));
+        assert_eq!(7, cpu.ror_cycles(&cpu._absx(0xffff, &bus)));
     }
 
     #[test]
@@ -118,7 +118,7 @@ mod ror_tests {
         cpu.a = 0b0000_0001;
         cpu.c = true;
 
-        cpu.ror(&cpu.acc(), &mut bus);
+        cpu.ror(&cpu._acc(), &mut bus);
         assert_eq!(0b1000_0000, cpu.a);
         assert_eq!(true, cpu.c);
     }
@@ -130,7 +130,7 @@ mod ror_tests {
 
         cpu.a = 0b0000_0001;
 
-        cpu.ror(&cpu.acc(), &mut bus);
+        cpu.ror(&cpu._acc(), &mut bus);
         assert_eq!(0b0000_0000, cpu.a);
         assert_eq!(true, cpu.c);
     }
@@ -143,7 +143,7 @@ mod ror_tests {
         cpu.a = 0x0;
         cpu.c = true;
 
-        cpu.ror(&cpu.acc(), &mut bus);
+        cpu.ror(&cpu._acc(), &mut bus);
         assert_eq!(0x80, cpu.a);
         assert_eq!(true, cpu.n);
     }
@@ -154,7 +154,7 @@ mod ror_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0x1;
-        cpu.ror(&cpu.acc(), &mut bus);
+        cpu.ror(&cpu._acc(), &mut bus);
 
         assert_eq!(true, cpu.z);
     }

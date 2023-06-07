@@ -18,7 +18,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn indy(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn indy(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let addr = self.fetch_byte(bus);
+        self._indy(addr, bus)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _indy(&self, addr: u8, bus: &impl CPUBus) -> AddrModeResult {
         let low_byte_addr = addr;
         let high_byte_addr = low_byte_addr.wrapping_add(1);
 
@@ -59,7 +65,7 @@ mod indy_tests {
         cpu.y = 0x2;
         mock_bus.expect_read().with(eq(0x8879)).return_const(0xbb);
 
-        let result = cpu.indy(0xff, &mock_bus);
+        let result = cpu._indy(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0xbb),
@@ -85,7 +91,7 @@ mod indy_tests {
         cpu.y = 0xff;
         mock_bus.expect_read().with(eq(0x8976)).return_const(0xcc);
 
-        let result = cpu.indy(0xff, &mock_bus);
+        let result = cpu._indy(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0xcc),

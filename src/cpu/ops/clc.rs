@@ -35,7 +35,7 @@ mod clc_tests {
     fn test_clc_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.clc_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.clc_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -43,10 +43,10 @@ mod clc_tests {
         let mut cpu = CPU::new();
         cpu.c = true;
 
-        cpu.clc(&cpu.imp());
+        cpu.clc(&cpu._imp());
         assert_eq!(false, cpu.c);
 
-        cpu.clc(&cpu.imp());
+        cpu.clc(&cpu._imp());
         assert_eq!(false, cpu.c);
     }
 }

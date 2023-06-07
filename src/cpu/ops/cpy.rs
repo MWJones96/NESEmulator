@@ -49,7 +49,7 @@ mod cpy_tests {
     fn test_cpy_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.cpy_cycles(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.cpy_cycles(&cpu._imm(0x0)));
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod cpy_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.cpy_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.cpy_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -67,7 +67,7 @@ mod cpy_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cpy_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.cpy_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod cpy_tests {
         let mut cpu = CPU::new();
 
         cpu.y = 0x10;
-        cpu.cpy(&cpu.imm(0x11));
+        cpu.cpy(&cpu._imm(0x11));
 
         assert_eq!(true, cpu.n);
         assert_eq!(0x10, cpu.y);
@@ -86,7 +86,7 @@ mod cpy_tests {
         let mut cpu = CPU::new();
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu.imm(0x20));
+        cpu.cpy(&cpu._imm(0x20));
 
         assert_eq!(true, cpu.z);
         assert_eq!(0x20, cpu.y);
@@ -97,19 +97,19 @@ mod cpy_tests {
         let mut cpu = CPU::new();
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu.imm(0x20));
+        cpu.cpy(&cpu._imm(0x20));
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.y);
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu.imm(0x10));
+        cpu.cpy(&cpu._imm(0x10));
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.y);
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu.imm(0x21));
+        cpu.cpy(&cpu._imm(0x21));
 
         assert_eq!(false, cpu.c);
         assert_eq!(0x20, cpu.y);

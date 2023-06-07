@@ -46,7 +46,7 @@ mod cmp_tests {
     fn test_cmp_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(2, cpu.cmp_cycles(&cpu.imm(0x0)));
+        assert_eq!(2, cpu.cmp_cycles(&cpu._imm(0x0)));
     }
 
     #[test]
@@ -55,7 +55,7 @@ mod cmp_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.cmp_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.cmp_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -64,7 +64,7 @@ mod cmp_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -73,7 +73,7 @@ mod cmp_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod cmp_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -93,7 +93,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.cmp_cycles(&cpu.absx(0x1234, &bus)));
+        assert_eq!(5, cpu.cmp_cycles(&cpu._absx(0x1234, &bus)));
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod cmp_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.cmp_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(4, cpu.cmp_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -113,7 +113,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.cmp_cycles(&cpu.absy(0x1234, &bus)));
+        assert_eq!(5, cpu.cmp_cycles(&cpu._absy(0x1234, &bus)));
     }
 
     #[test]
@@ -123,7 +123,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.cmp_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(6, cpu.cmp_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -133,7 +133,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.cmp_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(5, cpu.cmp_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -144,7 +144,7 @@ mod cmp_tests {
 
         bus.expect_read().return_const(0x80);
 
-        assert_eq!(6, cpu.cmp_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(6, cpu.cmp_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -152,7 +152,7 @@ mod cmp_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x10;
-        cpu.cmp(&cpu.imm(0x11));
+        cpu.cmp(&cpu._imm(0x11));
 
         assert_eq!(true, cpu.n);
         assert_eq!(0x10, cpu.a);
@@ -163,7 +163,7 @@ mod cmp_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu.imm(0x20));
+        cpu.cmp(&cpu._imm(0x20));
 
         assert_eq!(true, cpu.z);
         assert_eq!(0x20, cpu.a);
@@ -174,19 +174,19 @@ mod cmp_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu.imm(0x20));
+        cpu.cmp(&cpu._imm(0x20));
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.a);
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu.imm(0x10));
+        cpu.cmp(&cpu._imm(0x10));
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.a);
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu.imm(0x21));
+        cpu.cmp(&cpu._imm(0x21));
 
         assert_eq!(false, cpu.c);
         assert_eq!(0x20, cpu.a);

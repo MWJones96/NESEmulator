@@ -47,7 +47,7 @@ mod pla_tests {
     #[test]
     fn test_pla_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(4, cpu.pla_cycles(&cpu.imp()));
+        assert_eq!(4, cpu.pla_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -61,7 +61,7 @@ mod pla_tests {
             .times(1)
             .return_const(0xcc);
 
-        cpu.pla(&cpu.imp(), &bus);
+        cpu.pla(&cpu._imp(), &bus);
 
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xff, cpu.sp);
@@ -78,7 +78,7 @@ mod pla_tests {
             .times(1)
             .return_const(0x80);
 
-        cpu.pla(&cpu.imp(), &bus);
+        cpu.pla(&cpu._imp(), &bus);
 
         assert_eq!(true, cpu.n);
     }
@@ -91,7 +91,7 @@ mod pla_tests {
 
         bus.expect_read().with(eq(0x1ff)).times(1).return_const(0x0);
 
-        cpu.pla(&cpu.imp(), &bus);
+        cpu.pla(&cpu._imp(), &bus);
 
         assert_eq!(true, cpu.z);
     }
@@ -104,7 +104,7 @@ mod pla_tests {
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);
 
-        cpu.pla(&cpu.imp(), &bus);
+        cpu.pla(&cpu._imp(), &bus);
         assert_eq!(0x0, cpu.sp);
     }
 }

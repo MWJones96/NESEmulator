@@ -58,7 +58,7 @@ mod rti_tests {
     fn test_rti_correct_number_of_cycles() {
         let cpu = CPU::new();
 
-        assert_eq!(6, cpu.rti_cycles(&cpu.imp()));
+        assert_eq!(6, cpu.rti_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -74,7 +74,7 @@ mod rti_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.rti(&cpu.imp(), &bus);
+        cpu.rti(&cpu._imp(), &bus);
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
@@ -94,7 +94,7 @@ mod rti_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.rti(&cpu.imp(), &bus);
+        cpu.rti(&cpu._imp(), &bus);
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
@@ -124,7 +124,7 @@ mod rti_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.rti(&cpu.imp(), &bus);
+        cpu.rti(&cpu._imp(), &bus);
 
         assert_eq!(0x2040, cpu.pc);
         assert_eq!(0xff, cpu.sp);

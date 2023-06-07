@@ -57,7 +57,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.brk_cycles(&cpu.imp()));
+        assert_eq!(7, cpu.brk_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -67,7 +67,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(&cpu.imp(), &mut bus);
+        cpu.brk(&cpu._imp(), &mut bus);
 
         assert_eq!(true, cpu.i);
     }
@@ -91,7 +91,7 @@ mod brk_tests {
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(&cpu.imp(), &mut bus);
+        cpu.brk(&cpu._imp(), &mut bus);
     }
 
     #[test]
@@ -110,7 +110,7 @@ mod brk_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.brk(&cpu.imp(), &mut bus);
+        cpu.brk(&cpu._imp(), &mut bus);
 
         assert_eq!(0xfc, cpu.sp);
     }
@@ -132,7 +132,7 @@ mod brk_tests {
             .times(1)
             .return_const(0x40);
 
-        cpu.brk(&cpu.imp(), &mut bus);
+        cpu.brk(&cpu._imp(), &mut bus);
 
         assert_eq!(0x4020, cpu.pc);
         assert_eq!(true, cpu.i);
@@ -162,7 +162,7 @@ mod brk_tests {
             .times(1)
             .return_const(());
 
-        cpu.brk(&cpu.imp(), &mut bus);
+        cpu.brk(&cpu._imp(), &mut bus);
 
         assert_eq!(0xfd, cpu.sp);
     }

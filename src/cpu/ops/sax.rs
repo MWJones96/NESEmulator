@@ -38,7 +38,7 @@ mod sax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.sax_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.sax_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod sax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sax_cycles(&cpu.zpy(0x0, &bus)));
+        assert_eq!(4, cpu.sax_cycles(&cpu._zpy(0x0, &bus)));
     }
 
     #[test]
@@ -56,7 +56,7 @@ mod sax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sax_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.sax_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod sax_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sax_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(6, cpu.sax_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -81,6 +81,6 @@ mod sax_tests {
             .once()
             .return_const(());
 
-        cpu.sax(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.sax(&cpu._zp(0x0, &bus), &mut bus);
     }
 }

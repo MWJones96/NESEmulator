@@ -42,7 +42,7 @@ mod bne_tests {
 
         cpu.pc = 0x1234;
         cpu.z = true;
-        assert_eq!(2, cpu.bne_cycles(&cpu.rel(0x1)));
+        assert_eq!(2, cpu.bne_cycles(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -51,7 +51,7 @@ mod bne_tests {
 
         cpu.pc = 0x12ff;
         cpu.z = true;
-        assert_eq!(2, cpu.bne_cycles(&cpu.rel(0xa)));
+        assert_eq!(2, cpu.bne_cycles(&cpu._rel(0xa)));
     }
 
     #[test]
@@ -60,7 +60,7 @@ mod bne_tests {
         cpu.pc = 0x81;
         cpu.z = false;
 
-        assert_eq!(3, cpu.bne_cycles(&cpu.rel(0x80)));
+        assert_eq!(3, cpu.bne_cycles(&cpu._rel(0x80)));
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod bne_tests {
         cpu.pc = 0x8081;
         cpu.z = false;
 
-        assert_eq!(4, cpu.bne_cycles(&cpu.rel(0x7f)));
+        assert_eq!(4, cpu.bne_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -78,7 +78,7 @@ mod bne_tests {
 
         cpu.pc = 0x1234;
         cpu.z = true;
-        cpu.bne(&cpu.rel(0x1));
+        cpu.bne(&cpu._rel(0x1));
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -88,7 +88,7 @@ mod bne_tests {
 
         cpu.pc = 0x12ff;
         cpu.z = true;
-        cpu.bne(&cpu.rel(0xa));
+        cpu.bne(&cpu._rel(0xa));
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -98,7 +98,7 @@ mod bne_tests {
         cpu.pc = 0x81;
         cpu.z = false;
 
-        cpu.bne(&cpu.rel(0x80));
+        cpu.bne(&cpu._rel(0x80));
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -108,7 +108,7 @@ mod bne_tests {
         cpu.pc = 0x8081;
         cpu.z = false;
 
-        cpu.bne(&cpu.rel(0x7f));
+        cpu.bne(&cpu._rel(0x7f));
         assert_eq!(0x8100, cpu.pc);
     }
 }

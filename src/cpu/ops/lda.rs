@@ -43,7 +43,7 @@ mod lda_tests {
     #[test]
     fn test_lda_imm_correct_cycles() {
         let cpu = CPU::new();
-        let cycles: u8 = cpu.lda_cycles(&cpu.imm(0x0));
+        let cycles: u8 = cpu.lda_cycles(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
@@ -53,7 +53,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.zp(0x0, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._zp(0x0, &bus));
         assert_eq!(3, cycles);
     }
 
@@ -63,7 +63,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.zpx(0x0, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._zpx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -73,7 +73,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.abs(0x0, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._abs(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -83,7 +83,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.absx(0x0, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._absx(0x0, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -94,7 +94,7 @@ mod lda_tests {
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.absx(0x88, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._absx(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -104,7 +104,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(4, cycles);
     }
 
@@ -115,7 +115,7 @@ mod lda_tests {
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.lda_cycles(&cpu.absy(0x88, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._absy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -125,7 +125,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.indx(0x88, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._indx(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
@@ -135,7 +135,7 @@ mod lda_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        let cycles: u8 = cpu.lda_cycles(&cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._indy(0x88, &bus));
         assert_eq!(5, cycles);
     }
 
@@ -149,32 +149,32 @@ mod lda_tests {
         bus.expect_read().with(eq(0x2310)).return_const(0x0);
 
         cpu.y = 0xff;
-        let cycles: u8 = cpu.lda_cycles(&cpu.indy(0x88, &bus));
+        let cycles: u8 = cpu.lda_cycles(&cpu._indy(0x88, &bus));
         assert_eq!(6, cycles);
     }
 
     #[test]
     fn test_lda_value_goes_to_accumulator() {
         let mut cpu = CPU::new();
-        cpu.lda(&cpu.imm(0xff));
+        cpu.lda(&cpu._imm(0xff));
         assert_eq!(0xff, cpu.a);
     }
 
     #[test]
     fn test_lda_negative_flag() {
         let mut cpu = CPU::new();
-        cpu.lda(&cpu.imm(0x80));
+        cpu.lda(&cpu._imm(0x80));
         assert_eq!(true, cpu.n);
-        cpu.lda(&cpu.imm(0x7f));
+        cpu.lda(&cpu._imm(0x7f));
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_lda_zero_flag() {
         let mut cpu = CPU::new();
-        cpu.lda(&cpu.imm(0x0));
+        cpu.lda(&cpu._imm(0x0));
         assert_eq!(true, cpu.z);
-        cpu.lda(&cpu.imm(0x1));
+        cpu.lda(&cpu._imm(0x1));
         assert_eq!(false, cpu.z);
     }
 }

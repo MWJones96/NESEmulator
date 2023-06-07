@@ -16,7 +16,13 @@ use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn abs(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn abs(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let addr = self.fetch_two_bytes_as_u16(bus);
+        self._abs(addr, bus)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _abs(&self, addr: u16, bus: &impl CPUBus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr)),
             cycles: 2,
@@ -43,7 +49,7 @@ mod abs_tests {
 
         mock_bus.expect_read().with(eq(0xffff)).return_const(0x88);
 
-        let result = cpu.abs(0xffff, &mock_bus);
+        let result = cpu._abs(0xffff, &mock_bus);
         assert_eq!(
             AddrModeResult {
                 data: Some(0x88),

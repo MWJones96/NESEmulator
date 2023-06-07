@@ -27,7 +27,7 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn asr(&mut self, mode: &AddrModeResult, bus: &mut impl CPUBus) {
         self.and(mode);
-        self.lsr(&self.acc(), bus)
+        self.lsr(&self._acc(), bus)
     }
 }
 
@@ -40,7 +40,7 @@ mod asr_tests {
     #[test]
     fn test_asr_imm_correct_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.asr_cycles(&cpu.imm(0xff)));
+        assert_eq!(2, cpu.asr_cycles(&cpu._imm(0xff)));
     }
 
     #[test]
@@ -51,7 +51,7 @@ mod asr_tests {
         cpu.a = 0b1111_1111;
         cpu.n = true;
 
-        cpu.asr(&cpu.imm(0b1111_0000), &mut bus);
+        cpu.asr(&cpu._imm(0b1111_0000), &mut bus);
 
         assert_eq!(false, cpu.n);
         assert_eq!(0b0111_1000, cpu.a);
@@ -64,7 +64,7 @@ mod asr_tests {
 
         cpu.a = 0b0000_0001;
 
-        cpu.asr(&cpu.imm(0b0000_0001), &mut bus);
+        cpu.asr(&cpu._imm(0b0000_0001), &mut bus);
 
         assert_eq!(true, cpu.z);
     }
@@ -76,7 +76,7 @@ mod asr_tests {
 
         cpu.a = 0b0000_0001;
 
-        cpu.asr(&cpu.imm(0b0000_0001), &mut bus);
+        cpu.asr(&cpu._imm(0b0000_0001), &mut bus);
 
         assert_eq!(true, cpu.c);
     }

@@ -44,7 +44,7 @@ mod sty_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.sty_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.sty_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod sty_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sty_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.sty_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -65,7 +65,7 @@ mod sty_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sty_cycles(&cpu.absx(0xffff, &bus)));
+        assert_eq!(4, cpu.sty_cycles(&cpu._absx(0xffff, &bus)));
     }
 
     #[test]
@@ -81,6 +81,6 @@ mod sty_tests {
             .times(1)
             .return_const(());
 
-        cpu.sty(&cpu.abs(0xffff, &bus), &mut bus);
+        cpu.sty(&cpu._abs(0xffff, &bus), &mut bus);
     }
 }

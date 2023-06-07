@@ -39,7 +39,7 @@ mod txa_tests {
     #[test]
     fn test_txa_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.txa_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.txa_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod txa_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xcc;
 
-        cpu.txa(&cpu.imp());
+        cpu.txa(&cpu._imp());
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.x);
     }
@@ -57,7 +57,7 @@ mod txa_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.txa(&cpu.imp());
+        cpu.txa(&cpu._imp());
         assert_eq!(true, cpu.n);
     }
 
@@ -66,7 +66,7 @@ mod txa_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xff;
 
-        cpu.txa(&cpu.imp());
+        cpu.txa(&cpu._imp());
         assert_eq!(true, cpu.z);
     }
 }

@@ -37,7 +37,7 @@ mod bcs_tests {
     #[test]
     fn test_bcs_no_branch_no_page_cross() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.bcs_cycles(&cpu.rel(0x1)));
+        assert_eq!(2, cpu.bcs_cycles(&cpu._rel(0x1)));
     }
 
     #[test]
@@ -45,7 +45,7 @@ mod bcs_tests {
         let mut cpu = CPU::new();
         cpu.pc = 0x1234;
 
-        assert_eq!(2, cpu.bcs_cycles(&cpu.rel(0xaa)));
+        assert_eq!(2, cpu.bcs_cycles(&cpu._rel(0xaa)));
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod bcs_tests {
         let mut cpu = CPU::new();
         cpu.c = true;
 
-        assert_eq!(3, cpu.bcs_cycles(&cpu.rel(0x7f)));
+        assert_eq!(3, cpu.bcs_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -62,7 +62,7 @@ mod bcs_tests {
         cpu.c = true;
         cpu.pc = 0x12ff;
 
-        assert_eq!(4, cpu.bcs_cycles(&cpu.rel(0x7f)));
+        assert_eq!(4, cpu.bcs_cycles(&cpu._rel(0x7f)));
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod bcs_tests {
 
         cpu.pc = 0x1234;
         cpu.c = false;
-        cpu.bcs(&cpu.rel(0x1));
+        cpu.bcs(&cpu._rel(0x1));
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -81,7 +81,7 @@ mod bcs_tests {
 
         cpu.pc = 0x12ff;
         cpu.c = false;
-        cpu.bcs(&cpu.rel(0xa));
+        cpu.bcs(&cpu._rel(0xa));
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -91,7 +91,7 @@ mod bcs_tests {
         cpu.pc = 0x81;
         cpu.c = true;
 
-        cpu.bcs(&cpu.rel(0x80));
+        cpu.bcs(&cpu._rel(0x80));
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -101,7 +101,7 @@ mod bcs_tests {
         cpu.pc = 0x8081;
         cpu.c = true;
 
-        cpu.bcs(&cpu.rel(0x7f));
+        cpu.bcs(&cpu._rel(0x7f));
         assert_eq!(0x8100, cpu.pc);
     }
 }

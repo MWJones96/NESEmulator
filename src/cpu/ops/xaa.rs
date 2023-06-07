@@ -55,7 +55,7 @@ mod xaa_tests {
     #[test]
     fn test_xaa_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.xaa_cycles(&cpu.imm(0x00)));
+        assert_eq!(2, cpu.xaa_cycles(&cpu._imm(0x00)));
     }
 
     #[test]
@@ -63,7 +63,7 @@ mod xaa_tests {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
-        cpu.xaa(&cpu.imm(0xff), &mut bus);
+        cpu.xaa(&cpu._imm(0xff), &mut bus);
 
         assert_eq!(true, vec![0x00, 0xee, 0xef, 0xfe, 0xff].contains(&cpu.a));
     }

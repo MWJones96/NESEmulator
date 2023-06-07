@@ -40,7 +40,7 @@ impl CPU {
         let data_to_write = (self.c as u8) << 7 | data >> 1;
         self.c = (data & 0x1) != 0;
         bus.write(mode.addr.unwrap(), data_to_write);
-        self.adc(&self.imm(data_to_write));
+        self.adc(&self._imm(data_to_write));
     }
 }
 
@@ -58,7 +58,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.rra_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.rra_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -67,7 +67,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.rra_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.rra_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.rra_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(6, cpu.rra_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -85,7 +85,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.rra_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(7, cpu.rra_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -94,7 +94,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.rra_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(7, cpu.rra_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -103,7 +103,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.rra_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(8, cpu.rra_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -112,7 +112,7 @@ mod rra_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.rra_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(8, cpu.rra_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -131,7 +131,7 @@ mod rra_tests {
             .once()
             .return_const(());
 
-        cpu.rra(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.rra(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(0x82, cpu.a);
         assert_eq!(false, cpu.c);
         assert_eq!(true, cpu.n);
@@ -152,7 +152,7 @@ mod rra_tests {
             .once()
             .return_const(());
 
-        cpu.rra(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.rra(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(0x80, cpu.a);
         assert_eq!(true, cpu.v);
     }
@@ -172,7 +172,7 @@ mod rra_tests {
             .once()
             .return_const(());
 
-        cpu.rra(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.rra(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(0x0, cpu.a);
         assert_eq!(true, cpu.z);
     }
@@ -192,7 +192,7 @@ mod rra_tests {
             .once()
             .return_const(());
 
-        cpu.rra(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.rra(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(0x0, cpu.a);
         assert_eq!(true, cpu.c);
     }

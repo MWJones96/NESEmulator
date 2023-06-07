@@ -57,7 +57,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(5, cpu.inc_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.inc_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -69,7 +69,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.inc_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.inc_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -81,7 +81,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.inc_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(6, cpu.inc_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -93,7 +93,7 @@ mod inc_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(7, cpu.inc_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(7, cpu.inc_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod inc_tests {
             .times(1)
             .return_const(());
 
-        cpu.inc(&cpu.absx(0x0, &bus), &mut bus);
+        cpu.inc(&cpu._absx(0x0, &bus), &mut bus);
 
         assert_eq!(true, cpu.n);
     }
@@ -125,7 +125,7 @@ mod inc_tests {
             .times(1)
             .return_const(());
 
-        cpu.inc(&cpu.absx(0x0, &bus), &mut bus);
+        cpu.inc(&cpu._absx(0x0, &bus), &mut bus);
 
         assert_eq!(true, cpu.z);
     }

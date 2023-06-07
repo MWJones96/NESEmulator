@@ -51,7 +51,7 @@ mod dec_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(5, cpu.dec_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.dec_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -63,7 +63,7 @@ mod dec_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.dec_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.dec_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod dec_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(6, cpu.dec_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(6, cpu.dec_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -87,7 +87,7 @@ mod dec_tests {
 
         bus.expect_write().return_const(());
 
-        assert_eq!(7, cpu.dec_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(7, cpu.dec_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod dec_tests {
             .times(1)
             .return_const(());
 
-        cpu.dec(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.dec(&cpu._zp(0x0, &bus), &mut bus);
     }
 
     #[test]
@@ -114,7 +114,7 @@ mod dec_tests {
 
         bus.expect_write().with(eq(0x0), eq(0xff)).return_const(());
 
-        cpu.dec(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.dec(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.n);
     }
 
@@ -127,7 +127,7 @@ mod dec_tests {
 
         bus.expect_write().with(eq(0x0), eq(0x0)).return_const(());
 
-        cpu.dec(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.dec(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.z);
     }
 }

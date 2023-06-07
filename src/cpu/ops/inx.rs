@@ -39,7 +39,7 @@ mod inx_tests {
     #[test]
     fn test_inx_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.inx_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.inx_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -47,7 +47,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.inx(&cpu.imp());
+        cpu.inx(&cpu._imp());
 
         assert_eq!(0x81, cpu.x);
     }
@@ -57,7 +57,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x7f;
 
-        cpu.inx(&cpu.imp());
+        cpu.inx(&cpu._imp());
 
         assert_eq!(0x80, cpu.x);
         assert_eq!(true, cpu.n);
@@ -68,7 +68,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xff;
 
-        cpu.inx(&cpu.imp());
+        cpu.inx(&cpu._imp());
 
         assert_eq!(0x0, cpu.x);
         assert_eq!(true, cpu.z);

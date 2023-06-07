@@ -57,7 +57,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.slo_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.slo_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -66,7 +66,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.slo_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.slo_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -75,7 +75,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.slo_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(6, cpu.slo_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -84,7 +84,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.slo_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(7, cpu.slo_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -93,7 +93,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(7, cpu.slo_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(7, cpu.slo_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.slo_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(8, cpu.slo_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -111,7 +111,7 @@ mod slo_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(8, cpu.slo_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(8, cpu.slo_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod slo_tests {
             .once()
             .return_const(());
 
-        cpu.slo(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.slo(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(true, cpu.c);
         assert_eq!(true, cpu.n);
         assert_eq!(0xff, cpu.a);
@@ -141,7 +141,7 @@ mod slo_tests {
             .once()
             .return_const(());
 
-        cpu.slo(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.slo(&cpu._zp(0x0, &bus), &mut bus);
         assert_eq!(false, cpu.c);
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.z);

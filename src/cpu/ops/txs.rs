@@ -33,7 +33,7 @@ mod txs_tests {
     #[test]
     fn test_txs_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
-        assert_eq!(2, cpu.txs_cycles(&cpu.imp()));
+        assert_eq!(2, cpu.txs_cycles(&cpu._imp()));
     }
 
     #[test]
@@ -41,7 +41,7 @@ mod txs_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xcc;
 
-        cpu.txs(&cpu.imp());
+        cpu.txs(&cpu._imp());
         assert_eq!(0xcc, cpu.sp);
         assert_eq!(0xcc, cpu.x);
     }

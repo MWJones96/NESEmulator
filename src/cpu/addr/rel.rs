@@ -13,13 +13,19 @@
     Bytes: 2
 */
 
-use crate::cpu::CPU;
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn rel(&self, offset: u8) -> AddrModeResult {
+    pub(in crate::cpu) fn rel(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let offset = self.fetch_byte(bus);
+        self._rel(offset)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _rel(&self, offset: u8) -> AddrModeResult {
         let page_before = (self.pc >> 8) as u8;
         let resolved_offset = if (offset & 0x80) > 0 {
             (offset as u16) | 0xff00
@@ -52,7 +58,7 @@ mod rel_tests {
         let mut cpu = CPU::new();
 
         cpu.pc = 0x0;
-        let result = cpu.rel(0x1);
+        let result = cpu._rel(0x1);
         assert_eq!(
             AddrModeResult {
                 data: None,
@@ -72,7 +78,7 @@ mod rel_tests {
         let mut cpu = CPU::new();
 
         cpu.pc = 0x1234;
-        let result = cpu.rel(0xff);
+        let result = cpu._rel(0xff);
         assert_eq!(
             AddrModeResult {
                 data: None,
@@ -92,7 +98,7 @@ mod rel_tests {
         let mut cpu = CPU::new();
 
         cpu.pc = 0xffff;
-        let result = cpu.rel(0x2);
+        let result = cpu._rel(0x2);
         assert_eq!(
             AddrModeResult {
                 data: None,
@@ -112,7 +118,7 @@ mod rel_tests {
         let mut cpu = CPU::new();
 
         cpu.pc = 0x0;
-        let result = cpu.rel(0xfe);
+        let result = cpu._rel(0xfe);
         assert_eq!(
             AddrModeResult {
                 data: None,

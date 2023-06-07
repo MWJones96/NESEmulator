@@ -59,7 +59,7 @@ mod jsr_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.jsr_cycles(&cpu.abs(0x0000, &bus)));
+        assert_eq!(6, cpu.jsr_cycles(&cpu._abs(0x0000, &bus)));
     }
 
     #[test]
@@ -82,7 +82,7 @@ mod jsr_tests {
             .times(1)
             .return_const(());
 
-        cpu.jsr(&cpu.abs(0x0000, &bus), &mut bus);
+        cpu.jsr(&cpu._abs(0x0000, &bus), &mut bus);
 
         assert_eq!(0xff, cpu.sp);
     }
@@ -96,7 +96,7 @@ mod jsr_tests {
 
         bus.expect_write().return_const(());
 
-        cpu.jsr(&cpu.abs(0xeeee, &bus), &mut bus);
+        cpu.jsr(&cpu._abs(0xeeee, &bus), &mut bus);
 
         assert_eq!(0xeeee, cpu.pc);
     }

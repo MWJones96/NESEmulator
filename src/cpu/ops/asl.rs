@@ -60,7 +60,7 @@ mod asl_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        assert_eq!(2, cpu.asl_cycles(&cpu.acc()));
+        assert_eq!(2, cpu.asl_cycles(&cpu._acc()));
     }
 
     #[test]
@@ -70,7 +70,7 @@ mod asl_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
-        assert_eq!(5, cpu.asl_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(5, cpu.asl_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -81,7 +81,7 @@ mod asl_tests {
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
 
-        assert_eq!(6, cpu.asl_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(6, cpu.asl_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -94,7 +94,7 @@ mod asl_tests {
             .times(1)
             .return_const(0xaa);
 
-        assert_eq!(6, cpu.asl_cycles(&cpu.abs(0xffff, &bus)));
+        assert_eq!(6, cpu.asl_cycles(&cpu._abs(0xffff, &bus)));
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod asl_tests {
 
         bus.expect_read().with(eq(0x1)).times(1).return_const(0x88);
 
-        assert_eq!(7, cpu.asl_cycles(&cpu.absx(0xffff, &bus)));
+        assert_eq!(7, cpu.asl_cycles(&cpu._absx(0xffff, &bus)));
     }
 
     #[test]
@@ -115,20 +115,20 @@ mod asl_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0x1;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(0x2, cpu.a);
 
         cpu.a = 0xff;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(0xfe, cpu.a);
 
         cpu.a = 0x00;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(0x00, cpu.a);
 
         cpu.c = true;
         cpu.a = 0x00;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(0x00, cpu.a);
     }
 
@@ -138,11 +138,11 @@ mod asl_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0xc0;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(true, cpu.c);
 
         cpu.a = 0x1;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(false, cpu.c);
     }
 
@@ -152,11 +152,11 @@ mod asl_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0x80;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(true, cpu.z);
 
         cpu.a = 0x40;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(false, cpu.z);
     }
 
@@ -166,11 +166,11 @@ mod asl_tests {
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0x40;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(true, cpu.n);
 
         cpu.a = 0x80;
-        cpu.asl(&cpu.acc(), &mut bus);
+        cpu.asl(&cpu._acc(), &mut bus);
         assert_eq!(false, cpu.n);
     }
 
@@ -186,6 +186,6 @@ mod asl_tests {
             .times(1)
             .return_const(());
 
-        cpu.asl(&cpu.zp(0x0, &bus), &mut bus);
+        cpu.asl(&cpu._zp(0x0, &bus), &mut bus);
     }
 }

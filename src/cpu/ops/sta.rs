@@ -46,7 +46,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(3, cpu.sta_cycles(&cpu.zp(0x0, &bus)));
+        assert_eq!(3, cpu.sta_cycles(&cpu._zp(0x0, &bus)));
     }
 
     #[test]
@@ -56,7 +56,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sta_cycles(&cpu.zpx(0x0, &bus)));
+        assert_eq!(4, cpu.sta_cycles(&cpu._zpx(0x0, &bus)));
     }
 
     #[test]
@@ -66,7 +66,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(4, cpu.sta_cycles(&cpu.abs(0x0, &bus)));
+        assert_eq!(4, cpu.sta_cycles(&cpu._abs(0x0, &bus)));
     }
 
     #[test]
@@ -76,7 +76,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.sta_cycles(&cpu.absx(0x0, &bus)));
+        assert_eq!(5, cpu.sta_cycles(&cpu._absx(0x0, &bus)));
     }
 
     #[test]
@@ -86,7 +86,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(5, cpu.sta_cycles(&cpu.absy(0x0, &bus)));
+        assert_eq!(5, cpu.sta_cycles(&cpu._absy(0x0, &bus)));
     }
 
     #[test]
@@ -96,7 +96,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sta_cycles(&cpu.indx(0x0, &bus)));
+        assert_eq!(6, cpu.sta_cycles(&cpu._indx(0x0, &bus)));
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod sta_tests {
 
         bus.expect_read().return_const(0x0);
 
-        assert_eq!(6, cpu.sta_cycles(&cpu.indy(0x0, &bus)));
+        assert_eq!(6, cpu.sta_cycles(&cpu._indy(0x0, &bus)));
     }
 
     #[test]
@@ -122,6 +122,6 @@ mod sta_tests {
             .times(1)
             .return_const(());
 
-        cpu.sta(&cpu.abs(0x8000, &bus), &mut bus);
+        cpu.sta(&cpu._abs(0x8000, &bus), &mut bus);
     }
 }

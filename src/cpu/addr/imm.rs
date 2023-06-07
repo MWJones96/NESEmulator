@@ -8,13 +8,19 @@
     Bytes: 2
 */
 
-use crate::cpu::CPU;
+use crate::cpu::{bus::CPUBus, CPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
     #[inline]
-    pub(in crate::cpu) fn imm(&self, imm: u8) -> AddrModeResult {
+    pub(in crate::cpu) fn imm(&mut self, bus: &impl CPUBus) -> AddrModeResult {
+        let data = self.fetch_byte(bus);
+        self._imm(data)
+    }
+
+    #[inline]
+    pub(in crate::cpu) fn _imm(&self, imm: u8) -> AddrModeResult {
         AddrModeResult {
             data: Some(imm),
             cycles: 0,
@@ -36,7 +42,7 @@ mod imm_tests {
     #[test]
     fn test_imm_addressing_mode() {
         let cpu = CPU::new();
-        let imm = cpu.imm(0x88);
+        let imm = cpu._imm(0x88);
 
         assert_eq!(
             AddrModeResult {
