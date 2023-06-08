@@ -15,12 +15,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn phpc(&self, _mode: &AddrModeResult) -> u8 {
         3
     }
 
-    #[inline]
     pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(0x100 + (self.sp as u16), self.get_status_byte(true));
         self.sp = self.sp.wrapping_sub(1);

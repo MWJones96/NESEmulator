@@ -19,12 +19,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn asrc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn asr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         self.and(mode, bus);
         self.lsr(&self._acc(), bus)

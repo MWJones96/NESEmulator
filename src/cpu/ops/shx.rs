@@ -14,12 +14,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn shxc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
 
-    #[inline]
     pub(in crate::cpu) fn shx(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let write_addr = mode.addr.unwrap();
         let h = (write_addr.wrapping_sub(self.y as u16) >> 8) as u8;

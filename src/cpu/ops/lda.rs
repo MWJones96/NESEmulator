@@ -19,12 +19,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn ldac(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    #[inline]
     pub(in crate::cpu) fn lda(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.a = mode.data.unwrap();
         self.n = (self.a & 0x80) > 0;

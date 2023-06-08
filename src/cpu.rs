@@ -173,7 +173,6 @@ impl Default for CPU {
 }
 
 impl CPU {
-    #[inline]
     fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
         let current_instruction = self.current_instruction.clone();
         match current_instruction.instruction_type {
@@ -214,7 +213,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     fn poll_for_interrupts_or_fetch_next_instruction(
         &mut self,
         bus: &mut dyn CPUBus,
@@ -235,7 +233,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
         let (_, addr_mode_fn, cycles_fn, _) = CPU::LOOKUP_TABLE[opcode as usize];
@@ -255,7 +252,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     fn get_status_byte(&self, brk: bool) -> u8 {
         (self.n as u8) << 7
             | (self.v as u8) << 6
@@ -267,7 +263,6 @@ impl CPU {
             | (self.c as u8)
     }
 
-    #[inline]
     fn fetch_byte(&mut self, bus: &dyn CPUBus) -> u8 {
         let data = bus.read(self.pc);
         self.pc = self.pc.wrapping_add(1);
@@ -275,7 +270,6 @@ impl CPU {
         data
     }
 
-    #[inline]
     fn fetch_two_bytes_as_u16(&mut self, bus: &dyn CPUBus) -> u16 {
         let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
         let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;

@@ -25,7 +25,6 @@ use crate::cpu::{
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn lsrc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Acc => 2,
@@ -34,7 +33,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let before_shift = mode.data.unwrap();
         let after_shift = before_shift >> 1;

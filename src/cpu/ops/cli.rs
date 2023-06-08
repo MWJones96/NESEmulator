@@ -14,12 +14,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn clic(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn cli(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.i = false;
     }

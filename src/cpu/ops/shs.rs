@@ -17,12 +17,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn shsc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
 
-    #[inline]
     pub(in crate::cpu) fn shs(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         self.sp = self.a & self.x;
         let write_addr = mode.addr.unwrap();

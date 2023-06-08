@@ -23,12 +23,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn adcc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    #[inline]
     pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let a: u16 = self.a as u16;
         let v: u16 = mode.data.unwrap() as u16;

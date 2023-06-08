@@ -15,12 +15,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn txsc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn txs(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.sp = self.x;
     }

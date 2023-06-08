@@ -18,12 +18,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn taxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn tax(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = self.a;
 

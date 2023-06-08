@@ -24,7 +24,6 @@ use crate::cpu::{
 };
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn rrac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -34,7 +33,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn rra(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let data_to_write = (self.c as u8) << 7 | data >> 1;

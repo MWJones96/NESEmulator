@@ -29,12 +29,10 @@ use rand::seq::SliceRandom;
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn xaac(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn xaa(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let magic_constant = *vec![0x00, 0xee, 0xef, 0xfe, 0xff]
             .choose(&mut rand::thread_rng())

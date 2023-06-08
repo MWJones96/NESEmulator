@@ -16,7 +16,6 @@ use crate::cpu::{
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn stxc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absy => 4,
@@ -24,7 +23,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn stx(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.x);
     }

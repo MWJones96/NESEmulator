@@ -14,7 +14,6 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn bccc(&self, mode: &AddrModeResult) -> u8 {
         if !self.c {
             2 + 1 + mode.cycles
@@ -23,7 +22,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn bcc(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         if !self.c {
             self.pc = mode.addr.unwrap();

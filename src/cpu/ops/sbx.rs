@@ -19,12 +19,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn sbxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn sbx(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = (self.a & self.x).wrapping_sub(mode.data.unwrap());
 

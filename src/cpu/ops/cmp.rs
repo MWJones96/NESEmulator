@@ -20,12 +20,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn cmpc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    #[inline]
     pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let result = self.a.wrapping_add(!data).wrapping_add(1);

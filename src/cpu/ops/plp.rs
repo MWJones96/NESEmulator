@@ -18,12 +18,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn plpc(&self, _mode: &AddrModeResult) -> u8 {
         4
     }
 
-    #[inline]
     pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         self.sp = self.sp.wrapping_add(1);
         let data = bus.read(0x100 + (self.sp as u16));

@@ -16,7 +16,6 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn beqc(&self, mode: &AddrModeResult) -> u8 {
         if self.z {
             2 + 1 + mode.cycles
@@ -25,7 +24,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn beq(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         if self.z {
             self.pc = mode.addr.unwrap();

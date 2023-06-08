@@ -26,7 +26,6 @@ use crate::cpu::{
 };
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn shac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absy => 5,
@@ -35,7 +34,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn sha(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let write_addr = mode.addr.unwrap();
         let ax = self.a & self.x;

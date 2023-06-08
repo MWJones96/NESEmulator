@@ -15,12 +15,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn lasc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    #[inline]
     pub(in crate::cpu) fn las(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap() & self.sp;
 

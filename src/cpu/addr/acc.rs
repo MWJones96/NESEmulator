@@ -12,12 +12,10 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn acc(&mut self, _bus: &dyn CPUBus) -> AddrModeResult {
         self._acc()
     }
 
-    #[inline]
     pub(in crate::cpu) fn _acc(&self) -> AddrModeResult {
         AddrModeResult {
             data: Some(self.a),

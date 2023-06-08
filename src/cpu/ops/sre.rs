@@ -21,7 +21,6 @@ use crate::cpu::{
 };
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn srec(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -31,7 +30,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn sre(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data_to_write = mode.data.unwrap() >> 1;
         bus.write(mode.addr.unwrap(), data_to_write);

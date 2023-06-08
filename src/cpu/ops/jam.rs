@@ -10,12 +10,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn jamc(&self, _mode: &AddrModeResult) -> u8 {
         0
     }
 
-    #[inline]
     pub(in crate::cpu) fn _jam(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         panic!("JAM: This should not be called")
     }

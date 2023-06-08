@@ -17,12 +17,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn eorc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    #[inline]
     pub(in crate::cpu) fn eor(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.a ^= mode.data.unwrap();
 

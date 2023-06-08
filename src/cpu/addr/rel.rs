@@ -18,13 +18,11 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn rel(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let offset = self.fetch_byte(bus);
         self._rel(offset)
     }
 
-    #[inline]
     pub(in crate::cpu) fn _rel(&self, offset: u8) -> AddrModeResult {
         let page_before = (self.pc >> 8) as u8;
         let resolved_offset = if (offset & 0x80) > 0 {

@@ -17,13 +17,11 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn indy(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._indy(addr, bus)
     }
 
-    #[inline]
     pub(in crate::cpu) fn _indy(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
         let low_byte_addr = addr;
         let high_byte_addr = low_byte_addr.wrapping_add(1);

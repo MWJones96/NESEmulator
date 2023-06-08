@@ -19,12 +19,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn brkc(&self, _mode: &AddrModeResult) -> u8 {
         7
     }
 
-    #[inline]
     pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let pc_lsb = (self.pc & 0xff) as u8;
         let pc_msb = (self.pc >> 8) as u8;

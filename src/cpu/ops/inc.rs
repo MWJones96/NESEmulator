@@ -20,7 +20,6 @@ use crate::cpu::{
 };
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn incc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -28,7 +27,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap().wrapping_add(1);
         let addr = mode.addr.unwrap();

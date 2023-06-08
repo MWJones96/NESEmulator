@@ -23,7 +23,6 @@ use crate::cpu::{
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn rolc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Acc => 2,
@@ -32,7 +31,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn rol(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data: u16 = ((mode.data.unwrap() as u16) << 1) | (self.c as u16);
 

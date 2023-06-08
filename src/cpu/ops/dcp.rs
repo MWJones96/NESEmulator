@@ -22,7 +22,6 @@ use crate::cpu::{
 };
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn dcpc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -32,7 +31,6 @@ impl CPU {
         }
     }
 
-    #[inline]
     pub(in crate::cpu) fn dcp(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_sub(1);

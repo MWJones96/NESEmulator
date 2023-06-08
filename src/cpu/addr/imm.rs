@@ -13,13 +13,11 @@ use crate::cpu::{bus::CPUBus, CPU};
 use super::{AddrModeResult, AddrModeType};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn imm(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let data = self.fetch_byte(bus);
         self._imm(data)
     }
 
-    #[inline]
     pub(in crate::cpu) fn _imm(&self, imm: u8) -> AddrModeResult {
         AddrModeResult {
             data: Some(imm),

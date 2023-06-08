@@ -15,12 +15,10 @@ use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 use super::super::CPU;
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn secc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn sec(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.c = true;
     }

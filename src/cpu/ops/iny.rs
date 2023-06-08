@@ -18,12 +18,10 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
-    #[inline]
     pub(in crate::cpu) fn inyc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    #[inline]
     pub(in crate::cpu) fn iny(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.y = self.y.wrapping_add(1);
 
