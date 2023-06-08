@@ -22,7 +22,7 @@ impl CPU {
         AddrModeResult {
             data: Some(self.a),
             cycles: 0,
-            mode: AddrModeType::ACC,
+            mode: AddrModeType::Acc,
             addr: None,
             bytes: 1,
             operands: "".to_owned(),
@@ -46,7 +46,7 @@ mod acc_tests {
             AddrModeResult {
                 data: Some(0xcc),
                 cycles: 0,
-                mode: AddrModeType::ACC,
+                mode: AddrModeType::Acc,
                 addr: None,
                 bytes: 1,
                 operands: "".to_owned(),

@@ -15,7 +15,7 @@
     otherwise resets the Z flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn iny(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn iny(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.y = self.y.wrapping_add(1);
 
         self.n = (self.y & 0x80) > 0;
@@ -34,10 +34,12 @@ impl CPU {
 
 #[cfg(test)]
 mod iny_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_iny_returns_correct_number_ofc() {
+    fn test_iny_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.inyc(&cpu._imp()));
     }
@@ -47,7 +49,7 @@ mod iny_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x80;
 
-        cpu.iny(&cpu._imp());
+        cpu.iny(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x81, cpu.y);
     }
@@ -57,7 +59,7 @@ mod iny_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x7f;
 
-        cpu.iny(&cpu._imp());
+        cpu.iny(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x80, cpu.y);
         assert_eq!(true, cpu.n);
@@ -68,7 +70,7 @@ mod iny_tests {
         let mut cpu = CPU::new();
         cpu.y = 0xff;
 
-        cpu.iny(&cpu._imp());
+        cpu.iny(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x0, cpu.y);
         assert_eq!(true, cpu.z);

@@ -32,7 +32,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 2,
-            mode: AddrModeType::ZPX,
+            mode: AddrModeType::Zpx,
             addr: Some(resolved_addr),
             bytes: 2,
             operands: format!("{:02X}", addr),
@@ -61,7 +61,7 @@ mod zpx_tests {
             AddrModeResult {
                 data: Some(0x77),
                 cycles: 2,
-                mode: AddrModeType::ZPX,
+                mode: AddrModeType::Zpx,
                 addr: Some(0x1),
                 bytes: 2,
                 operands: "FF".to_owned(),

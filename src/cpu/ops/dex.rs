@@ -12,7 +12,7 @@
     as a result of the decrement, otherwise it resets the Z flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -21,7 +21,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn dex(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn dex(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = self.x.wrapping_sub(1);
 
         self.n = (self.x & 0x80) > 0;
@@ -31,10 +31,12 @@ impl CPU {
 
 #[cfg(test)]
 mod dex_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_dex_returns_correct_number_ofc() {
+    fn test_dex_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.dexc(&cpu._imp()));
     }
@@ -44,7 +46,7 @@ mod dex_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.dex(&cpu._imp());
+        cpu.dex(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x7f, cpu.x);
     }
@@ -54,7 +56,7 @@ mod dex_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x0;
 
-        cpu.dex(&cpu._imp());
+        cpu.dex(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0xff, cpu.x);
         assert_eq!(true, cpu.n);
@@ -65,7 +67,7 @@ mod dex_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x1;
 
-        cpu.dex(&cpu._imp());
+        cpu.dex(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x0, cpu.x);
         assert_eq!(true, cpu.z);

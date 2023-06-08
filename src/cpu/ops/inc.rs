@@ -23,7 +23,7 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn incc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSX => 7,
+            AddrModeType::Absx => 7,
             _ => 4 + mode.cycles,
         }
     }
@@ -49,7 +49,7 @@ mod inc_tests {
     use super::*;
 
     #[test]
-    fn test_inc_zp_correct_number_ofc() {
+    fn test_inc_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -61,7 +61,7 @@ mod inc_tests {
     }
 
     #[test]
-    fn test_inc_zpx_correct_number_ofc() {
+    fn test_inc_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -73,7 +73,7 @@ mod inc_tests {
     }
 
     #[test]
-    fn test_inc_abs_correct_number_ofc() {
+    fn test_inc_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -85,7 +85,7 @@ mod inc_tests {
     }
 
     #[test]
-    fn test_inc_absx_correct_number_ofc() {
+    fn test_inc_absx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 

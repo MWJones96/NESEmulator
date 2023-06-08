@@ -10,7 +10,7 @@
     other than the interrupt disable which is set.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -21,17 +21,19 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn sei(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn sei(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.i = true;
     }
 }
 
 #[cfg(test)]
 mod sei_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_sei_correct_number_ofc() {
+    fn test_sei_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.seic(&cpu._imp()));
@@ -42,10 +44,10 @@ mod sei_tests {
         let mut cpu = CPU::new();
         cpu.i = false;
 
-        cpu.sei(&cpu._imp());
+        cpu.sei(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.i);
 
-        cpu.sei(&cpu._imp());
+        cpu.sei(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.i);
     }
 }

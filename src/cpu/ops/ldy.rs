@@ -11,7 +11,7 @@
     the Y register.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -22,7 +22,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.y = mode.data.unwrap();
         self.n = (self.y & 0x80) > 0;
         self.z = self.y == 0;
@@ -96,25 +96,25 @@ mod ldy_tests {
     #[test]
     fn test_ldy_value_goes_to_y_register() {
         let mut cpu = CPU::new();
-        cpu.ldy(&cpu._imm(0xff));
+        cpu.ldy(&cpu._imm(0xff), &mut MockCPUBus::new());
         assert_eq!(0xff, cpu.y);
     }
 
     #[test]
     fn test_ldy_negative_flag() {
         let mut cpu = CPU::new();
-        cpu.ldy(&cpu._imm(0x80));
+        cpu.ldy(&cpu._imm(0x80), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
-        cpu.ldy(&cpu._imm(0x7f));
+        cpu.ldy(&cpu._imm(0x7f), &mut MockCPUBus::new());
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_ldy_zero_flag() {
         let mut cpu = CPU::new();
-        cpu.ldy(&cpu._imm(0x0));
+        cpu.ldy(&cpu._imm(0x0), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
-        cpu.ldy(&cpu._imm(0x1));
+        cpu.ldy(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(false, cpu.z);
     }
 }

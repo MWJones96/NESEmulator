@@ -16,7 +16,7 @@
     not affected at all.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -25,7 +25,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn sbx(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn sbx(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = (self.a & self.x).wrapping_sub(mode.data.unwrap());
 
         self.n = (self.x & 0x80) != 0;
@@ -36,10 +36,12 @@ impl CPU {
 
 #[cfg(test)]
 mod sbx_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_sbx_imm_correct_number_ofc() {
+    fn test_sbx_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.sbxc(&cpu._imm(0x0)))
     }
@@ -50,7 +52,7 @@ mod sbx_tests {
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
-        cpu.sbx(&cpu._imm(0x1));
+        cpu.sbx(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(0xff, cpu.x);
         assert_eq!(true, cpu.n);
     }
@@ -61,7 +63,7 @@ mod sbx_tests {
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
-        cpu.sbx(&cpu._imm(0x0));
+        cpu.sbx(&cpu._imm(0x0), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
     }
 
@@ -71,10 +73,10 @@ mod sbx_tests {
         cpu.a = 0b0000_1010;
         cpu.x = 0b0000_1111;
 
-        cpu.sbx(&cpu._imm(0b0000_1010));
+        cpu.sbx(&cpu._imm(0b0000_1010), &mut MockCPUBus::new());
         assert_eq!(true, cpu.c);
 
-        cpu.sbx(&cpu._imm(0x1));
+        cpu.sbx(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(false, cpu.c);
     }
 }

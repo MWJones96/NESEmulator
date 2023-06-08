@@ -14,7 +14,7 @@
     the negative flag.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -25,7 +25,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn lda(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn lda(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.a = mode.data.unwrap();
         self.n = (self.a & 0x80) > 0;
         self.z = self.a == 0;
@@ -156,25 +156,25 @@ mod lda_tests {
     #[test]
     fn test_lda_value_goes_to_accumulator() {
         let mut cpu = CPU::new();
-        cpu.lda(&cpu._imm(0xff));
+        cpu.lda(&cpu._imm(0xff), &mut MockCPUBus::new());
         assert_eq!(0xff, cpu.a);
     }
 
     #[test]
     fn test_lda_negative_flag() {
         let mut cpu = CPU::new();
-        cpu.lda(&cpu._imm(0x80));
+        cpu.lda(&cpu._imm(0x80), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
-        cpu.lda(&cpu._imm(0x7f));
+        cpu.lda(&cpu._imm(0x7f), &mut MockCPUBus::new());
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_lda_zero_flag() {
         let mut cpu = CPU::new();
-        cpu.lda(&cpu._imm(0x0));
+        cpu.lda(&cpu._imm(0x0), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
-        cpu.lda(&cpu._imm(0x1));
+        cpu.lda(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(false, cpu.z);
     }
 }

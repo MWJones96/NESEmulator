@@ -29,9 +29,9 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn iscc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSX => 7,
-            AddrModeType::ABSY => 7,
-            AddrModeType::INDY => 8,
+            AddrModeType::Absx => 7,
+            AddrModeType::Absy => 7,
+            AddrModeType::Indy => 8,
             _ => 4 + mode.cycles,
         }
     }
@@ -41,7 +41,7 @@ impl CPU {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_add(1);
         bus.write(mode.addr.unwrap(), data_to_write);
-        self.sbc(&self._imm(data_to_write));
+        self.sbc(&self._imm(data_to_write), bus);
     }
 }
 
@@ -54,7 +54,7 @@ mod isc_tests {
     use super::*;
 
     #[test]
-    fn test_isc_zp_correct_number_ofc() {
+    fn test_isc_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -63,7 +63,7 @@ mod isc_tests {
     }
 
     #[test]
-    fn test_isc_zpx_correct_number_ofc() {
+    fn test_isc_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -72,7 +72,7 @@ mod isc_tests {
     }
 
     #[test]
-    fn test_isc_abs_correct_number_ofc() {
+    fn test_isc_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -81,7 +81,7 @@ mod isc_tests {
     }
 
     #[test]
-    fn test_isc_absx_correct_number_ofc() {
+    fn test_isc_absx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -90,7 +90,7 @@ mod isc_tests {
     }
 
     #[test]
-    fn test_isc_absy_correct_number_ofc() {
+    fn test_isc_absy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -99,7 +99,7 @@ mod isc_tests {
     }
 
     #[test]
-    fn test_isc_indx_correct_number_ofc() {
+    fn test_isc_indx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -108,7 +108,7 @@ mod isc_tests {
     }
 
     #[test]
-    fn test_isc_indy_correct_number_ofc() {
+    fn test_isc_indy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);

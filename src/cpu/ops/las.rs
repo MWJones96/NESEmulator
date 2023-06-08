@@ -12,7 +12,7 @@
     If the result is zero, then the Z flag is set, otherwise it is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -21,7 +21,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn las(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn las(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap() & self.sp;
 
         self.a = data;
@@ -64,7 +64,7 @@ mod las_tests {
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0b1111_1100);
 
-        cpu.las(&cpu._absy(0x0, &bus));
+        cpu.las(&cpu._absy(0x0, &bus), &mut MockCPUBus::new());
 
         assert_eq!(0xf0, cpu.a);
         assert_eq!(0xf0, cpu.x);

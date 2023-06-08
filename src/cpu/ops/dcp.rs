@@ -25,9 +25,9 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn dcpc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSX => 7,
-            AddrModeType::ABSY => 7,
-            AddrModeType::INDY => 8,
+            AddrModeType::Absx => 7,
+            AddrModeType::Absy => 7,
+            AddrModeType::Indy => 8,
             _ => 4 + mode.cycles,
         }
     }
@@ -55,7 +55,7 @@ mod dcp_tests {
     use super::*;
 
     #[test]
-    fn test_dcp_zp_correct_number_ofc() {
+    fn test_dcp_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -64,7 +64,7 @@ mod dcp_tests {
     }
 
     #[test]
-    fn test_dcp_zpx_correct_number_ofc() {
+    fn test_dcp_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -73,7 +73,7 @@ mod dcp_tests {
     }
 
     #[test]
-    fn test_dcp_abs_correct_number_ofc() {
+    fn test_dcp_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -82,7 +82,7 @@ mod dcp_tests {
     }
 
     #[test]
-    fn test_dcp_absx_correct_number_ofc() {
+    fn test_dcp_absx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -91,7 +91,7 @@ mod dcp_tests {
     }
 
     #[test]
-    fn test_dcp_absy_correct_number_ofc() {
+    fn test_dcp_absy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -100,7 +100,7 @@ mod dcp_tests {
     }
 
     #[test]
-    fn test_dcp_indx_correct_number_ofc() {
+    fn test_dcp_indx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -109,7 +109,7 @@ mod dcp_tests {
     }
 
     #[test]
-    fn test_dcp_indy_correct_number_ofc() {
+    fn test_dcp_indy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);

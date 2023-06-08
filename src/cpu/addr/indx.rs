@@ -30,13 +30,13 @@ impl CPU {
         let low_byte_addr = addr.wrapping_add(self.x);
         let high_byte_addr = low_byte_addr.wrapping_add(1);
 
-        let resolved_addr = (((bus.read(high_byte_addr as u16) as u16) << 8) as u16)
-            | bus.read(low_byte_addr as u16) as u16;
+        let resolved_addr =
+            ((bus.read(high_byte_addr as u16) as u16) << 8) | bus.read(low_byte_addr as u16) as u16;
 
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 4,
-            mode: AddrModeType::INDX,
+            mode: AddrModeType::Indx,
             addr: Some(resolved_addr),
             bytes: 2,
             operands: format!("{:02X}", addr),
@@ -68,7 +68,7 @@ mod indx_tests {
             AddrModeResult {
                 data: Some(0xaa),
                 cycles: 4,
-                mode: AddrModeType::INDX,
+                mode: AddrModeType::Indx,
                 addr: Some(0x8877),
                 bytes: 2,
                 operands: "FF".to_owned(),

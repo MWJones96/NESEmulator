@@ -19,7 +19,7 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn decc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSX => 7,
+            AddrModeType::Absx => 7,
             _ => 4 + mode.cycles,
         }
     }
@@ -43,7 +43,7 @@ mod dec_tests {
     use super::*;
 
     #[test]
-    fn test_dec_zp_correct_number_ofc() {
+    fn test_dec_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -55,7 +55,7 @@ mod dec_tests {
     }
 
     #[test]
-    fn test_dec_zpx_correct_number_ofc() {
+    fn test_dec_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -67,7 +67,7 @@ mod dec_tests {
     }
 
     #[test]
-    fn test_dec_abs_correct_number_ofc() {
+    fn test_dec_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -79,7 +79,7 @@ mod dec_tests {
     }
 
     #[test]
-    fn test_dec_absx_correct_number_ofc() {
+    fn test_dec_absx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 

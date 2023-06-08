@@ -15,7 +15,7 @@
     The accumulator is not affected.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -26,7 +26,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let result = self.a.wrapping_add(!data).wrapping_add(1);
 
@@ -43,14 +43,14 @@ mod cmp_tests {
     use super::*;
 
     #[test]
-    fn test_cmp_imm_correct_number_ofc() {
+    fn test_cmp_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.cmpc(&cpu._imm(0x0)));
     }
 
     #[test]
-    fn test_cmp_zp_correct_number_ofc() {
+    fn test_cmp_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -59,7 +59,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_zpx_correct_number_ofc() {
+    fn test_cmp_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -68,7 +68,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_abs_correct_number_ofc() {
+    fn test_cmp_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -77,7 +77,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_absx_no_page_cross_correct_number_ofc() {
+    fn test_cmp_absx_no_page_cross_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -86,7 +86,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_absx_with_page_cross_correct_number_ofc() {
+    fn test_cmp_absx_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
@@ -97,7 +97,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_absy_no_page_cross_correct_number_ofc() {
+    fn test_cmp_absy_no_page_cross_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -106,7 +106,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_absy_with_page_cross_correct_number_ofc() {
+    fn test_cmp_absy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
@@ -117,7 +117,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_indx_correct_number_ofc() {
+    fn test_cmp_indx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -127,7 +127,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_indy_no_page_cross_correct_number_ofc() {
+    fn test_cmp_indy_no_page_cross_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -137,7 +137,7 @@ mod cmp_tests {
     }
 
     #[test]
-    fn test_cmp_indy_with_page_cross_correct_number_ofc() {
+    fn test_cmp_indy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
@@ -152,7 +152,7 @@ mod cmp_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x10;
-        cpu.cmp(&cpu._imm(0x11));
+        cpu.cmp(&cpu._imm(0x11), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(0x10, cpu.a);
@@ -163,7 +163,7 @@ mod cmp_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x20));
+        cpu.cmp(&cpu._imm(0x20), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.z);
         assert_eq!(0x20, cpu.a);
@@ -174,19 +174,19 @@ mod cmp_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x20));
+        cpu.cmp(&cpu._imm(0x20), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.a);
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x10));
+        cpu.cmp(&cpu._imm(0x10), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.a);
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x21));
+        cpu.cmp(&cpu._imm(0x21), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.c);
         assert_eq!(0x20, cpu.a);

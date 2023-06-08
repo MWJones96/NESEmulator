@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         self.sp = self.sp.wrapping_add(1);
         let data = bus.read(0x100 + (self.sp as u16));
 
@@ -46,7 +46,7 @@ mod plp_tests {
     use super::*;
 
     #[test]
-    fn test_plp_correct_number_ofc() {
+    fn test_plp_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(4, cpu.plpc(&cpu._imp()));
     }
@@ -62,7 +62,7 @@ mod plp_tests {
             .times(1)
             .return_const(0xff);
 
-        cpu.plp(&cpu._imp(), &bus);
+        cpu.plp(&cpu._imp(), &mut bus);
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
@@ -85,7 +85,7 @@ mod plp_tests {
             .times(1)
             .return_const(0x00);
 
-        cpu.plp(&cpu._imp(), &bus);
+        cpu.plp(&cpu._imp(), &mut bus);
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);
@@ -105,7 +105,7 @@ mod plp_tests {
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);
 
-        cpu.pla(&cpu._imp(), &bus);
+        cpu.pla(&cpu._imp(), &mut bus);
         assert_eq!(0x0, cpu.sp);
     }
 }

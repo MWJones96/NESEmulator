@@ -11,7 +11,7 @@
     X register.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -22,7 +22,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn ldx(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn ldx(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = mode.data.unwrap();
         self.n = (self.x & 0x80) > 0;
         self.z = self.x == 0;
@@ -96,25 +96,25 @@ mod ldx_tests {
     #[test]
     fn test_ldx_value_goes_to_x_register() {
         let mut cpu = CPU::new();
-        cpu.ldx(&cpu._imm(0xff));
+        cpu.ldx(&cpu._imm(0xff), &mut MockCPUBus::new());
         assert_eq!(0xff, cpu.x);
     }
 
     #[test]
     fn test_ldx_negative_flag() {
         let mut cpu = CPU::new();
-        cpu.ldx(&cpu._imm(0x80));
+        cpu.ldx(&cpu._imm(0x80), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
-        cpu.ldx(&cpu._imm(0x7f));
+        cpu.ldx(&cpu._imm(0x7f), &mut MockCPUBus::new());
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_ldx_zero_flag() {
         let mut cpu = CPU::new();
-        cpu.ldx(&cpu._imm(0x0));
+        cpu.ldx(&cpu._imm(0x0), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
-        cpu.ldx(&cpu._imm(0x1));
+        cpu.ldx(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(false, cpu.z);
     }
 }

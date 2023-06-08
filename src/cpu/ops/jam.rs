@@ -7,7 +7,7 @@
     nor NMIs. It will handle a RESET though.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -16,8 +16,8 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn _jam() {
-        //Should never be called
+    pub(in crate::cpu) fn _jam(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+        panic!("JAM: This should not be called")
     }
 }
 
@@ -26,7 +26,7 @@ mod jam_tests {
     use super::*;
 
     #[test]
-    fn test_jam_correct_number_ofc() {
+    fn test_jam_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(0, cpu.jamc(&cpu._imp()));
     }

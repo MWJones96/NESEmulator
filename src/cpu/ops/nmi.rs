@@ -35,7 +35,7 @@ mod nmi_tests {
     use super::*;
 
     #[test]
-    fn test_nmi_correct_number_ofc() {
+    fn test_nmi_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(7, cpu.nmic())
     }

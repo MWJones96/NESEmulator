@@ -22,14 +22,14 @@ pub fn read_bytes_from_file(file_path: String) -> Vec<u8> {
 
     let bytes = fs::read(file_path).expect("File not found!");
 
-    assert!(bytes.len() > 0);
-    assert!(&bytes[0..4] == ['N' as u8, 'E' as u8, 'S' as u8, 0x1A]);
+    assert!(!bytes.is_empty());
+    assert!(bytes[0..4] == [b'N', b'E', b'S', 0x1A]);
 
     bytes
 }
 
 pub fn extract_header(bytes: &[u8]) -> INESHeader {
-    assert!(&bytes[0..4] == ['N' as u8, 'E' as u8, 'S' as u8, 0x1A]);
+    assert!(bytes[0..4] == [b'N', b'E', b'S', 0x1A]);
 
     INESHeader {
         prg_rom_banks: bytes[4],
@@ -47,7 +47,7 @@ pub fn extract_header(bytes: &[u8]) -> INESHeader {
 }
 
 pub fn extract_prg_rom<'a>(header: &INESHeader, bytes: &'a [u8]) -> &'a [u8] {
-    assert!(&bytes[0..4] == ['N' as u8, 'E' as u8, 'S' as u8, 0x1A]);
+    assert!(bytes[0..4] == [b'N', b'E', b'S', 0x1A]);
 
     let start = 16 + (header.trainer as usize) * 512;
     let end = start + (header.prg_rom_banks as usize) * 16384;
@@ -56,7 +56,7 @@ pub fn extract_prg_rom<'a>(header: &INESHeader, bytes: &'a [u8]) -> &'a [u8] {
 }
 
 pub fn extract_chr_rom<'a>(header: &INESHeader, bytes: &'a [u8]) -> &'a [u8] {
-    assert!(&bytes[0..4] == ['N' as u8, 'E' as u8, 'S' as u8, 0x1A]);
+    assert!(bytes[0..4] == [b'N', b'E', b'S', 0x1A]);
 
     let start = 16 + (header.trainer as usize) * 512 + (header.prg_rom_banks as usize) * 16384;
     let end = start + (header.chr_rom_banks as usize) * 8192;

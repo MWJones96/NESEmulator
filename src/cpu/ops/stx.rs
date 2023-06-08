@@ -19,13 +19,13 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn stxc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSY => 4,
+            AddrModeType::Absy => 4,
             _ => 2 + mode.cycles,
         }
     }
 
     #[inline]
-    pub(in crate::cpu) fn stx(&self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn stx(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.x);
     }
 }
@@ -39,7 +39,7 @@ mod stx_tests {
     use super::*;
 
     #[test]
-    fn test_stx_zp_correct_number_ofc() {
+    fn test_stx_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -49,7 +49,7 @@ mod stx_tests {
     }
 
     #[test]
-    fn test_stx_abs_correct_number_ofc() {
+    fn test_stx_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -59,7 +59,7 @@ mod stx_tests {
     }
 
     #[test]
-    fn test_stx_absy_correct_number_ofc() {
+    fn test_stx_absy_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;

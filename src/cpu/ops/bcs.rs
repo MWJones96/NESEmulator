@@ -8,7 +8,7 @@
    counter and only then if the carry flag is on.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -23,7 +23,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn bcs(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn bcs(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         if self.c {
             self.pc = mode.addr.unwrap();
         }
@@ -32,6 +32,8 @@ impl CPU {
 
 #[cfg(test)]
 mod bcs_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
@@ -71,7 +73,7 @@ mod bcs_tests {
 
         cpu.pc = 0x1234;
         cpu.c = false;
-        cpu.bcs(&cpu._rel(0x1));
+        cpu.bcs(&cpu._rel(0x1), &mut MockCPUBus::new());
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -81,7 +83,7 @@ mod bcs_tests {
 
         cpu.pc = 0x12ff;
         cpu.c = false;
-        cpu.bcs(&cpu._rel(0xa));
+        cpu.bcs(&cpu._rel(0xa), &mut MockCPUBus::new());
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -91,7 +93,7 @@ mod bcs_tests {
         cpu.pc = 0x81;
         cpu.c = true;
 
-        cpu.bcs(&cpu._rel(0x80));
+        cpu.bcs(&cpu._rel(0x80), &mut MockCPUBus::new());
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -101,7 +103,7 @@ mod bcs_tests {
         cpu.pc = 0x8081;
         cpu.c = true;
 
-        cpu.bcs(&cpu._rel(0x7f));
+        cpu.bcs(&cpu._rel(0x7f), &mut MockCPUBus::new());
         assert_eq!(0x8100, cpu.pc);
     }
 }

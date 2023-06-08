@@ -33,7 +33,7 @@ mod irq_tests {
     use super::*;
 
     #[test]
-    fn test_irq_returns_correct_number_ofc() {
+    fn test_irq_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(7, cpu.irqc());
     }

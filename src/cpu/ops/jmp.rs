@@ -8,7 +8,7 @@
     affects no flags in the status register.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -17,7 +17,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn jmp(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn jmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.pc = mode.addr.unwrap();
     }
 }
@@ -29,7 +29,7 @@ mod jmp_tests {
     use super::*;
 
     #[test]
-    fn test_jmp_abs_correct_number_ofc() {
+    fn test_jmp_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -39,7 +39,7 @@ mod jmp_tests {
     }
 
     #[test]
-    fn test_jmp_ind_correct_number_ofc() {
+    fn test_jmp_ind_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -55,7 +55,7 @@ mod jmp_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.jmp(&cpu._abs(0x1234, &bus));
+        cpu.jmp(&cpu._abs(0x1234, &bus), &mut MockCPUBus::new());
         assert_eq!(0x1234, cpu.pc);
     }
 }

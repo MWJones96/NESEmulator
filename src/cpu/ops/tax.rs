@@ -13,7 +13,7 @@
     otherwise it is reset.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn tax(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn tax(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = self.a;
 
         self.n = (self.x & 0x80) > 0;
@@ -34,10 +34,12 @@ impl CPU {
 
 #[cfg(test)]
 mod tax_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_tax_returns_correct_number_ofc() {
+    fn test_tax_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.taxc(&cpu._imp()));
     }
@@ -47,7 +49,7 @@ mod tax_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xcc;
 
-        cpu.tax(&cpu._imp());
+        cpu.tax(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.a);
     }
@@ -57,7 +59,7 @@ mod tax_tests {
         let mut cpu = CPU::new();
         cpu.a = 0x80;
 
-        cpu.tax(&cpu._imp());
+        cpu.tax(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -66,7 +68,7 @@ mod tax_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xff;
 
-        cpu.tax(&cpu._imp());
+        cpu.tax(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
     }
 }

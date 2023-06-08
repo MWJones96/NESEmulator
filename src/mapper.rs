@@ -11,7 +11,7 @@ pub trait PRGRomMapper {
     fn write(&mut self, addr: u16, data: u8);
 }
 
-pub fn mapper_factory<'a>(mapper: u8, prg_rom: &'a [u8]) -> impl Mapper + 'a {
+pub fn mapper_factory(mapper: u8, prg_rom: &[u8]) -> impl Mapper + '_ {
     match mapper {
         0 => Mapper0::new(prg_rom),
         mapper => panic!("Mapper {mapper} has not been implemented"),

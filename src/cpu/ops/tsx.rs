@@ -13,7 +13,7 @@
     content of the stack pointer.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn tsx(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn tsx(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = self.sp;
 
         self.n = (self.x & 0x80) > 0;
@@ -34,10 +34,12 @@ impl CPU {
 
 #[cfg(test)]
 mod tsx_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_tsx_returns_correct_number_ofc() {
+    fn test_tsx_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.tsxc(&cpu._imp()));
     }
@@ -47,7 +49,7 @@ mod tsx_tests {
         let mut cpu = CPU::new();
         cpu.sp = 0xcc;
 
-        cpu.tsx(&cpu._imp());
+        cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.sp);
     }
@@ -57,7 +59,7 @@ mod tsx_tests {
         let mut cpu = CPU::new();
         cpu.sp = 0x80;
 
-        cpu.tsx(&cpu._imp());
+        cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -67,7 +69,7 @@ mod tsx_tests {
         cpu.x = 0xff;
         cpu.sp = 0x0;
 
-        cpu.tsx(&cpu._imp());
+        cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
     }
 }

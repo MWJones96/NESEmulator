@@ -38,7 +38,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 3 + ((page_before != page_after) as u8),
-            mode: AddrModeType::INDY,
+            mode: AddrModeType::Indy,
             addr: Some(resolved_addr),
             bytes: 2,
             operands: format!("{:02X}", addr),
@@ -70,7 +70,7 @@ mod indy_tests {
             AddrModeResult {
                 data: Some(0xbb),
                 cycles: 3,
-                mode: AddrModeType::INDY,
+                mode: AddrModeType::Indy,
                 addr: Some(0x8879),
                 bytes: 2,
                 operands: "FF".to_owned(),
@@ -96,7 +96,7 @@ mod indy_tests {
             AddrModeResult {
                 data: Some(0xcc),
                 cycles: 4,
-                mode: AddrModeType::INDY,
+                mode: AddrModeType::Indy,
                 addr: Some(0x8976),
                 bytes: 2,
                 operands: "FF".to_owned(),

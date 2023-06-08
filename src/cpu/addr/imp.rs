@@ -23,7 +23,7 @@ impl CPU {
         AddrModeResult {
             data: None,
             cycles: 0,
-            mode: AddrModeType::IMP,
+            mode: AddrModeType::Imp,
             addr: None,
             bytes: 1,
             operands: "".to_owned(),
@@ -45,7 +45,7 @@ mod imp_tests {
             AddrModeResult {
                 data: None,
                 cycles: 0,
-                mode: AddrModeType::IMP,
+                mode: AddrModeType::Imp,
                 addr: None,
                 bytes: 1,
                 operands: "".to_owned(),

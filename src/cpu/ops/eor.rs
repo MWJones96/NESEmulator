@@ -14,7 +14,7 @@
     has bit 7 on, otherwise resets the negative flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -23,8 +23,8 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn eor(&mut self, mode: &AddrModeResult) {
-        self.a = self.a ^ mode.data.unwrap();
+    pub(in crate::cpu) fn eor(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+        self.a ^= mode.data.unwrap();
 
         self.n = (self.a & 0x80) > 0;
         self.z = self.a == 0;
@@ -38,13 +38,13 @@ mod eor_tests {
     use super::*;
 
     #[test]
-    fn test_eor_imm_correct_number_ofc() {
+    fn test_eor_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.eorc(&cpu._imm(0x0)));
     }
 
     #[test]
-    fn test_eor_zp_correct_number_ofc() {
+    fn test_eor_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -54,7 +54,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_zpx_correct_number_ofc() {
+    fn test_eor_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -64,7 +64,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_abs_correct_number_ofc() {
+    fn test_eor_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -74,7 +74,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_absx_no_page_cross_correct_number_ofc() {
+    fn test_eor_absx_no_page_cross_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -84,7 +84,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_absx_with_page_cross_correct_number_ofc() {
+    fn test_eor_absx_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
@@ -95,7 +95,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_absy_no_page_cross_correct_number_ofc() {
+    fn test_eor_absy_no_page_cross_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -105,7 +105,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_absy_with_page_cross_correct_number_ofc() {
+    fn test_eor_absy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
@@ -116,7 +116,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_indx_correct_number_ofc() {
+    fn test_eor_indx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -126,7 +126,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_indy_no_page_cross_correct_number_ofc() {
+    fn test_eor_indy_no_page_cross_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -136,7 +136,7 @@ mod eor_tests {
     }
 
     #[test]
-    fn test_eor_indy_with_page_cross_correct_number_ofc() {
+    fn test_eor_indy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
@@ -151,7 +151,7 @@ mod eor_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0b1111_0000;
-        cpu.eor(&cpu._imm(0b1010_1010));
+        cpu.eor(&cpu._imm(0b1010_1010), &mut MockCPUBus::new());
 
         assert_eq!(0b0101_1010, cpu.a);
     }
@@ -161,7 +161,7 @@ mod eor_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0b1111_1111;
-        cpu.eor(&cpu._imm(0b0000_0000));
+        cpu.eor(&cpu._imm(0b0000_0000), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.n);
     }
@@ -171,7 +171,7 @@ mod eor_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0xff;
-        cpu.eor(&cpu._imm(0xff));
+        cpu.eor(&cpu._imm(0xff), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.z);
     }

@@ -34,7 +34,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(resolved_addr)),
             cycles: 2 + ((page_before != page_after) as u8),
-            mode: AddrModeType::ABSY,
+            mode: AddrModeType::Absy,
             addr: Some(resolved_addr),
             bytes: 3,
             operands: format!("{:02X} {:02X}", (addr & 0xff) as u8, (addr >> 8) as u8),
@@ -65,7 +65,7 @@ mod absy_tests {
                 data: Some(0x88),
                 cycles: 2,
                 addr: Some(0x2),
-                mode: AddrModeType::ABSY,
+                mode: AddrModeType::Absy,
                 bytes: 3,
                 operands: "00 00".to_owned(),
                 repr: "$0000,Y".to_owned()
@@ -88,7 +88,7 @@ mod absy_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 3,
-                mode: AddrModeType::ABSY,
+                mode: AddrModeType::Absy,
                 addr: Some(0x1),
                 bytes: 3,
                 operands: "FF FF".to_owned(),

@@ -11,7 +11,7 @@
     to a 0.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -22,17 +22,19 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn cld(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn cld(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.d = false;
     }
 }
 
 #[cfg(test)]
 mod cld_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_cld_correct_number_ofc() {
+    fn test_cld_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.cldc(&cpu._imp()));
@@ -43,10 +45,10 @@ mod cld_tests {
         let mut cpu = CPU::new();
         cpu.d = true;
 
-        cpu.cld(&cpu._imp());
+        cpu.cld(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(false, cpu.d);
 
-        cpu.cld(&cpu._imp());
+        cpu.cld(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(false, cpu.d);
     }
 }

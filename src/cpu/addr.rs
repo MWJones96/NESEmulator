@@ -14,19 +14,19 @@ mod zpy;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(in crate::cpu) enum AddrModeType {
-    ACC,
-    IMM,
-    ZP,
-    ZPX,
-    ZPY,
-    ABS,
-    ABSX,
-    ABSY,
-    IND,
-    INDX,
-    INDY,
-    REL,
-    IMP,
+    Acc,
+    Imm,
+    Zp,
+    Zpx,
+    Zpy,
+    Abs,
+    Absx,
+    Absy,
+    Ind,
+    Indx,
+    Indy,
+    Rel,
+    Imp,
 }
 
 #[derive(Debug, PartialEq, Clone)]

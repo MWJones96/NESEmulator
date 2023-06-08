@@ -26,7 +26,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(addr as u16)),
             cycles: 1,
-            mode: AddrModeType::ZP,
+            mode: AddrModeType::Zp,
             addr: Some(addr as u16),
             bytes: 2,
             operands: format!("{:02X}", addr),
@@ -54,7 +54,7 @@ mod zp_tests {
             AddrModeResult {
                 data: Some(0x77),
                 cycles: 1,
-                mode: AddrModeType::ZP,
+                mode: AddrModeType::Zp,
                 addr: Some(0x0),
                 bytes: 2,
                 operands: "00".to_owned(),

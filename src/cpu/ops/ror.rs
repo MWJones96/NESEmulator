@@ -25,8 +25,8 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn rorc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ACC => 2,
-            AddrModeType::ABSX => 7,
+            AddrModeType::Acc => 2,
+            AddrModeType::Absx => 7,
             _ => 4 + mode.cycles,
         }
     }

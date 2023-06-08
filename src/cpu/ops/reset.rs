@@ -26,7 +26,7 @@ mod reset_tests {
     use super::*;
 
     #[test]
-    fn test_reset_correct_number_ofc() {
+    fn test_reset_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(7, cpu.resetc())
     }

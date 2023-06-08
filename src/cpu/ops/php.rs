@@ -36,7 +36,7 @@ mod php_tests {
     use super::*;
 
     #[test]
-    fn test_php_correct_number_ofc() {
+    fn test_php_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(3, cpu.phpc(&cpu._imp()));
     }

@@ -22,7 +22,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn rts(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn rts(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(1) as u16)) as u16;
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
 
@@ -41,7 +41,7 @@ mod rts_tests {
     use super::*;
 
     #[test]
-    fn test_rts_correct_number_ofc() {
+    fn test_rts_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(6, cpu.rtsc(&cpu._imp()));
@@ -65,7 +65,7 @@ mod rts_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.rts(&cpu._imp(), &bus);
+        cpu.rts(&cpu._imp(), &mut bus);
 
         assert_eq!(0x2041, cpu.pc);
         assert_eq!(0xff, cpu.sp);

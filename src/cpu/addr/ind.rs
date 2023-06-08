@@ -39,7 +39,7 @@ impl CPU {
         AddrModeResult {
             data: None,
             cycles: 4,
-            mode: AddrModeType::IND,
+            mode: AddrModeType::Ind,
             addr: Some(resolved_addr),
             bytes: 3,
             operands: format!("{:02X} {:02X}", (addr & 0xff) as u8, (addr >> 8) as u8),
@@ -76,7 +76,7 @@ mod ind_tests {
             AddrModeResult {
                 data: None,
                 cycles: 4,
-                mode: AddrModeType::IND,
+                mode: AddrModeType::Ind,
                 addr: Some(0x2040),
                 bytes: 3,
                 operands: "00 00".to_owned(),
@@ -106,7 +106,7 @@ mod ind_tests {
             AddrModeResult {
                 data: None,
                 cycles: 4,
-                mode: AddrModeType::IND,
+                mode: AddrModeType::Ind,
                 addr: Some(0x2040),
                 bytes: 3,
                 operands: "FF 80".to_owned(),

@@ -38,7 +38,7 @@ impl CPU {
         AddrModeResult {
             data: None,
             cycles: (page_before != page_after) as u8,
-            mode: AddrModeType::REL,
+            mode: AddrModeType::Rel,
             addr: Some(resolved_addr),
             bytes: 2,
             operands: format!("{:02X}", offset),
@@ -63,7 +63,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 0,
-                mode: AddrModeType::REL,
+                mode: AddrModeType::Rel,
                 addr: Some(0x1),
                 bytes: 2,
                 operands: "01".to_owned(),
@@ -83,7 +83,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 0,
-                mode: AddrModeType::REL,
+                mode: AddrModeType::Rel,
                 addr: Some(0x1233),
                 bytes: 2,
                 operands: "FF".to_owned(),
@@ -103,7 +103,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 1,
-                mode: AddrModeType::REL,
+                mode: AddrModeType::Rel,
                 addr: Some(0x1),
                 bytes: 2,
                 operands: "02".to_owned(),
@@ -123,7 +123,7 @@ mod rel_tests {
             AddrModeResult {
                 data: None,
                 cycles: 1,
-                mode: AddrModeType::REL,
+                mode: AddrModeType::Rel,
                 addr: Some(0xfffe),
                 bytes: 2,
                 operands: "FE".to_owned(),

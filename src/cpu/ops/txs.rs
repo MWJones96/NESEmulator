@@ -10,7 +10,7 @@
     the flags.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -21,17 +21,19 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn txs(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn txs(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.sp = self.x;
     }
 }
 
 #[cfg(test)]
 mod txs_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_txs_returns_correct_number_ofc() {
+    fn test_txs_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.txsc(&cpu._imp()));
     }
@@ -41,7 +43,7 @@ mod txs_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xcc;
 
-        cpu.txs(&cpu._imp());
+        cpu.txs(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(0xcc, cpu.sp);
         assert_eq!(0xcc, cpu.x);
     }

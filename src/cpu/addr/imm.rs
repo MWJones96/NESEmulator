@@ -24,7 +24,7 @@ impl CPU {
         AddrModeResult {
             data: Some(imm),
             cycles: 0,
-            mode: AddrModeType::IMM,
+            mode: AddrModeType::Imm,
             addr: None,
             bytes: 2,
             operands: format!("{:02X}", imm),
@@ -48,7 +48,7 @@ mod imm_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 0,
-                mode: AddrModeType::IMM,
+                mode: AddrModeType::Imm,
                 addr: None,
                 bytes: 2,
                 operands: "88".to_owned(),

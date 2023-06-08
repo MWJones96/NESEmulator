@@ -7,14 +7,14 @@ mod ops;
 
 type AddrFn = fn(&mut CPU, &dyn CPUBus) -> AddrModeResult;
 type CyclesFn = fn(&CPU, &AddrModeResult) -> u8;
-type ExecFn = fn(&mut CPU, &mut dyn CPUBus);
+type ExecFn = fn(&mut CPU, &AddrModeResult, &mut dyn CPUBus);
 
 #[derive(PartialEq, Debug, Clone)]
 enum InstructionType {
     Jam,
     Reset,
-    NMI,
-    IRQ,
+    Nmi,
+    Irq,
     Instruction {
         opcode: u8,
         addr_mode: AddrModeResult,
@@ -72,8 +72,8 @@ impl ToString for CPU {
                 )
             }
             InstructionType::Jam => "JAM".to_owned(),
-            InstructionType::IRQ => "IRQ".to_owned(),
-            InstructionType::NMI => "NMI".to_owned(),
+            InstructionType::Irq => "IRQ".to_owned(),
+            InstructionType::Nmi => "NMI".to_owned(),
             InstructionType::Reset => "RESET".to_owned(),
         }
     }
@@ -85,23 +85,23 @@ impl CPU {
     const IRQ_VECTOR: u16 = 0xfffe;
 
     #[rustfmt::skip]
-    const LOOKUP_TABLE: [(&str, AddrFn, CyclesFn); 256] = [
-        ("BRK", CPU::imm, CPU::brkc), ("ORA", CPU::indx, CPU::orac), ("JAM", CPU::imp, CPU::jamc), ("SLO", CPU::indx, CPU::sloc), ("NOP",  CPU::zp, CPU::nopc), ("ORA",  CPU::zp, CPU::orac), ("ASL",  CPU::zp, CPU::aslc), ("SLO",  CPU::zp, CPU::sloc), ("PHP", CPU::imp, CPU::phpc), ("ORA",  CPU::imm, CPU::orac), ("ASL", CPU::acc, CPU::aslc), ("ANC",  CPU::imm, CPU::ancc), ("NOP",  CPU::abs, CPU::nopc), ("ORA",  CPU::abs, CPU::orac), ("ASL",  CPU::abs, CPU::aslc), ("SLO",  CPU::abs, CPU::sloc),
-        ("BPL", CPU::rel, CPU::bplc), ("ORA", CPU::indy, CPU::orac), ("JAM", CPU::imp, CPU::jamc), ("SLO", CPU::indy, CPU::sloc), ("NOP", CPU::zpx, CPU::nopc), ("ORA", CPU::zpx, CPU::orac), ("ASL", CPU::zpx, CPU::aslc), ("SLO", CPU::zpx, CPU::sloc), ("CLC", CPU::imp, CPU::clcc), ("ORA", CPU::absy, CPU::orac), ("NOP", CPU::imp, CPU::nopc), ("SLO", CPU::absy, CPU::sloc), ("NOP", CPU::absx, CPU::nopc), ("ORA", CPU::absx, CPU::orac), ("ASL", CPU::absx, CPU::aslc), ("SLO", CPU::absx, CPU::sloc),
-        ("JSR", CPU::abs, CPU::jsrc), ("AND", CPU::indx, CPU::andc), ("JAM", CPU::imp, CPU::jamc), ("RLA", CPU::indx, CPU::rlac), ("BIT",  CPU::zp, CPU::bitc), ("AND",  CPU::zp, CPU::andc), ("ROL",  CPU::zp, CPU::rolc), ("RLA",  CPU::zp, CPU::rlac), ("PLP", CPU::imp, CPU::plpc), ("AND",  CPU::imm, CPU::andc), ("ROL", CPU::acc, CPU::rolc), ("ANC",  CPU::imm, CPU::ancc), ("BIT",  CPU::abs, CPU::bitc), ("AND",  CPU::abs, CPU::andc), ("ROL",  CPU::abs, CPU::rolc), ("RLA",  CPU::abs, CPU::rlac),
-        ("BMI", CPU::rel, CPU::bmic), ("AND", CPU::indy, CPU::andc), ("JAM", CPU::imp, CPU::jamc), ("RLA", CPU::indy, CPU::rlac), ("NOP", CPU::zpx, CPU::nopc), ("AND", CPU::zpx, CPU::andc), ("ROL", CPU::zpx, CPU::rolc), ("RLA", CPU::zpx, CPU::rlac), ("SEC", CPU::imp, CPU::secc), ("AND", CPU::absy, CPU::andc), ("NOP", CPU::imp, CPU::nopc), ("RLA", CPU::absy, CPU::rlac), ("NOP", CPU::absx, CPU::nopc), ("AND", CPU::absx, CPU::andc), ("ROL", CPU::absx, CPU::rolc), ("RLA", CPU::absx, CPU::rlac),
-        ("RTI", CPU::imp, CPU::rtic), ("EOR", CPU::indx, CPU::eorc), ("JAM", CPU::imp, CPU::jamc), ("SRE", CPU::indx, CPU::srec), ("NOP",  CPU::zp, CPU::nopc), ("EOR",  CPU::zp, CPU::eorc), ("LSR",  CPU::zp, CPU::lsrc), ("SRE",  CPU::zp, CPU::srec), ("PHA", CPU::imp, CPU::phac), ("EOR",  CPU::imm, CPU::eorc), ("LSR", CPU::acc, CPU::lsrc), ("ASR",  CPU::imm, CPU::asrc), ("JMP",  CPU::abs, CPU::jmpc), ("EOR",  CPU::abs, CPU::eorc), ("LSR",  CPU::abs, CPU::lsrc), ("SRE",  CPU::abs, CPU::srec),
-        ("BVC", CPU::rel, CPU::bvcc), ("EOR", CPU::indy, CPU::eorc), ("JAM", CPU::imp, CPU::jamc), ("SRE", CPU::indy, CPU::srec), ("NOP", CPU::zpx, CPU::nopc), ("EOR", CPU::zpx, CPU::eorc), ("LSR", CPU::zpx, CPU::lsrc), ("SRE", CPU::zpx, CPU::srec), ("CLI", CPU::imp, CPU::clic), ("EOR", CPU::absy, CPU::eorc), ("NOP", CPU::imp, CPU::nopc), ("SRE", CPU::absy, CPU::srec), ("NOP", CPU::absx, CPU::nopc), ("EOR", CPU::absx, CPU::eorc), ("LSR", CPU::absx, CPU::lsrc), ("SRE", CPU::absx, CPU::srec),
-        ("RTS", CPU::imp, CPU::rtsc), ("ADC", CPU::indx, CPU::adcc), ("JAM", CPU::imp, CPU::jamc), ("RRA", CPU::indx, CPU::rrac), ("NOP",  CPU::zp, CPU::nopc), ("ADC",  CPU::zp, CPU::adcc), ("ROR",  CPU::zp, CPU::rorc), ("RRA",  CPU::zp, CPU::rrac), ("PLA", CPU::imp, CPU::plac), ("ADC",  CPU::imm, CPU::adcc), ("ROR", CPU::acc, CPU::rorc), ("ARR",  CPU::imm, CPU::arrc), ("JMP",  CPU::ind, CPU::jmpc), ("ADC",  CPU::abs, CPU::adcc), ("ROR",  CPU::abs, CPU::rorc), ("RRA",  CPU::abs, CPU::rrac),
-        ("BVS", CPU::rel, CPU::bvsc), ("ADC", CPU::indy, CPU::adcc), ("JAM", CPU::imp, CPU::jamc), ("RRA", CPU::indy, CPU::rrac), ("NOP", CPU::zpx, CPU::nopc), ("ADC", CPU::zpx, CPU::adcc), ("ROR", CPU::zpx, CPU::rorc), ("RRA", CPU::zpx, CPU::rrac), ("SEI", CPU::imp, CPU::seic), ("ADC", CPU::absy, CPU::adcc), ("NOP", CPU::imp, CPU::nopc), ("RRA", CPU::absy, CPU::rrac), ("NOP", CPU::absx, CPU::nopc), ("ADC", CPU::absx, CPU::adcc), ("ROR", CPU::absx, CPU::rorc), ("RRA", CPU::absx, CPU::rrac),
-        ("NOP", CPU::imm, CPU::nopc), ("STA", CPU::indx, CPU::stac), ("NOP", CPU::imm, CPU::nopc), ("SAX", CPU::indx, CPU::saxc), ("STY",  CPU::zp, CPU::styc), ("STA",  CPU::zp, CPU::stac), ("STX",  CPU::zp, CPU::stxc), ("SAX",  CPU::zp, CPU::saxc), ("DEY", CPU::imp, CPU::deyc), ("NOP",  CPU::imm, CPU::nopc), ("TXA", CPU::imp, CPU::txac), ("XAA",  CPU::imm, CPU::xaac), ("STY",  CPU::abs, CPU::styc), ("STA",  CPU::abs, CPU::stac), ("STX",  CPU::abs, CPU::stxc), ("SAX",  CPU::abs, CPU::saxc),
-        ("BCC", CPU::rel, CPU::bccc), ("STA", CPU::indy, CPU::stac), ("JAM", CPU::imp, CPU::jamc), ("SHA", CPU::indy, CPU::shac), ("STY", CPU::zpx, CPU::styc), ("STA", CPU::zpx, CPU::stac), ("STX", CPU::zpy, CPU::stxc), ("SAX", CPU::zpy, CPU::saxc), ("TYA", CPU::imp, CPU::tyac), ("STA", CPU::absy, CPU::stac), ("TXS", CPU::imp, CPU::txsc), ("SHS", CPU::absy, CPU::shsc), ("SHY", CPU::absx, CPU::shyc), ("STA", CPU::absx, CPU::stac), ("SHX", CPU::absy, CPU::shxc), ("SHA", CPU::absy, CPU::shac),
-        ("LDY", CPU::imm, CPU::ldyc), ("LDA", CPU::indx, CPU::ldac), ("LDX", CPU::imm, CPU::ldxc), ("LAX", CPU::indx, CPU::laxc), ("LDY",  CPU::zp, CPU::ldyc), ("LDA",  CPU::zp, CPU::ldac), ("LDX",  CPU::zp, CPU::ldxc), ("LAX",  CPU::zp, CPU::laxc), ("TAY", CPU::imp, CPU::tayc), ("LDA",  CPU::imm, CPU::ldac), ("TAX", CPU::imp, CPU::taxc), ("LAX",  CPU::imm, CPU::laxc), ("LDY",  CPU::abs, CPU::ldyc), ("LDA",  CPU::abs, CPU::ldac), ("LDX",  CPU::abs, CPU::ldxc), ("LAX",  CPU::abs, CPU::laxc),
-        ("BCS", CPU::rel, CPU::bcsc), ("LDA", CPU::indy, CPU::ldac), ("JAM", CPU::imp, CPU::jamc), ("LAX", CPU::indy, CPU::laxc), ("LDY", CPU::zpx, CPU::ldyc), ("LDA", CPU::zpx, CPU::ldac), ("LDX", CPU::zpy, CPU::ldxc), ("LAX", CPU::zpy, CPU::laxc), ("CLV", CPU::imp, CPU::clvc), ("LDA", CPU::absy, CPU::ldac), ("TSX", CPU::imp, CPU::tsxc), ("LAS", CPU::absy, CPU::lasc), ("LDY", CPU::absx, CPU::ldyc), ("LDA", CPU::absx, CPU::ldac), ("LDX", CPU::absy, CPU::ldxc), ("LAX", CPU::absy, CPU::laxc),
-        ("CPY", CPU::imm, CPU::cpyc), ("CMP", CPU::indx, CPU::cmpc), ("NOP", CPU::imm, CPU::nopc), ("DCP", CPU::indx, CPU::dcpc), ("CPY",  CPU::zp, CPU::cpyc), ("CMP",  CPU::zp, CPU::cmpc), ("DEC",  CPU::zp, CPU::decc), ("DCP",  CPU::zp, CPU::dcpc), ("INY", CPU::imp, CPU::inyc), ("CMP",  CPU::imm, CPU::cmpc), ("DEX", CPU::imp, CPU::dexc), ("SBX",  CPU::imm, CPU::sbxc), ("CPY",  CPU::abs, CPU::cpyc), ("CMP",  CPU::abs, CPU::cmpc), ("DEC",  CPU::abs, CPU::decc), ("DCP",  CPU::abs, CPU::dcpc),
-        ("BNE", CPU::rel, CPU::bnec), ("CMP", CPU::indy, CPU::cmpc), ("JAM", CPU::imp, CPU::jamc), ("DCP", CPU::indy, CPU::dcpc), ("NOP", CPU::zpx, CPU::nopc), ("CMP", CPU::zpx, CPU::cmpc), ("DEC", CPU::zpx, CPU::decc), ("DCP", CPU::zpx, CPU::dcpc), ("CLD", CPU::imp, CPU::cldc), ("CMP", CPU::absy, CPU::cmpc), ("NOP", CPU::imp, CPU::nopc), ("DCP", CPU::absy, CPU::dcpc), ("NOP", CPU::absx, CPU::nopc), ("CMP", CPU::absx, CPU::cmpc), ("DEC", CPU::absx, CPU::decc), ("DCP", CPU::absx, CPU::dcpc),
-        ("CPX", CPU::imm, CPU::cpxc), ("SBC", CPU::indx, CPU::sbcc), ("NOP", CPU::imm, CPU::nopc), ("ISC", CPU::indx, CPU::iscc), ("CPX",  CPU::zp, CPU::cpxc), ("SBC",  CPU::zp, CPU::sbcc), ("INC",  CPU::zp, CPU::incc), ("ISC",  CPU::zp, CPU::iscc), ("INX", CPU::imp, CPU::inxc), ("SBC",  CPU::imm, CPU::sbcc), ("NOP", CPU::imp, CPU::nopc), ("SBC",  CPU::imm, CPU::sbcc), ("CPX",  CPU::abs, CPU::cpxc), ("SBC",  CPU::abs, CPU::sbcc), ("INC",  CPU::abs, CPU::incc), ("ISC",  CPU::abs, CPU::iscc),
-        ("BEQ", CPU::rel, CPU::beqc), ("SBC", CPU::indy, CPU::sbcc), ("JAM", CPU::imp, CPU::jamc), ("ISC", CPU::indy, CPU::iscc), ("NOP", CPU::zpx, CPU::nopc), ("SBC", CPU::zpx, CPU::sbcc), ("INC", CPU::zpx, CPU::incc), ("ISC", CPU::zpx, CPU::iscc), ("SED", CPU::imp, CPU::sedc), ("SBC", CPU::absy, CPU::sbcc), ("NOP", CPU::imp, CPU::nopc), ("ISC", CPU::absy, CPU::iscc), ("NOP", CPU::absx, CPU::nopc), ("SBC", CPU::absx, CPU::sbcc), ("INC", CPU::absx, CPU::incc), ("ISC", CPU::absx, CPU::iscc),
+    const LOOKUP_TABLE: [(&str, AddrFn, CyclesFn, ExecFn); 256] = [
+        ("BRK", CPU::imm, CPU::brkc, CPU::brk), ("ORA", CPU::indx, CPU::orac, CPU::ora), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SLO", CPU::indx, CPU::sloc, CPU::slo), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("ORA",  CPU::zp, CPU::orac, CPU::ora), ("ASL",  CPU::zp, CPU::aslc, CPU::asl), ("SLO",  CPU::zp, CPU::sloc, CPU::slo), ("PHP", CPU::imp, CPU::phpc, CPU::php), ("ORA",  CPU::imm, CPU::orac, CPU::ora), ("ASL", CPU::acc, CPU::aslc, CPU::asl), ("ANC",  CPU::imm, CPU::ancc, CPU::anc), ("NOP",  CPU::abs, CPU::nopc, CPU::nop), ("ORA",  CPU::abs, CPU::orac, CPU::ora), ("ASL",  CPU::abs, CPU::aslc, CPU::asl), ("SLO",  CPU::abs, CPU::sloc, CPU::slo),
+        ("BPL", CPU::rel, CPU::bplc, CPU::bpl), ("ORA", CPU::indy, CPU::orac, CPU::ora), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SLO", CPU::indy, CPU::sloc, CPU::slo), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("ORA", CPU::zpx, CPU::orac, CPU::ora), ("ASL", CPU::zpx, CPU::aslc, CPU::asl), ("SLO", CPU::zpx, CPU::sloc, CPU::slo), ("CLC", CPU::imp, CPU::clcc, CPU::clc), ("ORA", CPU::absy, CPU::orac, CPU::ora), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SLO", CPU::absy, CPU::sloc, CPU::slo), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("ORA", CPU::absx, CPU::orac, CPU::ora), ("ASL", CPU::absx, CPU::aslc, CPU::asl), ("SLO", CPU::absx, CPU::sloc, CPU::slo),
+        ("JSR", CPU::abs, CPU::jsrc, CPU::jsr), ("AND", CPU::indx, CPU::andc, CPU::and), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RLA", CPU::indx, CPU::rlac, CPU::rla), ("BIT",  CPU::zp, CPU::bitc, CPU::bit), ("AND",  CPU::zp, CPU::andc, CPU::and), ("ROL",  CPU::zp, CPU::rolc, CPU::rol), ("RLA",  CPU::zp, CPU::rlac, CPU::rla), ("PLP", CPU::imp, CPU::plpc, CPU::plp), ("AND",  CPU::imm, CPU::andc, CPU::and), ("ROL", CPU::acc, CPU::rolc, CPU::rol), ("ANC",  CPU::imm, CPU::ancc, CPU::anc), ("BIT",  CPU::abs, CPU::bitc, CPU::bit), ("AND",  CPU::abs, CPU::andc, CPU::and), ("ROL",  CPU::abs, CPU::rolc, CPU::rol), ("RLA",  CPU::abs, CPU::rlac, CPU::rla),
+        ("BMI", CPU::rel, CPU::bmic, CPU::bmi), ("AND", CPU::indy, CPU::andc, CPU::and), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RLA", CPU::indy, CPU::rlac, CPU::rla), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("AND", CPU::zpx, CPU::andc, CPU::and), ("ROL", CPU::zpx, CPU::rolc, CPU::rol), ("RLA", CPU::zpx, CPU::rlac, CPU::rla), ("SEC", CPU::imp, CPU::secc, CPU::sec), ("AND", CPU::absy, CPU::andc, CPU::and), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("RLA", CPU::absy, CPU::rlac, CPU::rla), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("AND", CPU::absx, CPU::andc, CPU::and), ("ROL", CPU::absx, CPU::rolc, CPU::rol), ("RLA", CPU::absx, CPU::rlac, CPU::rla),
+        ("RTI", CPU::imp, CPU::rtic, CPU::rti), ("EOR", CPU::indx, CPU::eorc, CPU::eor), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SRE", CPU::indx, CPU::srec, CPU::sre), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("EOR",  CPU::zp, CPU::eorc, CPU::eor), ("LSR",  CPU::zp, CPU::lsrc, CPU::lsr), ("SRE",  CPU::zp, CPU::srec, CPU::sre), ("PHA", CPU::imp, CPU::phac, CPU::pha), ("EOR",  CPU::imm, CPU::eorc, CPU::eor), ("LSR", CPU::acc, CPU::lsrc, CPU::lsr), ("ASR",  CPU::imm, CPU::asrc, CPU::asr), ("JMP",  CPU::abs, CPU::jmpc, CPU::jmp), ("EOR",  CPU::abs, CPU::eorc, CPU::eor), ("LSR",  CPU::abs, CPU::lsrc, CPU::lsr), ("SRE",  CPU::abs, CPU::srec, CPU::sre),
+        ("BVC", CPU::rel, CPU::bvcc, CPU::bvc), ("EOR", CPU::indy, CPU::eorc, CPU::eor), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SRE", CPU::indy, CPU::srec, CPU::sre), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("EOR", CPU::zpx, CPU::eorc, CPU::eor), ("LSR", CPU::zpx, CPU::lsrc, CPU::lsr), ("SRE", CPU::zpx, CPU::srec, CPU::sre), ("CLI", CPU::imp, CPU::clic, CPU::cli), ("EOR", CPU::absy, CPU::eorc, CPU::eor), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SRE", CPU::absy, CPU::srec, CPU::sre), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("EOR", CPU::absx, CPU::eorc, CPU::eor), ("LSR", CPU::absx, CPU::lsrc, CPU::lsr), ("SRE", CPU::absx, CPU::srec, CPU::sre),
+        ("RTS", CPU::imp, CPU::rtsc, CPU::rts), ("ADC", CPU::indx, CPU::adcc, CPU::adc), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RRA", CPU::indx, CPU::rrac, CPU::rra), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("ADC",  CPU::zp, CPU::adcc, CPU::adc), ("ROR",  CPU::zp, CPU::rorc, CPU::ror), ("RRA",  CPU::zp, CPU::rrac, CPU::rra), ("PLA", CPU::imp, CPU::plac, CPU::pla), ("ADC",  CPU::imm, CPU::adcc, CPU::adc), ("ROR", CPU::acc, CPU::rorc, CPU::ror), ("ARR",  CPU::imm, CPU::arrc, CPU::arr), ("JMP",  CPU::ind, CPU::jmpc, CPU::jmp), ("ADC",  CPU::abs, CPU::adcc, CPU::adc), ("ROR",  CPU::abs, CPU::rorc, CPU::ror), ("RRA",  CPU::abs, CPU::rrac, CPU::rra),
+        ("BVS", CPU::rel, CPU::bvsc, CPU::bvs), ("ADC", CPU::indy, CPU::adcc, CPU::adc), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RRA", CPU::indy, CPU::rrac, CPU::rra), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("ADC", CPU::zpx, CPU::adcc, CPU::adc), ("ROR", CPU::zpx, CPU::rorc, CPU::ror), ("RRA", CPU::zpx, CPU::rrac, CPU::rra), ("SEI", CPU::imp, CPU::seic, CPU::sei), ("ADC", CPU::absy, CPU::adcc, CPU::adc), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("RRA", CPU::absy, CPU::rrac, CPU::rra), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("ADC", CPU::absx, CPU::adcc, CPU::adc), ("ROR", CPU::absx, CPU::rorc, CPU::ror), ("RRA", CPU::absx, CPU::rrac, CPU::rra),
+        ("NOP", CPU::imm, CPU::nopc, CPU::nop), ("STA", CPU::indx, CPU::stac, CPU::sta), ("NOP", CPU::imm, CPU::nopc, CPU::nop),  ("SAX", CPU::indx, CPU::saxc, CPU::sax), ("STY",  CPU::zp, CPU::styc, CPU::sty), ("STA",  CPU::zp, CPU::stac, CPU::sta), ("STX",  CPU::zp, CPU::stxc, CPU::stx), ("SAX",  CPU::zp, CPU::saxc, CPU::sax), ("DEY", CPU::imp, CPU::deyc, CPU::dey), ("NOP",  CPU::imm, CPU::nopc, CPU::nop), ("TXA", CPU::imp, CPU::txac, CPU::txa), ("XAA",  CPU::imm, CPU::xaac, CPU::xaa), ("STY",  CPU::abs, CPU::styc, CPU::sty), ("STA",  CPU::abs, CPU::stac, CPU::sta), ("STX",  CPU::abs, CPU::stxc, CPU::stx), ("SAX",  CPU::abs, CPU::saxc, CPU::sax),
+        ("BCC", CPU::rel, CPU::bccc, CPU::bcc), ("STA", CPU::indy, CPU::stac, CPU::sta), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SHA", CPU::indy, CPU::shac, CPU::sha), ("STY", CPU::zpx, CPU::styc, CPU::sty), ("STA", CPU::zpx, CPU::stac, CPU::sta), ("STX", CPU::zpy, CPU::stxc, CPU::stx), ("SAX", CPU::zpy, CPU::saxc, CPU::sax), ("TYA", CPU::imp, CPU::tyac, CPU::tya), ("STA", CPU::absy, CPU::stac, CPU::sta), ("TXS", CPU::imp, CPU::txsc, CPU::txs), ("SHS", CPU::absy, CPU::shsc, CPU::shs), ("SHY", CPU::absx, CPU::shyc, CPU::shy), ("STA", CPU::absx, CPU::stac, CPU::sta), ("SHX", CPU::absy, CPU::shxc, CPU::shx), ("SHA", CPU::absy, CPU::shac, CPU::sha),
+        ("LDY", CPU::imm, CPU::ldyc, CPU::ldy), ("LDA", CPU::indx, CPU::ldac, CPU::lda), ("LDX", CPU::imm, CPU::ldxc, CPU::ldx),  ("LAX", CPU::indx, CPU::laxc, CPU::lax), ("LDY",  CPU::zp, CPU::ldyc, CPU::ldy), ("LDA",  CPU::zp, CPU::ldac, CPU::lda), ("LDX",  CPU::zp, CPU::ldxc, CPU::ldx), ("LAX",  CPU::zp, CPU::laxc, CPU::lax), ("TAY", CPU::imp, CPU::tayc, CPU::tay), ("LDA",  CPU::imm, CPU::ldac, CPU::lda), ("TAX", CPU::imp, CPU::taxc, CPU::tax), ("LAX",  CPU::imm, CPU::laxc, CPU::lax), ("LDY",  CPU::abs, CPU::ldyc, CPU::ldy), ("LDA",  CPU::abs, CPU::ldac, CPU::lda), ("LDX",  CPU::abs, CPU::ldxc, CPU::ldx), ("LAX",  CPU::abs, CPU::laxc, CPU::lax),
+        ("BCS", CPU::rel, CPU::bcsc, CPU::bcs), ("LDA", CPU::indy, CPU::ldac, CPU::lda), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("LAX", CPU::indy, CPU::laxc, CPU::lax), ("LDY", CPU::zpx, CPU::ldyc, CPU::ldy), ("LDA", CPU::zpx, CPU::ldac, CPU::lda), ("LDX", CPU::zpy, CPU::ldxc, CPU::ldx), ("LAX", CPU::zpy, CPU::laxc, CPU::lax), ("CLV", CPU::imp, CPU::clvc, CPU::clv), ("LDA", CPU::absy, CPU::ldac, CPU::lda), ("TSX", CPU::imp, CPU::tsxc, CPU::tsx), ("LAS", CPU::absy, CPU::lasc, CPU::las), ("LDY", CPU::absx, CPU::ldyc, CPU::ldy), ("LDA", CPU::absx, CPU::ldac, CPU::lda), ("LDX", CPU::absy, CPU::ldxc, CPU::ldx), ("LAX", CPU::absy, CPU::laxc, CPU::lax),
+        ("CPY", CPU::imm, CPU::cpyc, CPU::cpy), ("CMP", CPU::indx, CPU::cmpc, CPU::cmp), ("NOP", CPU::imm, CPU::nopc, CPU::nop),  ("DCP", CPU::indx, CPU::dcpc, CPU::dcp), ("CPY",  CPU::zp, CPU::cpyc, CPU::cpy), ("CMP",  CPU::zp, CPU::cmpc, CPU::cmp), ("DEC",  CPU::zp, CPU::decc, CPU::dec), ("DCP",  CPU::zp, CPU::dcpc, CPU::dcp), ("INY", CPU::imp, CPU::inyc, CPU::iny), ("CMP",  CPU::imm, CPU::cmpc, CPU::cmp), ("DEX", CPU::imp, CPU::dexc, CPU::dex), ("SBX",  CPU::imm, CPU::sbxc, CPU::sbx), ("CPY",  CPU::abs, CPU::cpyc, CPU::cpy), ("CMP",  CPU::abs, CPU::cmpc, CPU::cmp), ("DEC",  CPU::abs, CPU::decc, CPU::dec), ("DCP",  CPU::abs, CPU::dcpc, CPU::dcp),
+        ("BNE", CPU::rel, CPU::bnec, CPU::bne), ("CMP", CPU::indy, CPU::cmpc, CPU::cmp), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("DCP", CPU::indy, CPU::dcpc, CPU::dcp), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("CMP", CPU::zpx, CPU::cmpc, CPU::cmp), ("DEC", CPU::zpx, CPU::decc, CPU::dec), ("DCP", CPU::zpx, CPU::dcpc, CPU::dcp), ("CLD", CPU::imp, CPU::cldc, CPU::cld), ("CMP", CPU::absy, CPU::cmpc, CPU::cmp), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("DCP", CPU::absy, CPU::dcpc, CPU::dcp), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("CMP", CPU::absx, CPU::cmpc, CPU::cmp), ("DEC", CPU::absx, CPU::decc, CPU::dec), ("DCP", CPU::absx, CPU::dcpc, CPU::dcp),
+        ("CPX", CPU::imm, CPU::cpxc, CPU::cpx), ("SBC", CPU::indx, CPU::sbcc, CPU::sbc), ("NOP", CPU::imm, CPU::nopc, CPU::nop),  ("ISC", CPU::indx, CPU::iscc, CPU::isc), ("CPX",  CPU::zp, CPU::cpxc, CPU::cpx), ("SBC",  CPU::zp, CPU::sbcc, CPU::sbc), ("INC",  CPU::zp, CPU::incc, CPU::inc), ("ISC",  CPU::zp, CPU::iscc, CPU::isc), ("INX", CPU::imp, CPU::inxc, CPU::inx), ("SBC",  CPU::imm, CPU::sbcc, CPU::sbc), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SBC",  CPU::imm, CPU::sbcc, CPU::sbc), ("CPX",  CPU::abs, CPU::cpxc, CPU::cpx), ("SBC",  CPU::abs, CPU::sbcc, CPU::sbc), ("INC",  CPU::abs, CPU::incc, CPU::inc), ("ISC",  CPU::abs, CPU::iscc, CPU::isc),
+        ("BEQ", CPU::rel, CPU::beqc, CPU::beq), ("SBC", CPU::indy, CPU::sbcc, CPU::sbc), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("ISC", CPU::indy, CPU::iscc, CPU::isc), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("SBC", CPU::zpx, CPU::sbcc, CPU::sbc), ("INC", CPU::zpx, CPU::incc, CPU::inc), ("ISC", CPU::zpx, CPU::iscc, CPU::isc), ("SED", CPU::imp, CPU::sedc, CPU::sed), ("SBC", CPU::absy, CPU::sbcc, CPU::sbc), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("ISC", CPU::absy, CPU::iscc, CPU::isc), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("SBC", CPU::absx, CPU::sbcc, CPU::sbc), ("INC", CPU::absx, CPU::incc, CPU::inc), ("ISC", CPU::absx, CPU::iscc, CPU::isc),
     ];
 
     pub fn new() -> Self {
@@ -165,6 +165,12 @@ impl CPU {
     }
 }
 
+impl Default for CPU {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CPU {
     #[inline]
     fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
@@ -177,11 +183,11 @@ impl CPU {
                 self.reset(bus);
                 self.current_instruction = self.fetch_next_instruction(bus);
             }
-            InstructionType::NMI => {
+            InstructionType::Nmi => {
                 self.nmi(bus);
                 self.current_instruction = self.fetch_next_instruction(bus);
             }
-            InstructionType::IRQ => {
+            InstructionType::Irq => {
                 self.irq(bus);
                 self.current_instruction = self.fetch_next_instruction(bus);
             }
@@ -190,7 +196,10 @@ impl CPU {
                 addr_mode: addressing_mode,
             } => {
                 let i_flag_before = self.i;
-                self.execute(opcode, &addressing_mode, bus);
+
+                let exec_fn = CPU::LOOKUP_TABLE[opcode as usize].3;
+                exec_fn(self, &addressing_mode, bus);
+
                 let i_flag_after = self.i;
 
                 let polled_i_flag = match opcode {
@@ -213,12 +222,12 @@ impl CPU {
         if self.pending_nmi {
             self.current_instruction = CurrentInstruction {
                 remaining_cycles: self.nmic(),
-                instruction_type: InstructionType::NMI,
+                instruction_type: InstructionType::Nmi,
             };
         } else if self.pending_irq && !i_flag {
             self.current_instruction = CurrentInstruction {
                 remaining_cycles: self.irqc(),
-                instruction_type: InstructionType::IRQ,
+                instruction_type: InstructionType::Irq,
             };
         } else {
             self.current_instruction = self.fetch_next_instruction(bus);
@@ -228,7 +237,7 @@ impl CPU {
     #[inline]
     fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
-        let (_, addr_mode_fn, cycles_fn) = CPU::LOOKUP_TABLE[opcode as usize];
+        let (_, addr_mode_fn, cycles_fn, _) = CPU::LOOKUP_TABLE[opcode as usize];
         let addr_mode = addr_mode_fn(self, bus);
         let cycles = cycles_fn(self, &addr_mode);
         if cycles == 0 {
@@ -254,7 +263,7 @@ impl CPU {
             | (self.d as u8) << 3
             | (self.i as u8) << 2
             | (self.z as u8) << 1
-            | (self.c as u8) << 0
+            | (self.c as u8)
     }
 
     #[inline]
@@ -272,91 +281,6 @@ impl CPU {
         self.pc = self.pc.wrapping_add(2);
 
         high_byte << 8 | low_byte
-    }
-}
-
-impl CPU {
-    #[inline]
-    fn execute(&mut self, opcode: u8, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
-        match opcode {
-            0x00 => self.brk(mode, bus),
-            0x08 => self.php(mode, bus),
-            0x09 | 0x0D | 0x1D | 0x19 | 0x05 | 0x15 | 0x01 | 0x11 => self.ora(mode),
-            0x0A | 0x0E | 0x1E | 0x06 | 0x16 => self.asl(mode, bus),
-            0x0B | 0x2B => self.anc(mode),
-            0x0F | 0x1F | 0x1B | 0x07 | 0x17 | 0x03 | 0x13 => self.slo(mode, bus),
-            0x10 => self.bpl(mode),
-            0x18 => self.clc(mode),
-            0x20 => self.jsr(mode, bus),
-            0x28 => self.plp(mode, bus),
-            0x29 | 0x2D | 0x3D | 0x39 | 0x25 | 0x35 | 0x21 | 0x31 => self.and(mode),
-            0x2A | 0x2E | 0x3E | 0x26 | 0x36 => self.rol(mode, bus),
-            0x2C | 0x24 => self.bit(mode),
-            0x2F | 0x3F | 0x3B | 0x27 | 0x37 | 0x23 | 0x33 => self.rla(mode, bus),
-            0x30 => self.bmi(mode),
-            0x38 => self.sec(mode),
-            0x40 => self.rti(mode, bus),
-            0x48 => self.pha(mode, bus),
-            0x49 | 0x4D | 0x5D | 0x59 | 0x45 | 0x55 | 0x41 | 0x51 => self.eor(mode),
-            0x4A | 0x4E | 0x5E | 0x46 | 0x56 => self.lsr(mode, bus),
-            0x4B => self.asr(mode, bus),
-            0x4C | 0x6C => self.jmp(mode),
-            0x4F | 0x5F | 0x5B | 0x47 | 0x57 | 0x43 | 0x53 => self.sre(mode, bus),
-            0x50 => self.bvc(mode),
-            0x58 => self.cli(mode),
-            0x60 => self.rts(mode, bus),
-            0x68 => self.pla(mode, bus),
-            0x69 | 0x6D | 0x7D | 0x79 | 0x65 | 0x75 | 0x61 | 0x71 => self.adc(mode),
-            0x6A | 0x6E | 0x7E | 0x66 | 0x76 => self.ror(mode, bus),
-            0x6B => self.arr(mode, bus),
-            0x6F | 0x7F | 0x7B | 0x67 | 0x77 | 0x63 | 0x73 => self.rra(mode, bus),
-            0x70 => self.bvs(mode),
-            0x78 => self.sei(mode),
-            0x88 => self.dey(mode),
-            0x8C | 0x84 | 0x94 => self.sty(mode, bus),
-            0x8A => self.txa(mode),
-            0x8B => self.xaa(mode, bus),
-            0x8D | 0x9D | 0x99 | 0x85 | 0x95 | 0x81 | 0x91 => self.sta(mode, bus),
-            0x8E | 0x86 | 0x96 => self.stx(mode, bus),
-            0x8F | 0x87 | 0x97 | 0x83 => self.sax(mode, bus),
-            0x90 => self.bcc(mode),
-            0x98 => self.tya(mode),
-            0x9A => self.txs(mode),
-            0x9B => self.shs(mode, bus),
-            0x9C => self.shy(mode, bus),
-            0x9E => self.shx(mode, bus),
-            0x9F | 0x93 => self.sha(mode, bus),
-            0xA2 | 0xAE | 0xBE | 0xA6 | 0xB6 => self.ldx(mode),
-            0xA8 => self.tay(mode),
-            0xA9 | 0xAD | 0xBD | 0xB9 | 0xA5 | 0xB5 | 0xA1 | 0xB1 => self.lda(mode),
-            0xA0 | 0xAC | 0xBC | 0xA4 | 0xB4 => self.ldy(mode),
-            0xAA => self.tax(mode),
-            0xAB | 0xAF | 0xBF | 0xA7 | 0xB7 | 0xA3 | 0xB3 => self.lax(mode),
-            0xB0 => self.bcs(mode),
-            0xB8 => self.clv(mode),
-            0xBA => self.tsx(mode),
-            0xBB => self.las(mode),
-            0xC0 | 0xCC | 0xC4 => self.cpy(mode),
-            0xC8 => self.iny(mode),
-            0xC9 | 0xCD | 0xDD | 0xD9 | 0xC5 | 0xD5 | 0xC1 | 0xD1 => self.cmp(mode),
-            0xCA => self.dex(mode),
-            0xCB => self.sbx(mode),
-            0xCE | 0xDE | 0xC6 | 0xD6 => self.dec(mode, bus),
-            0xCF | 0xDF | 0xDB | 0xC7 | 0xD7 | 0xC3 | 0xD3 => self.dcp(mode, bus),
-            0xD0 => self.bne(mode),
-            0xD8 => self.cld(mode),
-            0xE0 | 0xEC | 0xE4 => self.cpx(mode),
-            0xE8 => self.inx(mode),
-            0xE9 | 0xEB | 0xED | 0xFD | 0xF9 | 0xE5 | 0xF5 | 0xE1 | 0xF1 => self.sbc(mode),
-            0xEA | 0x1A | 0x3A | 0x5A | 0x7A | 0xDA | 0xFA | 0x80 | 0x82 | 0x89 | 0xC2 | 0xE2
-            | 0x0C | 0x1C | 0x3C | 0x5C | 0x7C | 0xDC | 0xFC | 0x04 | 0x44 | 0x64 | 0x14 | 0x34
-            | 0x54 | 0x74 | 0xD4 | 0xF4 => self.nop(mode),
-            0xEE | 0xFE | 0xE6 | 0xF6 => self.inc(mode, bus),
-            0xEF | 0xFF | 0xFB | 0xE7 | 0xF7 | 0xE3 | 0xF3 => self.isc(mode, bus),
-            0xF0 => self.beq(mode),
-            0xF8 => self.sed(mode),
-            _ => panic!("Opcode {:#02x} is not implemented", opcode),
-        }
     }
 }
 
@@ -535,7 +459,7 @@ mod cpu_tests {
                         addr: None,
                         data: Some(0xff),
                         cycles: 0,
-                        mode: addr::AddrModeType::IMM,
+                        mode: addr::AddrModeType::Imm,
                         bytes: 2,
                         operands: "FF".to_owned(),
                         repr: "#$FF".to_owned()
@@ -619,7 +543,7 @@ mod cpu_tests {
         assert_eq!(
             CurrentInstruction {
                 remaining_cycles: 7,
-                instruction_type: InstructionType::NMI
+                instruction_type: InstructionType::Nmi
             },
             cpu.current_instruction
         );
@@ -656,7 +580,7 @@ mod cpu_tests {
         assert_eq!(
             CurrentInstruction {
                 remaining_cycles: 7,
-                instruction_type: InstructionType::IRQ
+                instruction_type: InstructionType::Irq
             },
             cpu.current_instruction
         )
@@ -760,7 +684,7 @@ mod cpu_tests {
         assert_eq!(
             CurrentInstruction {
                 remaining_cycles: 7,
-                instruction_type: InstructionType::IRQ
+                instruction_type: InstructionType::Irq
             },
             cpu.current_instruction
         );
@@ -810,7 +734,7 @@ mod cpu_tests {
         assert_eq!(
             CurrentInstruction {
                 remaining_cycles: 7,
-                instruction_type: InstructionType::IRQ
+                instruction_type: InstructionType::Irq
             },
             cpu.current_instruction
         );
@@ -865,7 +789,7 @@ mod cpu_tests {
         assert_eq!(
             CurrentInstruction {
                 remaining_cycles: 7,
-                instruction_type: InstructionType::IRQ
+                instruction_type: InstructionType::Irq
             },
             cpu.current_instruction
         );

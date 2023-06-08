@@ -1,4 +1,4 @@
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -9,7 +9,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn tya(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn tya(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.a = self.y;
 
         self.n = (self.a & 0x80) > 0;
@@ -19,10 +19,12 @@ impl CPU {
 
 #[cfg(test)]
 mod tya_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_tya_returns_correct_number_ofc() {
+    fn test_tya_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.tyac(&cpu._imp()));
     }
@@ -32,7 +34,7 @@ mod tya_tests {
         let mut cpu = CPU::new();
         cpu.y = 0xcc;
 
-        cpu.tya(&cpu._imp());
+        cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.y);
     }
@@ -42,7 +44,7 @@ mod tya_tests {
         let mut cpu = CPU::new();
         cpu.y = 0x80;
 
-        cpu.tya(&cpu._imp());
+        cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -51,7 +53,7 @@ mod tya_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xff;
 
-        cpu.tya(&cpu._imp());
+        cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
     }
 }

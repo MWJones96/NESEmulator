@@ -26,7 +26,7 @@ impl CPU {
         AddrModeResult {
             data: Some(bus.read(addr)),
             cycles: 2,
-            mode: AddrModeType::ABS,
+            mode: AddrModeType::Abs,
             addr: Some(addr),
             bytes: 3,
             operands: format!("{:02X} {:02X}", (addr & 0xff) as u8, (addr >> 8) as u8),
@@ -54,7 +54,7 @@ mod abs_tests {
             AddrModeResult {
                 data: Some(0x88),
                 cycles: 2,
-                mode: AddrModeType::ABS,
+                mode: AddrModeType::Abs,
                 addr: Some(0xffff),
                 bytes: 3,
                 operands: "FF FF".to_owned(),

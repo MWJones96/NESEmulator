@@ -27,7 +27,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn pla(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         self.sp = self.sp.wrapping_add(1);
 
         self.a = bus.read(0x100 + (self.sp as u16));
@@ -45,7 +45,7 @@ mod pla_tests {
     use super::*;
 
     #[test]
-    fn test_pla_correct_number_ofc() {
+    fn test_pla_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(4, cpu.plac(&cpu._imp()));
     }
@@ -61,7 +61,7 @@ mod pla_tests {
             .times(1)
             .return_const(0xcc);
 
-        cpu.pla(&cpu._imp(), &bus);
+        cpu.pla(&cpu._imp(), &mut bus);
 
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xff, cpu.sp);
@@ -78,7 +78,7 @@ mod pla_tests {
             .times(1)
             .return_const(0x80);
 
-        cpu.pla(&cpu._imp(), &bus);
+        cpu.pla(&cpu._imp(), &mut bus);
 
         assert_eq!(true, cpu.n);
     }
@@ -91,7 +91,7 @@ mod pla_tests {
 
         bus.expect_read().with(eq(0x1ff)).times(1).return_const(0x0);
 
-        cpu.pla(&cpu._imp(), &bus);
+        cpu.pla(&cpu._imp(), &mut bus);
 
         assert_eq!(true, cpu.z);
     }
@@ -104,7 +104,7 @@ mod pla_tests {
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);
 
-        cpu.pla(&cpu._imp(), &bus);
+        cpu.pla(&cpu._imp(), &mut bus);
         assert_eq!(0x0, cpu.sp);
     }
 }

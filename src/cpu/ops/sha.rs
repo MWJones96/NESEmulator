@@ -29,8 +29,8 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn shac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSY => 5,
-            AddrModeType::INDY => 6,
+            AddrModeType::Absy => 5,
+            AddrModeType::Indy => 6,
             addr => panic!("Addressing mode {:?} not implemented for SHA", addr),
         }
     }
@@ -41,11 +41,11 @@ impl CPU {
         let ax = self.a & self.x;
 
         match mode.mode {
-            AddrModeType::ABSY => {
+            AddrModeType::Absy => {
                 let v = ((write_addr.wrapping_sub(self.y as u16) >> 8) as u8).wrapping_add(1);
                 bus.write(write_addr, ax & v);
             }
-            AddrModeType::INDY => {
+            AddrModeType::Indy => {
                 let v = bus.read(write_addr.wrapping_sub(self.y as u16)) + 1;
                 bus.write(write_addr, ax & v);
             }
@@ -62,7 +62,7 @@ mod sha_tests {
     use crate::cpu::bus::MockCPUBus;
 
     #[test]
-    fn test_sha_absy_correct_number_ofc() {
+    fn test_sha_absy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -71,7 +71,7 @@ mod sha_tests {
     }
 
     #[test]
-    fn test_sha_indy_correct_number_ofc() {
+    fn test_sha_indy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);

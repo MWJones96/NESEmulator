@@ -15,7 +15,7 @@
     It does not affect the accumulator.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
 
         self.n = (data & 0b1000_0000) > 0;
@@ -42,7 +42,7 @@ mod bit_tests {
     use super::*;
 
     #[test]
-    fn test_bit_zp_correct_number_ofc() {
+    fn test_bit_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -52,7 +52,7 @@ mod bit_tests {
     }
 
     #[test]
-    fn test_bit_abs_correct_number_ofc() {
+    fn test_bit_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -69,7 +69,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x80);
 
-        cpu.bit(&cpu._zp(0x0, &bus));
+        cpu.bit(&cpu._zp(0x0, &bus), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
@@ -84,7 +84,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x40);
 
-        cpu.bit(&cpu._zp(0x0, &bus));
+        cpu.bit(&cpu._zp(0x0, &bus), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
@@ -98,7 +98,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        cpu.bit(&cpu._zp(0x0, &bus));
+        cpu.bit(&cpu._zp(0x0, &bus), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

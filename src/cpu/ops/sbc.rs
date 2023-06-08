@@ -18,7 +18,7 @@
     it is reset.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -29,8 +29,8 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult) {
-        self.adc(&self._imm(!mode.data.unwrap()))
+    pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+        self.adc(&self._imm(!mode.data.unwrap()), bus)
     }
 }
 
@@ -161,7 +161,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2));
+        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
 
         assert_eq!(0xff, cpu.a);
     }
@@ -172,7 +172,7 @@ mod sbc_tests {
 
         cpu.c = false; //Borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2));
+        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
 
         assert_eq!(0xfe, cpu.a);
     }
@@ -183,7 +183,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2));
+        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.n);
     }
@@ -194,7 +194,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x1));
+        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.z);
     }
@@ -205,19 +205,19 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2));
+        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.c);
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x1));
+        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.c);
 
         cpu.c = true; //No borrow
         cpu.a = 0x2;
-        cpu.sbc(&cpu._imm(0x1));
+        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.c);
     }
@@ -229,20 +229,20 @@ mod sbc_tests {
         cpu.c = true;
         cpu.a = 0x7f;
 
-        cpu.sbc(&cpu._imm(0xff));
+        cpu.sbc(&cpu._imm(0xff), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.v);
 
         cpu.c = true;
         cpu.a = 0x80;
 
-        cpu.sbc(&cpu._imm(0x1));
+        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(true, cpu.v);
 
         cpu.c = true;
         cpu.a = 0x1;
 
-        cpu.sbc(&cpu._imm(0x1));
+        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
         assert_eq!(false, cpu.v);
     }
 }

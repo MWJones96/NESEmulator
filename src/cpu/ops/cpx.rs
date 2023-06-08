@@ -21,7 +21,7 @@
     register X, the Z flag is set, otherwise it is reset.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -32,7 +32,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let data = mode.data.unwrap();
         let result = self.x.wrapping_add(!data).wrapping_add(1);
 
@@ -49,14 +49,14 @@ mod cpx_tests {
     use super::*;
 
     #[test]
-    fn test_cpx_imm_correct_number_ofc() {
+    fn test_cpx_imm_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.cpxc(&cpu._imm(0x0)));
     }
 
     #[test]
-    fn test_cpx_zp_correct_number_ofc() {
+    fn test_cpx_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -65,7 +65,7 @@ mod cpx_tests {
     }
 
     #[test]
-    fn test_cpx_abs_correct_number_ofc() {
+    fn test_cpx_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -78,7 +78,7 @@ mod cpx_tests {
         let mut cpu = CPU::new();
 
         cpu.x = 0x10;
-        cpu.cpx(&cpu._imm(0x11));
+        cpu.cpx(&cpu._imm(0x11), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(0x10, cpu.x);
@@ -89,7 +89,7 @@ mod cpx_tests {
         let mut cpu = CPU::new();
 
         cpu.x = 0x20;
-        cpu.cpx(&cpu._imm(0x20));
+        cpu.cpx(&cpu._imm(0x20), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.z);
         assert_eq!(0x20, cpu.x);
@@ -100,19 +100,19 @@ mod cpx_tests {
         let mut cpu = CPU::new();
 
         cpu.x = 0x20;
-        cpu.cpx(&cpu._imm(0x20));
+        cpu.cpx(&cpu._imm(0x20), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.x);
 
         cpu.x = 0x20;
-        cpu.cpx(&cpu._imm(0x10));
+        cpu.cpx(&cpu._imm(0x10), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.x);
 
         cpu.x = 0x20;
-        cpu.cpx(&cpu._imm(0x21));
+        cpu.cpx(&cpu._imm(0x21), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.c);
         assert_eq!(0x20, cpu.x);

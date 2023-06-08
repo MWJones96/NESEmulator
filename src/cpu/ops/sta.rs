@@ -19,14 +19,14 @@ impl CPU {
     #[inline]
     pub(in crate::cpu) fn stac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
-            AddrModeType::ABSX | AddrModeType::ABSY => 5,
-            AddrModeType::INDY => 6,
+            AddrModeType::Absx | AddrModeType::Absy => 5,
+            AddrModeType::Indy => 6,
             _ => 2 + mode.cycles,
         }
     }
 
     #[inline]
-    pub(in crate::cpu) fn sta(&self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sta(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
         bus.write(mode.addr.unwrap(), self.a);
     }
 }
@@ -40,7 +40,7 @@ mod sta_tests {
     use super::*;
 
     #[test]
-    fn test_sta_zp_correct_number_ofc() {
+    fn test_sta_zp_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -50,7 +50,7 @@ mod sta_tests {
     }
 
     #[test]
-    fn test_sta_zpx_correct_number_ofc() {
+    fn test_sta_zpx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -60,7 +60,7 @@ mod sta_tests {
     }
 
     #[test]
-    fn test_sta_abs_correct_number_ofc() {
+    fn test_sta_abs_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -70,7 +70,7 @@ mod sta_tests {
     }
 
     #[test]
-    fn test_sta_absx_correct_number_ofc() {
+    fn test_sta_absx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -80,7 +80,7 @@ mod sta_tests {
     }
 
     #[test]
-    fn test_sta_absy_correct_number_ofc() {
+    fn test_sta_absy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -90,7 +90,7 @@ mod sta_tests {
     }
 
     #[test]
-    fn test_sta_indx_correct_number_ofc() {
+    fn test_sta_indx_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 
@@ -100,7 +100,7 @@ mod sta_tests {
     }
 
     #[test]
-    fn test_sta_indy_correct_number_ofc() {
+    fn test_sta_indy_correct_number_of_cycles() {
         let cpu = CPU::new();
         let mut bus = MockCPUBus::new();
 

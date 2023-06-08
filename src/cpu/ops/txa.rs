@@ -13,7 +13,7 @@
     set, other­ wise it is reset.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn txa(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn txa(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.a = self.x;
 
         self.n = (self.a & 0x80) > 0;
@@ -34,10 +34,12 @@ impl CPU {
 
 #[cfg(test)]
 mod txa_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_txa_returns_correct_number_ofc() {
+    fn test_txa_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.txac(&cpu._imp()));
     }
@@ -47,7 +49,7 @@ mod txa_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xcc;
 
-        cpu.txa(&cpu._imp());
+        cpu.txa(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.x);
     }
@@ -57,7 +59,7 @@ mod txa_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.txa(&cpu._imp());
+        cpu.txa(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -66,7 +68,7 @@ mod txa_tests {
         let mut cpu = CPU::new();
         cpu.a = 0xff;
 
-        cpu.txa(&cpu._imp());
+        cpu.txa(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.z);
     }
 }

@@ -36,7 +36,7 @@ impl CPU {
 
     #[inline]
     pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
-        self.and(mode);
+        self.and(mode, bus);
         self.ror(&self._acc(), bus);
 
         self.c = (self.a & 0x40) != 0;

@@ -18,7 +18,7 @@
     The zero flag is set if the accumulator result is 0, otherwise the zero flag is reset.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -29,7 +29,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult) {
+    pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         let a: u16 = self.a as u16;
         let v: u16 = mode.data.unwrap() as u16;
 
@@ -169,7 +169,7 @@ mod adc_tests {
     fn test_adc_no_carry() {
         let mut cpu = CPU::new();
 
-        cpu.adc(&cpu._imm(0x01_u8));
+        cpu.adc(&cpu._imm(0x01_u8), &mut MockCPUBus::new());
 
         assert_eq!(0x01_u8, cpu.a);
         assert_eq!(false, cpu.c);
@@ -180,17 +180,17 @@ mod adc_tests {
         let mut cpu = CPU::new();
         cpu.a = 0x80_u8;
 
-        cpu.adc(&cpu._imm(0x80));
+        cpu.adc(&cpu._imm(0x80), &mut MockCPUBus::new());
 
         assert_eq!(0x00_u8, cpu.a);
         assert_eq!(true, cpu.c);
 
-        cpu.adc(&cpu._imm(0x80));
+        cpu.adc(&cpu._imm(0x80), &mut MockCPUBus::new());
 
         assert_eq!(0x81, cpu.a);
         assert_eq!(false, cpu.c);
 
-        cpu.adc(&cpu._imm(0x01));
+        cpu.adc(&cpu._imm(0x01), &mut MockCPUBus::new());
 
         assert_eq!(0x82, cpu.a);
         assert_eq!(false, cpu.c);
@@ -200,15 +200,15 @@ mod adc_tests {
     fn test_adc_with_carry_zero_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc(&cpu._imm(0x00_u8));
+        cpu.adc(&cpu._imm(0x00_u8), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.z);
 
-        cpu.adc(&cpu._imm(0x80_u8));
+        cpu.adc(&cpu._imm(0x80_u8), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.z);
 
-        cpu.adc(&cpu._imm(0x80_u8));
+        cpu.adc(&cpu._imm(0x80_u8), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.z);
     }
@@ -217,11 +217,11 @@ mod adc_tests {
     fn test_adc_with_negative_flag() {
         let mut cpu = CPU::new();
 
-        cpu.adc(&cpu._imm(0b_0111_1111_u8));
+        cpu.adc(&cpu._imm(0b_0111_1111_u8), &mut MockCPUBus::new());
 
         assert_eq!(false, cpu.n);
 
-        cpu.adc(&cpu._imm(0b_0000_0001_u8));
+        cpu.adc(&cpu._imm(0b_0000_0001_u8), &mut MockCPUBus::new());
 
         assert_eq!(true, cpu.n);
     }
@@ -231,25 +231,25 @@ mod adc_tests {
         let mut cpu = CPU::new();
 
         cpu.a = 0x7f; //+ve
-        cpu.adc(&cpu._imm(0x1)); //+ve
+        cpu.adc(&cpu._imm(0x1), &mut MockCPUBus::new()); //+ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x80; //-ve
-        cpu.adc(&cpu._imm(0x80)); //-ve
+        cpu.adc(&cpu._imm(0x80), &mut MockCPUBus::new()); //-ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x1; //+ve
-        cpu.adc(&cpu._imm(0xf0)); //-ve
+        cpu.adc(&cpu._imm(0xf0), &mut MockCPUBus::new()); //-ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
         cpu.a = 0xff; //-ve
-        cpu.adc(&cpu._imm(0x2)); //+ve
+        cpu.adc(&cpu._imm(0x2), &mut MockCPUBus::new()); //+ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

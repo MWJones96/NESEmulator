@@ -15,7 +15,7 @@
     INX does not affect any other register other than the X register.
 */
 
-use crate::cpu::{addr::AddrModeResult, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
 
 impl CPU {
     #[inline]
@@ -24,7 +24,7 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn inx(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn inx(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.x = self.x.wrapping_add(1);
 
         self.n = (self.x & 0x80) > 0;
@@ -34,10 +34,12 @@ impl CPU {
 
 #[cfg(test)]
 mod inx_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_inx_returns_correct_number_ofc() {
+    fn test_inx_returns_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.inxc(&cpu._imp()));
     }
@@ -47,7 +49,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x80;
 
-        cpu.inx(&cpu._imp());
+        cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x81, cpu.x);
     }
@@ -57,7 +59,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0x7f;
 
-        cpu.inx(&cpu._imp());
+        cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x80, cpu.x);
         assert_eq!(true, cpu.n);
@@ -68,7 +70,7 @@ mod inx_tests {
         let mut cpu = CPU::new();
         cpu.x = 0xff;
 
-        cpu.inx(&cpu._imp());
+        cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
 
         assert_eq!(0x0, cpu.x);
         assert_eq!(true, cpu.z);

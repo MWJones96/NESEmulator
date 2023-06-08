@@ -38,7 +38,7 @@ mod pha_tests {
     use super::*;
 
     #[test]
-    fn test_pha_correct_number_ofc() {
+    fn test_pha_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(3, cpu.phac(&cpu._imp()));
     }

@@ -53,7 +53,7 @@ mod xaa_tests {
     use super::*;
 
     #[test]
-    fn test_xaa_correct_number_ofc() {
+    fn test_xaa_correct_number_of_cycles() {
         let cpu = CPU::new();
         assert_eq!(2, cpu.xaac(&cpu._imm(0x00)));
     }

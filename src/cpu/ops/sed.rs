@@ -10,7 +10,7 @@
     than the decimal mode which is set to a 1.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -21,17 +21,19 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn sed(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn sed(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.d = true;
     }
 }
 
 #[cfg(test)]
 mod sed_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_sed_correct_number_ofc() {
+    fn test_sed_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.sedc(&cpu._imp()));
@@ -42,10 +44,10 @@ mod sed_tests {
         let mut cpu = CPU::new();
         cpu.d = false;
 
-        cpu.sed(&cpu._imp());
+        cpu.sed(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.d);
 
-        cpu.sed(&cpu._imp());
+        cpu.sed(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(true, cpu.d);
     }
 }

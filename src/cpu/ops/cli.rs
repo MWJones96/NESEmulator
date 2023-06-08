@@ -9,7 +9,7 @@
     other than the interrupt disable which is cleared.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -20,17 +20,19 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn cli(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn cli(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.i = false;
     }
 }
 
 #[cfg(test)]
 mod cli_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_cli_correct_number_ofc() {
+    fn test_cli_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.clic(&cpu._imp()));
@@ -41,10 +43,10 @@ mod cli_tests {
         let mut cpu = CPU::new();
         cpu.i = true;
 
-        cpu.cli(&cpu._imp());
+        cpu.cli(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(false, cpu.i);
 
-        cpu.cli(&cpu._imp());
+        cpu.cli(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(false, cpu.i);
     }
 }

@@ -11,7 +11,7 @@
     and no flags other than the carry flag which is reset.
 */
 
-use crate::cpu::addr::AddrModeResult;
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
 use super::super::CPU;
 
@@ -22,17 +22,19 @@ impl CPU {
     }
 
     #[inline]
-    pub(in crate::cpu) fn clc(&mut self, _mode: &AddrModeResult) {
+    pub(in crate::cpu) fn clc(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
         self.c = false;
     }
 }
 
 #[cfg(test)]
 mod clc_tests {
+    use crate::cpu::bus::MockCPUBus;
+
     use super::*;
 
     #[test]
-    fn test_clc_correct_number_ofc() {
+    fn test_clc_correct_number_of_cycles() {
         let cpu = CPU::new();
 
         assert_eq!(2, cpu.clcc(&cpu._imp()));
@@ -43,10 +45,10 @@ mod clc_tests {
         let mut cpu = CPU::new();
         cpu.c = true;
 
-        cpu.clc(&cpu._imp());
+        cpu.clc(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(false, cpu.c);
 
-        cpu.clc(&cpu._imp());
+        cpu.clc(&cpu._imp(), &mut MockCPUBus::new());
         assert_eq!(false, cpu.c);
     }
 }
