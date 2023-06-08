@@ -5,9 +5,10 @@ pub mod bus;
 mod addr;
 mod ops;
 
-type AddrFn = fn(&mut CPU, &dyn CPUBus) -> AddrModeResult;
-type CyclesFn = fn(&CPU, &AddrModeResult) -> u8;
-type ExecFn = fn(&mut CPU, &AddrModeResult, &mut dyn CPUBus);
+type Mnemonic = &'static str;
+type AddrModeFn = fn(&mut CPU, &dyn CPUBus) -> AddrModeResult;
+type CycleCountFn = fn(&CPU, &AddrModeResult) -> u8;
+type ExecuteFn = fn(&mut CPU, &AddrModeResult, &mut dyn CPUBus);
 
 #[derive(PartialEq, Debug, Clone)]
 enum InstructionType {
@@ -85,7 +86,7 @@ impl CPU {
     const IRQ_VECTOR: u16 = 0xfffe;
 
     #[rustfmt::skip]
-    const LOOKUP_TABLE: [(&str, AddrFn, CyclesFn, ExecFn); 256] = [
+    const LOOKUP_TABLE: [(Mnemonic, AddrModeFn, CycleCountFn, ExecuteFn); 256] = [
         ("BRK", CPU::imm, CPU::brkc, CPU::brk), ("ORA", CPU::indx, CPU::orac, CPU::ora), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SLO", CPU::indx, CPU::sloc, CPU::slo), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("ORA",  CPU::zp, CPU::orac, CPU::ora), ("ASL",  CPU::zp, CPU::aslc, CPU::asl), ("SLO",  CPU::zp, CPU::sloc, CPU::slo), ("PHP", CPU::imp, CPU::phpc, CPU::php), ("ORA",  CPU::imm, CPU::orac, CPU::ora), ("ASL", CPU::acc, CPU::aslc, CPU::asl), ("ANC",  CPU::imm, CPU::ancc, CPU::anc), ("NOP",  CPU::abs, CPU::nopc, CPU::nop), ("ORA",  CPU::abs, CPU::orac, CPU::ora), ("ASL",  CPU::abs, CPU::aslc, CPU::asl), ("SLO",  CPU::abs, CPU::sloc, CPU::slo),
         ("BPL", CPU::rel, CPU::bplc, CPU::bpl), ("ORA", CPU::indy, CPU::orac, CPU::ora), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SLO", CPU::indy, CPU::sloc, CPU::slo), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("ORA", CPU::zpx, CPU::orac, CPU::ora), ("ASL", CPU::zpx, CPU::aslc, CPU::asl), ("SLO", CPU::zpx, CPU::sloc, CPU::slo), ("CLC", CPU::imp, CPU::clcc, CPU::clc), ("ORA", CPU::absy, CPU::orac, CPU::ora), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SLO", CPU::absy, CPU::sloc, CPU::slo), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("ORA", CPU::absx, CPU::orac, CPU::ora), ("ASL", CPU::absx, CPU::aslc, CPU::asl), ("SLO", CPU::absx, CPU::sloc, CPU::slo),
         ("JSR", CPU::abs, CPU::jsrc, CPU::jsr), ("AND", CPU::indx, CPU::andc, CPU::and), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RLA", CPU::indx, CPU::rlac, CPU::rla), ("BIT",  CPU::zp, CPU::bitc, CPU::bit), ("AND",  CPU::zp, CPU::andc, CPU::and), ("ROL",  CPU::zp, CPU::rolc, CPU::rol), ("RLA",  CPU::zp, CPU::rlac, CPU::rla), ("PLP", CPU::imp, CPU::plpc, CPU::plp), ("AND",  CPU::imm, CPU::andc, CPU::and), ("ROL", CPU::acc, CPU::rolc, CPU::rol), ("ANC",  CPU::imm, CPU::ancc, CPU::anc), ("BIT",  CPU::abs, CPU::bitc, CPU::bit), ("AND",  CPU::abs, CPU::andc, CPU::and), ("ROL",  CPU::abs, CPU::rolc, CPU::rol), ("RLA",  CPU::abs, CPU::rlac, CPU::rla),
