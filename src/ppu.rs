@@ -39,6 +39,44 @@ impl PPU {
         }
     }
 
+    pub fn write(&mut self, addr: u16, data: u8) {
+        assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
+
+        if addr == 0x4014 {
+            self.registers.oam_dma = data;
+            return;
+        }
+
+        let offset: u8 = ((addr - 0x2000) & 0x7) as u8;
+        match offset {
+            0x0 => self.registers.ppu_ctrl = data,
+            0x1 => self.registers.ppu_mask = data,
+            0x2 => {} //PPUSTATUS is read-only
+            0x3 => self.registers.oam_addr = data,
+            0x4 => self.registers.oam_data = data,
+            0x5 => {
+                if *self.registers.scroll_latch.borrow() {
+                    self.registers.ppu_scroll_y = data;
+                    self.registers.scroll_latch.replace(false);
+                } else {
+                    self.registers.ppu_scroll_x = data;
+                    self.registers.scroll_latch.replace(true);
+                }
+            }
+            0x6 => {
+                if *self.registers.addr_latch.borrow() {
+                    self.registers.ppu_addr = self.registers.ppu_addr & 0xFF00 | data as u16;
+                    self.registers.addr_latch.replace(false);
+                } else {
+                    self.registers.ppu_addr = self.registers.ppu_addr & 0xff | (data as u16) << 8;
+                    self.registers.addr_latch.replace(true);
+                }
+            }
+            0x7 => self.registers.ppu_data = data,
+            _ => panic!("Register {offset} is invalid, must be from 0x0 to 0x7"),
+        }
+    }
+
     pub fn get_screen(&self) -> &[[u8; 256]; 240] {
         &[[0x0; 256]; 240] //Black screen
     }
@@ -157,5 +195,121 @@ mod ppu_tests {
         ppu.registers.oam_data = 0xff;
 
         assert_eq!(0x0, ppu.read(0x4014));
+    }
+
+    #[test]
+    fn test_ppu_write_ppu_ctrl() {
+        let mut ppu = PPU::new();
+        ppu.write(0x2000, 0xff);
+        ppu.write(0x2008, 0xee);
+        ppu.write(0x2010, 0xdd);
+
+        assert_eq!(0xdd, ppu.registers.ppu_ctrl);
+    }
+
+    #[test]
+    fn test_ppu_write_ppu_mask() {
+        let mut ppu = PPU::new();
+        ppu.write(0x2001, 0xff);
+        ppu.write(0x2009, 0xee);
+        ppu.write(0x2011, 0xdd);
+
+        assert_eq!(0xdd, ppu.registers.ppu_mask);
+    }
+
+    #[test]
+    fn test_ppu_write_ppu_status() {
+        let mut ppu = PPU::new();
+        ppu.write(0x2002, 0xff);
+        ppu.write(0x200A, 0xee);
+        ppu.write(0x2012, 0xdd);
+
+        assert_eq!(0x0, ppu.registers.ppu_status);
+    }
+
+    #[test]
+    fn test_ppu_write_omm_addr() {
+        let mut ppu = PPU::new();
+        ppu.write(0x2003, 0xff);
+        ppu.write(0x200B, 0xee);
+        ppu.write(0x2013, 0xdd);
+
+        assert_eq!(0xdd, ppu.registers.oam_addr);
+    }
+
+    #[test]
+    fn test_ppu_write_omm_data() {
+        let mut ppu = PPU::new();
+        ppu.write(0x2004, 0xff);
+        ppu.write(0x200C, 0xee);
+        ppu.write(0x2014, 0xdd);
+
+        assert_eq!(0xdd, ppu.registers.oam_data);
+    }
+
+    #[test]
+    fn test_ppu_write_ppu_scroll() {
+        let mut ppu = PPU::new();
+        ppu.registers.ppu_scroll_x = 0xff;
+        ppu.registers.ppu_scroll_y = 0xff;
+
+        ppu.write(0x2005, 0x11);
+
+        assert_eq!(0x11, ppu.registers.ppu_scroll_x);
+        assert_eq!(0xff, ppu.registers.ppu_scroll_y);
+        assert_eq!(true, *ppu.registers.scroll_latch.borrow());
+
+        ppu.write(0x2005, 0x22);
+
+        assert_eq!(0x11, ppu.registers.ppu_scroll_x);
+        assert_eq!(0x22, ppu.registers.ppu_scroll_y);
+        assert_eq!(false, *ppu.registers.scroll_latch.borrow());
+
+        ppu.write(0x2005, 0x33);
+
+        assert_eq!(0x33, ppu.registers.ppu_scroll_x);
+        assert_eq!(0x22, ppu.registers.ppu_scroll_y);
+        assert_eq!(true, *ppu.registers.scroll_latch.borrow());
+    }
+
+    #[test]
+    fn test_ppu_write_ppu_addr() {
+        let mut ppu = PPU::new();
+        ppu.registers.ppu_addr = 0xeeee;
+
+        ppu.write(0x2006, 0x11);
+
+        assert_eq!(0x11ee, ppu.registers.ppu_addr);
+        assert_eq!(true, *ppu.registers.addr_latch.borrow());
+
+        ppu.write(0x2006, 0x22);
+
+        assert_eq!(0x1122, ppu.registers.ppu_addr);
+        assert_eq!(false, *ppu.registers.addr_latch.borrow());
+
+        ppu.write(0x2006, 0x33);
+
+        assert_eq!(0x3322, ppu.registers.ppu_addr);
+        assert_eq!(true, *ppu.registers.addr_latch.borrow());
+    }
+
+    #[test]
+    fn test_ppu_write_ppu_data() {
+        let mut ppu = PPU::new();
+
+        ppu.write(0x2007, 0xff);
+        ppu.write(0x200F, 0xee);
+        ppu.write(0x2017, 0xdd);
+
+        assert_eq!(0xdd, ppu.registers.ppu_data);
+    }
+
+    #[test]
+    fn test_ppu_write_oam_dma() {
+        let mut ppu = PPU::new();
+
+        ppu.write(0x4014, 0xff);
+
+        assert_eq!(0xff, ppu.registers.oam_dma);
     }
 }

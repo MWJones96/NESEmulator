@@ -6,7 +6,7 @@ fn main() {
         .build()
         .unwrap();
     while let Some(e) = window.next() {
-        window.draw_2d(&e, |c, g, _device| {
+        window.draw_2d(&e, |_c, g, _device| {
             clear([0.0; 4], g);
         });
     }
