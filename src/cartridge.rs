@@ -60,4 +60,22 @@ mod cartridge_tests {
 
         cartridge.read(0x0);
     }
+
+    #[test]
+    fn test_cartridge_write_from_cpu() {
+        let mut mapper = MockMapper::new();
+
+        mapper
+            .expect_write()
+            .with(eq(0x0), eq(0x0), eq(1))
+            .once()
+            .return_const(());
+
+        let mut cartridge = NESCartridge::new(
+            &[0; NESCartridge::BYTES_PER_PRG_BANK as usize],
+            Box::new(mapper),
+        );
+
+        cartridge.write(0x0, 0x0);
+    }
 }
