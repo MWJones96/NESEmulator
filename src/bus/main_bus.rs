@@ -1,17 +1,16 @@
 use crate::{
+    cartridge::Cartridge,
     cpu::{bus::CPUBus, CPU},
-    mapper::PRGRomMapper,
 };
-
 pub struct MainBus<'a> {
-    mapper: &'a dyn PRGRomMapper,
+    cartridge: Box<dyn Cartridge + 'a>,
     ram: [u8; 0x800],
 }
 
 impl<'a> MainBus<'a> {
-    pub fn new(mapper: &'a impl PRGRomMapper) -> Self {
+    pub fn new(cartridge: Box<dyn Cartridge + 'a>) -> Self {
         Self {
-            mapper,
+            cartridge,
             ram: [0; 0x800],
         }
     }
@@ -25,7 +24,7 @@ impl CPUBus for MainBus<'_> {
     fn read(&self, addr: u16) -> u8 {
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
-            0x8000..=0xffff => self.mapper.read(addr),
+            0x8000..=0xffff => Cartridge::read(self.cartridge.as_ref(), addr),
             _ => 0x0, //Open Bus Read
         }
     }
@@ -35,7 +34,7 @@ impl CPUBus for MainBus<'_> {
             0x0000..=0x1fff => {
                 self.ram[(addr & 0x7ff) as usize] = data;
             }
-            0x8000..=0xffff => {}
+            0x8000..=0xffff => Cartridge::write(self.cartridge.as_mut(), addr, data),
             _ => {} //Open Bus Write
         }
     }
@@ -43,14 +42,16 @@ impl CPUBus for MainBus<'_> {
 
 #[cfg(test)]
 mod main_bus_tests {
-    use crate::mapper::MockPRGRomMapper;
+    use mockall::predicate::eq;
+
+    use crate::cartridge::MockCartridge;
 
     use super::*;
 
     #[test]
     fn test_cpu_bus_read() {
-        let mapper = MockPRGRomMapper::new();
-        let mut main_bus = MainBus::new(&mapper);
+        let cartridge = MockCartridge::new();
+        let mut main_bus = MainBus::new(Box::new(cartridge));
 
         main_bus.ram[0x0] = 0xff;
 
@@ -62,8 +63,8 @@ mod main_bus_tests {
 
     #[test]
     fn test_cpu_bus_write() {
-        let mapper = MockPRGRomMapper::new();
-        let mut main_bus = MainBus::new(&mapper);
+        let cartridge = MockCartridge::new();
+        let mut main_bus = MainBus::new(Box::new(cartridge));
 
         main_bus.write(0x1, 0x34);
         assert_eq!(0x34, main_bus.ram[0x1]);
@@ -76,5 +77,55 @@ mod main_bus_tests {
 
         main_bus.write(0x1001, 0x37);
         assert_eq!(0x37, main_bus.ram[0x1]);
+    }
+
+    #[test]
+    fn test_cartridge_read() {
+        let mut cartridge = MockCartridge::new();
+
+        cartridge.expect_read().with(eq(0x7fff)).never();
+
+        cartridge
+            .expect_read()
+            .with(eq(0x8000))
+            .once()
+            .return_const(0x0);
+
+        cartridge
+            .expect_read()
+            .with(eq(0xffff))
+            .once()
+            .return_const(0x0);
+
+        let main_bus = MainBus::new(Box::new(cartridge));
+
+        main_bus.read(0x7fff);
+        main_bus.read(0x8000);
+        main_bus.read(0xffff);
+    }
+
+    #[test]
+    fn test_cartridge_write() {
+        let mut cartridge = MockCartridge::new();
+
+        cartridge.expect_write().with(eq(0x7fff), eq(0x0)).never();
+
+        cartridge
+            .expect_write()
+            .with(eq(0x8000), eq(0x0))
+            .once()
+            .return_const(());
+
+        cartridge
+            .expect_write()
+            .with(eq(0xffff), eq(0x0))
+            .once()
+            .return_const(());
+
+        let mut main_bus = MainBus::new(Box::new(cartridge));
+
+        main_bus.write(0x7fff, 0x0);
+        main_bus.write(0x8000, 0x0);
+        main_bus.write(0xffff, 0x0);
     }
 }

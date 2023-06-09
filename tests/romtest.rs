@@ -3,6 +3,7 @@ use std::io;
 use std::io::BufRead;
 
 use nes_emu::bus::main_bus::MainBus;
+use nes_emu::cartridge::NESCartridge;
 use nes_emu::cpu::CPU;
 use nes_emu::mapper::mapper_factory;
 use nes_emu::util::extract_header;
@@ -20,9 +21,11 @@ fn test_nestest_rom() {
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
 
-    let mapper = mapper_factory(header.mapper_num, prg_rom);
+    let mapper = mapper_factory(header.mapper_num);
+    let cartridge = NESCartridge::new(prg_rom, Box::new(mapper));
+
     let mut cpu = CPU::new();
-    let mut main_bus = MainBus::new(&mapper);
+    let mut main_bus = MainBus::new(Box::new(cartridge));
 
     //Execute reset routine
     for _ in 0..7 {
