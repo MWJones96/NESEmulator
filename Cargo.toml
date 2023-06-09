@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 mockall = "0.11.4"
+piston = "0.53.2"
+piston_window = "0.128.0"
 rand = "0.8.5"

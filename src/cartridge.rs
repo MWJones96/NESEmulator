@@ -28,10 +28,12 @@ impl<'a> NESCartridge<'a> {
 
 impl Cartridge for NESCartridge<'_> {
     fn read(&self, addr: u16) -> u8 {
+        assert!((0x8000..=0xffff).contains(&addr));
         self.prg_rom[self.mapper.read(addr, self.prg_rom_banks) as usize]
     }
 
     fn write(&mut self, addr: u16, data: u8) {
+        assert!((0x8000..=0xffff).contains(&addr));
         self.mapper.write(addr, data, self.prg_rom_banks);
     }
 }
@@ -49,7 +51,7 @@ mod cartridge_tests {
 
         mapper
             .expect_read()
-            .with(eq(0x0), eq(1))
+            .with(eq(0x8000), eq(1))
             .once()
             .return_const(0x0 as u16);
 
@@ -58,7 +60,7 @@ mod cartridge_tests {
             Box::new(mapper),
         );
 
-        cartridge.read(0x0);
+        cartridge.read(0x8000);
     }
 
     #[test]
@@ -67,7 +69,7 @@ mod cartridge_tests {
 
         mapper
             .expect_write()
-            .with(eq(0x0), eq(0x0), eq(1))
+            .with(eq(0x8000), eq(0x0), eq(1))
             .once()
             .return_const(());
 
@@ -76,6 +78,6 @@ mod cartridge_tests {
             Box::new(mapper),
         );
 
-        cartridge.write(0x0, 0x0);
+        cartridge.write(0x8000, 0x0);
     }
 }
