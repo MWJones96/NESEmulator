@@ -1,14 +1,22 @@
+use mockall::automock;
+
 use self::registers::Registers;
 
 mod registers;
 
-pub struct PPU {
+#[automock]
+pub trait PPU {
+    fn read(&self, addr: u16) -> u8;
+    fn write(&mut self, addr: u16, data: u8);
+}
+
+pub struct NESPPU {
     registers: Registers,
 }
 
-impl PPU {
+impl NESPPU {
     pub fn new() -> Self {
-        PPU {
+        NESPPU {
             registers: Registers::new(),
         }
     }
@@ -82,7 +90,7 @@ impl PPU {
     }
 }
 
-impl Default for PPU {
+impl Default for NESPPU {
     fn default() -> Self {
         Self::new()
     }
@@ -96,7 +104,7 @@ mod ppu_tests {
 
     #[test]
     fn test_get_screen() {
-        let ppu = PPU::new();
+        let ppu = NESPPU::new();
         let expected = &[[0x0u8; 256]; 240];
 
         assert_eq!(expected, ppu.get_screen());
@@ -104,7 +112,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_ppu_ctrl() {
-        let mut ppu = PPU::default();
+        let mut ppu = NESPPU::default();
         ppu.registers.ppu_ctrl = 0xff;
 
         assert_eq!(0x0, ppu.read(0x2000));
@@ -114,7 +122,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_ppu_mask() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.ppu_mask = 0xff;
 
         assert_eq!(0x0, ppu.read(0x2001));
@@ -124,7 +132,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_ppu_status() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.addr_latch = RefCell::new(true);
         ppu.registers.scroll_latch = RefCell::new(true);
         ppu.registers.ppu_status = 0xff;
@@ -139,7 +147,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_oam_addr() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.oam_addr = 0xff;
 
         assert_eq!(0x0, ppu.read(0x2003));
@@ -148,7 +156,7 @@ mod ppu_tests {
     }
     #[test]
     fn test_ppu_read_oam_data() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.oam_data = 0xff;
 
         assert_eq!(0xff, ppu.read(0x2004));
@@ -158,7 +166,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_ppu_scroll() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.ppu_scroll_x = 0xff;
         ppu.registers.ppu_scroll_y = 0xff;
 
@@ -170,7 +178,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_ppu_addr() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.ppu_addr = 0xff;
 
         assert_eq!(0x0, ppu.read(0x2006));
@@ -181,7 +189,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_ppu_data() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.ppu_data = 0xff;
 
         assert_eq!(0xff, ppu.read(0x2007));
@@ -191,7 +199,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_read_oam_dma() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.oam_data = 0xff;
 
         assert_eq!(0x0, ppu.read(0x4014));
@@ -199,7 +207,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_ppu_ctrl() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.write(0x2000, 0xff);
         ppu.write(0x2008, 0xee);
         ppu.write(0x2010, 0xdd);
@@ -209,7 +217,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_ppu_mask() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.write(0x2001, 0xff);
         ppu.write(0x2009, 0xee);
         ppu.write(0x2011, 0xdd);
@@ -219,7 +227,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_ppu_status() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.write(0x2002, 0xff);
         ppu.write(0x200A, 0xee);
         ppu.write(0x2012, 0xdd);
@@ -229,7 +237,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_omm_addr() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.write(0x2003, 0xff);
         ppu.write(0x200B, 0xee);
         ppu.write(0x2013, 0xdd);
@@ -239,7 +247,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_omm_data() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.write(0x2004, 0xff);
         ppu.write(0x200C, 0xee);
         ppu.write(0x2014, 0xdd);
@@ -249,7 +257,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_ppu_scroll() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.ppu_scroll_x = 0xff;
         ppu.registers.ppu_scroll_y = 0xff;
 
@@ -274,7 +282,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_ppu_addr() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
         ppu.registers.ppu_addr = 0xeeee;
 
         ppu.write(0x2006, 0x11);
@@ -295,7 +303,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_ppu_data() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
 
         ppu.write(0x2007, 0xff);
         ppu.write(0x200F, 0xee);
@@ -306,7 +314,7 @@ mod ppu_tests {
 
     #[test]
     fn test_ppu_write_oam_dma() {
-        let mut ppu = PPU::new();
+        let mut ppu = NESPPU::new();
 
         ppu.write(0x4014, 0xff);
 

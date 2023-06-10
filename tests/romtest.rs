@@ -6,6 +6,7 @@ use nes_emu::bus::main_bus::MainBus;
 use nes_emu::cartridge::NESCartridge;
 use nes_emu::cpu::CPU;
 use nes_emu::mapper::mapper_factory;
+use nes_emu::ppu::MockPPU;
 use nes_emu::util::extract_header;
 use nes_emu::util::extract_prg_rom;
 use nes_emu::util::read_bytes_from_file;
@@ -25,7 +26,7 @@ fn test_nestest_rom() {
     let cartridge = NESCartridge::new(prg_rom, Box::new(mapper));
 
     let mut cpu = CPU::new();
-    let mut main_bus = MainBus::new(Box::new(cartridge));
+    let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Box::new(cartridge));
 
     //Execute reset routine
     for _ in 0..7 {
