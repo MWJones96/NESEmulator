@@ -8,9 +8,9 @@
     register and does not affect the accumulator.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
+use crate::{
+    bus::Bus,
+    cpu::addr::{AddrModeResult, AddrModeType},
 };
 
 use super::super::NESCPU;
@@ -24,7 +24,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn sta(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sta(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         bus.write(mode.addr.unwrap(), self.a);
     }
 }
@@ -33,14 +33,14 @@ impl NESCPU {
 mod sta_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_sta_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -50,7 +50,7 @@ mod sta_tests {
     #[test]
     fn test_sta_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -60,7 +60,7 @@ mod sta_tests {
     #[test]
     fn test_sta_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -70,7 +70,7 @@ mod sta_tests {
     #[test]
     fn test_sta_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -80,7 +80,7 @@ mod sta_tests {
     #[test]
     fn test_sta_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -90,7 +90,7 @@ mod sta_tests {
     #[test]
     fn test_sta_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -100,7 +100,7 @@ mod sta_tests {
     #[test]
     fn test_sta_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -110,7 +110,7 @@ mod sta_tests {
     #[test]
     fn test_sta() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0xee;
 
         bus.expect_read().return_const(0x0);

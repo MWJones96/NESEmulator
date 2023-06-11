@@ -18,7 +18,7 @@
     The zero flag is set if the accumulator result is 0, otherwise the zero flag is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -27,7 +27,7 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         let a: u16 = self.a as u16;
         let v: u16 = mode.data.unwrap() as u16;
 
@@ -46,7 +46,7 @@ impl NESCPU {
 mod adc_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -60,7 +60,7 @@ mod adc_tests {
     #[test]
     fn test_adc_zp_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._zp(0x0, &bus));
@@ -70,7 +70,7 @@ mod adc_tests {
     #[test]
     fn test_adc_zpx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._zpx(0x0, &bus));
@@ -80,7 +80,7 @@ mod adc_tests {
     #[test]
     fn test_adc_abs_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._abs(0x0, &bus));
@@ -90,7 +90,7 @@ mod adc_tests {
     #[test]
     fn test_adc_absx_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._absx(0x0, &bus));
@@ -100,7 +100,7 @@ mod adc_tests {
     #[test]
     fn test_adc_absx_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
@@ -111,7 +111,7 @@ mod adc_tests {
     #[test]
     fn test_adc_absy_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._absy(0x88, &bus));
@@ -121,7 +121,7 @@ mod adc_tests {
     #[test]
     fn test_adc_absy_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
@@ -132,7 +132,7 @@ mod adc_tests {
     #[test]
     fn test_adc_indx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._indx(0x88, &bus));
@@ -142,7 +142,7 @@ mod adc_tests {
     #[test]
     fn test_adc_indy_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.adcc(&cpu._indy(0x88, &bus));
@@ -152,7 +152,7 @@ mod adc_tests {
     #[test]
     fn test_adc_indy_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x88)).return_const(0x11);
         bus.expect_read().with(eq(0x89)).return_const(0x22);
 
@@ -167,7 +167,7 @@ mod adc_tests {
     fn test_adc_no_carry() {
         let mut cpu = NESCPU::new();
 
-        cpu.adc(&cpu._imm(0x01_u8), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x01_u8), &mut MockBus::new());
 
         assert_eq!(0x01_u8, cpu.a);
         assert_eq!(false, cpu.c);
@@ -178,17 +178,17 @@ mod adc_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x80_u8;
 
-        cpu.adc(&cpu._imm(0x80), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x80), &mut MockBus::new());
 
         assert_eq!(0x00_u8, cpu.a);
         assert_eq!(true, cpu.c);
 
-        cpu.adc(&cpu._imm(0x80), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x80), &mut MockBus::new());
 
         assert_eq!(0x81, cpu.a);
         assert_eq!(false, cpu.c);
 
-        cpu.adc(&cpu._imm(0x01), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x01), &mut MockBus::new());
 
         assert_eq!(0x82, cpu.a);
         assert_eq!(false, cpu.c);
@@ -198,15 +198,15 @@ mod adc_tests {
     fn test_adc_with_carry_zero_flag() {
         let mut cpu = NESCPU::new();
 
-        cpu.adc(&cpu._imm(0x00_u8), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x00_u8), &mut MockBus::new());
 
         assert_eq!(true, cpu.z);
 
-        cpu.adc(&cpu._imm(0x80_u8), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x80_u8), &mut MockBus::new());
 
         assert_eq!(false, cpu.z);
 
-        cpu.adc(&cpu._imm(0x80_u8), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0x80_u8), &mut MockBus::new());
 
         assert_eq!(true, cpu.z);
     }
@@ -215,11 +215,11 @@ mod adc_tests {
     fn test_adc_with_negative_flag() {
         let mut cpu = NESCPU::new();
 
-        cpu.adc(&cpu._imm(0b_0111_1111_u8), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0b_0111_1111_u8), &mut MockBus::new());
 
         assert_eq!(false, cpu.n);
 
-        cpu.adc(&cpu._imm(0b_0000_0001_u8), &mut MockCPUBus::new());
+        cpu.adc(&cpu._imm(0b_0000_0001_u8), &mut MockBus::new());
 
         assert_eq!(true, cpu.n);
     }
@@ -229,25 +229,25 @@ mod adc_tests {
         let mut cpu = NESCPU::new();
 
         cpu.a = 0x7f; //+ve
-        cpu.adc(&cpu._imm(0x1), &mut MockCPUBus::new()); //+ve
+        cpu.adc(&cpu._imm(0x1), &mut MockBus::new()); //+ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x80; //-ve
-        cpu.adc(&cpu._imm(0x80), &mut MockCPUBus::new()); //-ve
+        cpu.adc(&cpu._imm(0x80), &mut MockBus::new()); //-ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
 
         cpu.a = 0x1; //+ve
-        cpu.adc(&cpu._imm(0xf0), &mut MockCPUBus::new()); //-ve
+        cpu.adc(&cpu._imm(0xf0), &mut MockBus::new()); //-ve
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
 
         cpu.a = 0xff; //-ve
-        cpu.adc(&cpu._imm(0x2), &mut MockCPUBus::new()); //+ve
+        cpu.adc(&cpu._imm(0x2), &mut MockBus::new()); //+ve
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

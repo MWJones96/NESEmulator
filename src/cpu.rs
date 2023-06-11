@@ -1,16 +1,16 @@
 use mockall::automock;
 
-use self::{addr::AddrModeResult, bus::CPUBus};
+use crate::bus::Bus;
 
-pub mod bus;
+use self::addr::AddrModeResult;
 
 mod addr;
 mod ops;
 
 type Mnemonic = &'static str;
-type AddrModeFn = fn(&mut NESCPU, &dyn CPUBus) -> AddrModeResult;
+type AddrModeFn = fn(&mut NESCPU, &dyn Bus) -> AddrModeResult;
 type CycleCountFn = fn(&NESCPU, &AddrModeResult) -> u8;
-type ExecuteFn = fn(&mut NESCPU, &AddrModeResult, &mut dyn CPUBus);
+type ExecuteFn = fn(&mut NESCPU, &AddrModeResult, &mut dyn Bus);
 
 #[derive(PartialEq, Debug, Clone)]
 enum InstructionType {
@@ -32,7 +32,7 @@ struct CurrentInstruction {
 
 #[automock]
 pub trait CPU {
-    fn clock(&mut self, bus: &mut dyn CPUBus);
+    fn clock(&mut self, bus: &mut dyn Bus);
     fn cpu_reset(&mut self);
     fn cpu_irq(&mut self, interrupt: bool);
     fn cpu_nmi(&mut self);
@@ -166,7 +166,7 @@ impl CPU for NESCPU {
         }
     }
 
-    fn clock(&mut self, bus: &mut dyn CPUBus) {
+    fn clock(&mut self, bus: &mut dyn Bus) {
         self.elapsed_cycles += 1;
         self.current_instruction.remaining_cycles -= 1;
 
@@ -187,7 +187,7 @@ impl Default for NESCPU {
 }
 
 impl NESCPU {
-    fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
+    fn execute_operation(&mut self, bus: &mut dyn Bus) {
         let current_instruction = self.current_instruction.clone();
         match current_instruction.instruction_type {
             InstructionType::Jam => {
@@ -227,11 +227,7 @@ impl NESCPU {
         }
     }
 
-    fn poll_for_interrupts_or_fetch_next_instruction(
-        &mut self,
-        bus: &mut dyn CPUBus,
-        i_flag: bool,
-    ) {
+    fn poll_for_interrupts_or_fetch_next_instruction(&mut self, bus: &mut dyn Bus, i_flag: bool) {
         if self.pending_nmi {
             self.current_instruction = CurrentInstruction {
                 remaining_cycles: self.nmic(),
@@ -247,7 +243,7 @@ impl NESCPU {
         }
     }
 
-    fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
+    fn fetch_next_instruction(&mut self, bus: &mut dyn Bus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
         let (_, addr_mode_fn, cycles_fn, _) = NESCPU::LOOKUP_TABLE[opcode as usize];
         let addr_mode = addr_mode_fn(self, bus);
@@ -277,14 +273,14 @@ impl NESCPU {
             | (self.c as u8)
     }
 
-    fn fetch_byte(&mut self, bus: &dyn CPUBus) -> u8 {
+    fn fetch_byte(&mut self, bus: &dyn Bus) -> u8 {
         let data = bus.read(self.pc);
         self.pc = self.pc.wrapping_add(1);
 
         data
     }
 
-    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn CPUBus) -> u16 {
+    fn fetch_two_bytes_as_u16(&mut self, bus: &dyn Bus) -> u16 {
         let low_byte: u16 = bus.read(self.pc.wrapping_add(0)) as u16;
         let high_byte: u16 = bus.read(self.pc.wrapping_add(1)) as u16;
         self.pc = self.pc.wrapping_add(2);
@@ -297,8 +293,15 @@ impl NESCPU {
 mod cpu_tests {
     use mockall::predicate::eq;
 
+    use crate::{
+        bus::MockBus,
+        cpu::{
+            addr::{AddrModeResult, AddrModeType},
+            CurrentInstruction, InstructionType, CPU, NESCPU,
+        },
+    };
+
     // Note this useful idiom: importing names from outer (for mod tests) scope.
-    use super::{bus::MockCPUBus, *};
 
     #[test]
     fn test_cpu_initial_state() {
@@ -406,7 +409,7 @@ mod cpu_tests {
     #[test]
     fn test_fetch_next_byte() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.pc = 0xffff;
         bus.expect_read()
@@ -422,7 +425,7 @@ mod cpu_tests {
     #[test]
     fn test_fetch_next_two_bytes_as_u16() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.pc = 0xffff;
         bus.expect_read()
@@ -439,7 +442,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_reset() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -468,7 +471,7 @@ mod cpu_tests {
                         addr: None,
                         data: Some(0xff),
                         cycles: 0,
-                        mode: addr::AddrModeType::Imm,
+                        mode: AddrModeType::Imm,
                         bytes: 2,
                         operands: "FF".to_owned(),
                         repr: "#$FF".to_owned()
@@ -485,7 +488,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_system_reset() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -511,7 +514,7 @@ mod cpu_tests {
     #[test]
     fn test_nmi_request_triggered() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -561,7 +564,7 @@ mod cpu_tests {
     #[test]
     fn test_irq_request_triggered() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -598,7 +601,7 @@ mod cpu_tests {
     #[test]
     fn test_irq_request_ignored_on_flag_set() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -638,7 +641,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_cli_delays_interrupt() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -702,7 +705,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_sei_triggers_interrupt() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -752,7 +755,7 @@ mod cpu_tests {
     #[test]
     fn test_cpu_plp_triggers_interrupt() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))
@@ -807,7 +810,7 @@ mod cpu_tests {
     #[test]
     fn test_jam() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))

@@ -10,7 +10,7 @@
     other than the carry flag which is set.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -19,14 +19,14 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn sec(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sec(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.c = true;
     }
 }
 
 #[cfg(test)]
 mod sec_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -42,10 +42,10 @@ mod sec_tests {
         let mut cpu = NESCPU::new();
         cpu.c = false;
 
-        cpu.sec(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.sec(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.c);
 
-        cpu.sec(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.sec(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.c);
     }
 }

@@ -13,7 +13,10 @@
     flag is set, other­wise it is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, addr::AddrModeType, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, addr::AddrModeType, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn decc(&self, mode: &AddrModeResult) -> u8 {
@@ -23,7 +26,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let result = mode.data.unwrap().wrapping_sub(1);
         bus.write(mode.addr.unwrap(), result);
 
@@ -36,14 +39,14 @@ impl NESCPU {
 mod dec_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_dec_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -55,7 +58,7 @@ mod dec_tests {
     #[test]
     fn test_dec_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -67,7 +70,7 @@ mod dec_tests {
     #[test]
     fn test_dec_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -79,7 +82,7 @@ mod dec_tests {
     #[test]
     fn test_dec_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -91,7 +94,7 @@ mod dec_tests {
     #[test]
     fn test_dec() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x10);
 
@@ -106,7 +109,7 @@ mod dec_tests {
     #[test]
     fn test_dec_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -119,7 +122,7 @@ mod dec_tests {
     #[test]
     fn test_dec_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x1);
 

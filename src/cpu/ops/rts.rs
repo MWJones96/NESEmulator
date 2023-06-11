@@ -13,14 +13,17 @@
     affects only PCL and PCH.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn rtsc(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
-    pub(in crate::cpu) fn rts(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn rts(&mut self, _mode: &AddrModeResult, bus: &mut dyn Bus) {
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(1) as u16)) as u16;
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
 
@@ -34,7 +37,7 @@ impl NESCPU {
 mod rts_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -48,7 +51,7 @@ mod rts_tests {
     #[test]
     fn test_rts_returns_pc() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xfd;
 
         bus.expect_read()

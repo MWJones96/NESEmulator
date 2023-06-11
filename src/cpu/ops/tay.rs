@@ -12,7 +12,7 @@
     Z is set on, otherwise it is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -21,7 +21,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn tay(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn tay(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.y = self.a;
 
         self.n = (self.y & 0x80) > 0;
@@ -31,7 +31,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod tay_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -46,7 +46,7 @@ mod tay_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0xcc;
 
-        cpu.tay(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tay(&cpu._imp(), &mut MockBus::new());
         assert_eq!(0xcc, cpu.y);
         assert_eq!(0xcc, cpu.a);
     }
@@ -56,7 +56,7 @@ mod tay_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x80;
 
-        cpu.tay(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tay(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -65,7 +65,7 @@ mod tay_tests {
         let mut cpu = NESCPU::new();
         cpu.y = 0xff;
 
-        cpu.tay(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tay(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.z);
     }
 }

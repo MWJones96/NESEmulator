@@ -11,14 +11,17 @@
     operation.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn shyc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
 
-    pub(in crate::cpu) fn shy(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn shy(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let write_addr = mode.addr.unwrap();
         let h = (write_addr.wrapping_sub(self.x as u16) >> 8) as u8;
         bus.write(write_addr, self.y & h.wrapping_add(1));
@@ -29,14 +32,14 @@ impl NESCPU {
 mod shy_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_shyc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.shyc(&cpu._absx(0x0, &bus)));
@@ -48,7 +51,7 @@ mod shy_tests {
         cpu.y = 0xff;
         cpu.x = 0xff;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
         bus.expect_write()
             .with(eq(0x1333), eq(0xff & 0x13))

@@ -14,7 +14,7 @@
     the negative flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -23,7 +23,7 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn lda(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn lda(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.a = mode.data.unwrap();
         self.n = (self.a & 0x80) > 0;
         self.z = self.a == 0;
@@ -34,7 +34,7 @@ impl NESCPU {
 mod lda_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -48,7 +48,7 @@ mod lda_tests {
     #[test]
     fn test_lda_zp_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._zp(0x0, &bus));
@@ -58,7 +58,7 @@ mod lda_tests {
     #[test]
     fn test_lda_zpx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._zpx(0x0, &bus));
@@ -68,7 +68,7 @@ mod lda_tests {
     #[test]
     fn test_lda_abs_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._abs(0x0, &bus));
@@ -78,7 +78,7 @@ mod lda_tests {
     #[test]
     fn test_lda_absx_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._absx(0x0, &bus));
@@ -88,7 +88,7 @@ mod lda_tests {
     #[test]
     fn test_lda_absx_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
@@ -99,7 +99,7 @@ mod lda_tests {
     #[test]
     fn test_lda_absy_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._absy(0x88, &bus));
@@ -109,7 +109,7 @@ mod lda_tests {
     #[test]
     fn test_lda_absy_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
@@ -120,7 +120,7 @@ mod lda_tests {
     #[test]
     fn test_lda_indx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._indx(0x88, &bus));
@@ -130,7 +130,7 @@ mod lda_tests {
     #[test]
     fn test_lda_indy_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldac(&cpu._indy(0x88, &bus));
@@ -140,7 +140,7 @@ mod lda_tests {
     #[test]
     fn test_lda_indy_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x88)).return_const(0x11);
         bus.expect_read().with(eq(0x89)).return_const(0x22);
 
@@ -154,25 +154,25 @@ mod lda_tests {
     #[test]
     fn test_lda_value_goes_to_accumulator() {
         let mut cpu = NESCPU::new();
-        cpu.lda(&cpu._imm(0xff), &mut MockCPUBus::new());
+        cpu.lda(&cpu._imm(0xff), &mut MockBus::new());
         assert_eq!(0xff, cpu.a);
     }
 
     #[test]
     fn test_lda_negative_flag() {
         let mut cpu = NESCPU::new();
-        cpu.lda(&cpu._imm(0x80), &mut MockCPUBus::new());
+        cpu.lda(&cpu._imm(0x80), &mut MockBus::new());
         assert_eq!(true, cpu.n);
-        cpu.lda(&cpu._imm(0x7f), &mut MockCPUBus::new());
+        cpu.lda(&cpu._imm(0x7f), &mut MockBus::new());
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_lda_zero_flag() {
         let mut cpu = NESCPU::new();
-        cpu.lda(&cpu._imm(0x0), &mut MockCPUBus::new());
+        cpu.lda(&cpu._imm(0x0), &mut MockBus::new());
         assert_eq!(true, cpu.z);
-        cpu.lda(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.lda(&cpu._imm(0x1), &mut MockBus::new());
         assert_eq!(false, cpu.z);
     }
 }

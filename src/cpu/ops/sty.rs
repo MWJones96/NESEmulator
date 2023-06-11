@@ -7,9 +7,9 @@
     STY does not affect any flags or registers in the microprocessor.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
+use crate::{
+    bus::Bus,
+    cpu::addr::{AddrModeResult, AddrModeType},
 };
 
 use super::super::NESCPU;
@@ -22,7 +22,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn sty(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sty(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         bus.write(mode.addr.unwrap(), self.y);
     }
 }
@@ -31,14 +31,14 @@ impl NESCPU {
 mod sty_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_sty_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -48,7 +48,7 @@ mod sty_tests {
     #[test]
     fn test_sty_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -58,7 +58,7 @@ mod sty_tests {
     #[test]
     fn test_sty_absx_correct_number_of_cycles() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.x = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -69,7 +69,7 @@ mod sty_tests {
     #[test]
     fn test_sty() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.y = 0xbb;
 
         bus.expect_read().return_const(0x0);

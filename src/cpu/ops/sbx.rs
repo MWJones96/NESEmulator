@@ -16,14 +16,17 @@
     not affected at all.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn sbxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn sbx(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sbx(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.x = (self.a & self.x).wrapping_sub(mode.data.unwrap());
 
         self.n = (self.x & 0x80) != 0;
@@ -34,7 +37,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod sbx_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -50,7 +53,7 @@ mod sbx_tests {
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
-        cpu.sbx(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbx(&cpu._imm(0x1), &mut MockBus::new());
         assert_eq!(0xff, cpu.x);
         assert_eq!(true, cpu.n);
     }
@@ -61,7 +64,7 @@ mod sbx_tests {
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
-        cpu.sbx(&cpu._imm(0x0), &mut MockCPUBus::new());
+        cpu.sbx(&cpu._imm(0x0), &mut MockBus::new());
         assert_eq!(true, cpu.z);
     }
 
@@ -71,10 +74,10 @@ mod sbx_tests {
         cpu.a = 0b0000_1010;
         cpu.x = 0b0000_1111;
 
-        cpu.sbx(&cpu._imm(0b0000_1010), &mut MockCPUBus::new());
+        cpu.sbx(&cpu._imm(0b0000_1010), &mut MockBus::new());
         assert_eq!(true, cpu.c);
 
-        cpu.sbx(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbx(&cpu._imm(0x1), &mut MockBus::new());
         assert_eq!(false, cpu.c);
     }
 }

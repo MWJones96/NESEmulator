@@ -14,9 +14,9 @@
     Z and does not affect the overflow flag at all.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
+use crate::{
+    bus::Bus,
+    cpu::addr::{AddrModeResult, AddrModeType},
 };
 
 use super::super::NESCPU;
@@ -30,7 +30,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn ror(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let before = mode.data.unwrap();
         let after: u8 = ((self.c as u8) << 7) | before >> 1;
 
@@ -50,7 +50,7 @@ impl NESCPU {
 mod ror_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -65,7 +65,7 @@ mod ror_tests {
     #[test]
     fn test_ror_zp() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
@@ -75,7 +75,7 @@ mod ror_tests {
     #[test]
     fn test_ror_zpx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
@@ -86,7 +86,7 @@ mod ror_tests {
     #[test]
     fn test_ror_abs() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(0xffff))
@@ -99,7 +99,7 @@ mod ror_tests {
     #[test]
     fn test_ror_absx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.x = 0x2;
 
@@ -111,7 +111,7 @@ mod ror_tests {
     #[test]
     fn test_ror_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_0001;
         cpu.c = true;
@@ -124,7 +124,7 @@ mod ror_tests {
     #[test]
     fn test_ror_no_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_0001;
 
@@ -136,7 +136,7 @@ mod ror_tests {
     #[test]
     fn test_ror_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x0;
         cpu.c = true;
@@ -149,7 +149,7 @@ mod ror_tests {
     #[test]
     fn test_ror_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x1;
         cpu.ror(&cpu._acc(), &mut bus);

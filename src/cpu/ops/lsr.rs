@@ -17,9 +17,9 @@
     The carry is set equal to bit 0 of the input.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
+use crate::{
+    bus::Bus,
+    cpu::addr::{AddrModeResult, AddrModeType},
 };
 
 use super::super::NESCPU;
@@ -33,7 +33,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let before_shift = mode.data.unwrap();
         let after_shift = before_shift >> 1;
 
@@ -53,7 +53,7 @@ impl NESCPU {
 mod lsr_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -68,7 +68,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_zp() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
@@ -78,7 +78,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_zpx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
@@ -89,7 +89,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_abs() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(0xffff))
@@ -102,7 +102,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_absx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.x = 0x2;
 
@@ -114,7 +114,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_shift() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x2;
         cpu.lsr(&cpu._acc(), &mut bus);
@@ -132,7 +132,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x1;
         cpu.lsr(&cpu._acc(), &mut bus);
@@ -146,7 +146,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_acc_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x1;
         cpu.lsr(&cpu._acc(), &mut bus);
@@ -160,7 +160,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_acc_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.n = true;
 
@@ -172,7 +172,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_writes_to_memory() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 

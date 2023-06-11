@@ -7,14 +7,17 @@
     nor NMIs. It will handle a RESET though.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn jamc(&self, _mode: &AddrModeResult) -> u8 {
         0
     }
 
-    pub(in crate::cpu) fn _jam(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn _jam(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         panic!("JAM: This should not be called")
     }
 }

@@ -19,10 +19,12 @@
     accumulator is 0, otherwise it is reset.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
-    NESCPU,
+use crate::{
+    bus::Bus,
+    cpu::{
+        addr::{AddrModeResult, AddrModeType},
+        NESCPU,
+    },
 };
 
 impl NESCPU {
@@ -35,7 +37,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn isc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn isc(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_add(1);
         bus.write(mode.addr.unwrap(), data_to_write);
@@ -47,14 +49,14 @@ impl NESCPU {
 mod isc_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_isc_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.iscc(&cpu._zp(0x0, &bus)));
@@ -63,7 +65,7 @@ mod isc_tests {
     #[test]
     fn test_isc_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.iscc(&cpu._zpx(0x0, &bus)));
@@ -72,7 +74,7 @@ mod isc_tests {
     #[test]
     fn test_isc_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.iscc(&cpu._abs(0x0, &bus)));
@@ -81,7 +83,7 @@ mod isc_tests {
     #[test]
     fn test_isc_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.iscc(&cpu._absx(0x0, &bus)));
@@ -90,7 +92,7 @@ mod isc_tests {
     #[test]
     fn test_isc_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.iscc(&cpu._absy(0x0, &bus)));
@@ -99,7 +101,7 @@ mod isc_tests {
     #[test]
     fn test_isc_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.iscc(&cpu._indx(0x0, &bus)));
@@ -108,7 +110,7 @@ mod isc_tests {
     #[test]
     fn test_isc_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.iscc(&cpu._indy(0x0, &bus)));
@@ -117,7 +119,7 @@ mod isc_tests {
     #[test]
     fn test_isc() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x1;
         cpu.c = true; //No borrow
 
@@ -134,7 +136,7 @@ mod isc_tests {
     #[test]
     fn test_isc_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x0;
         cpu.c = true; //No borrow
 
@@ -152,7 +154,7 @@ mod isc_tests {
     #[test]
     fn test_isc_overflow_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x80;
         cpu.c = true; //No borrow
 
@@ -170,7 +172,7 @@ mod isc_tests {
     #[test]
     fn test_isc_overflow_flag_positive() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x7f;
         cpu.c = true; //No borrow
 
@@ -188,7 +190,7 @@ mod isc_tests {
     #[test]
     fn test_isc_overflow_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x2;
         cpu.c = false; //Borrow
 

@@ -14,9 +14,9 @@
     to 0, otherwise resets Z and stores the input bit 7 in the carry flag.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
+use crate::{
+    bus::Bus,
+    cpu::addr::{AddrModeResult, AddrModeType},
 };
 
 use super::super::NESCPU;
@@ -30,7 +30,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn asl(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let data: u16 = (mode.data.unwrap() as u16) << 1;
 
         self.c = data > (u8::MAX as u16);
@@ -49,7 +49,7 @@ impl NESCPU {
 mod asl_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -64,7 +64,7 @@ mod asl_tests {
     #[test]
     fn test_asl_zp() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 
@@ -74,7 +74,7 @@ mod asl_tests {
     #[test]
     fn test_asl_zpx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.x = 0x2;
         bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
@@ -85,7 +85,7 @@ mod asl_tests {
     #[test]
     fn test_asl_abs() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(0xffff))
@@ -98,7 +98,7 @@ mod asl_tests {
     #[test]
     fn test_asl_absx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.x = 0x2;
 
@@ -110,7 +110,7 @@ mod asl_tests {
     #[test]
     fn test_asl_shift() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x1;
         cpu.asl(&cpu._acc(), &mut bus);
@@ -133,7 +133,7 @@ mod asl_tests {
     #[test]
     fn test_asl_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0xc0;
         cpu.asl(&cpu._acc(), &mut bus);
@@ -147,7 +147,7 @@ mod asl_tests {
     #[test]
     fn test_asl_acc_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x80;
         cpu.asl(&cpu._acc(), &mut bus);
@@ -161,7 +161,7 @@ mod asl_tests {
     #[test]
     fn test_asl_acc_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0x40;
         cpu.asl(&cpu._acc(), &mut bus);
@@ -175,7 +175,7 @@ mod asl_tests {
     #[test]
     fn test_asl_writes_to_memory() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
 

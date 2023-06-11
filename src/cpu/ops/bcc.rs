@@ -9,7 +9,7 @@
     and then only if the C flag is not on.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -22,7 +22,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn bcc(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn bcc(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         if !self.c {
             self.pc = mode.addr.unwrap();
         }
@@ -31,7 +31,8 @@ impl NESCPU {
 
 #[cfg(test)]
 mod bcc_tests {
-    use crate::cpu::bus::MockCPUBus;
+
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -77,7 +78,7 @@ mod bcc_tests {
 
         cpu.pc = 0x1234;
         cpu.c = true;
-        cpu.bcc(&cpu._rel(0x1), &mut MockCPUBus::new());
+        cpu.bcc(&cpu._rel(0x1), &mut MockBus::new());
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -87,7 +88,7 @@ mod bcc_tests {
 
         cpu.pc = 0x12ff;
         cpu.c = true;
-        cpu.bcc(&cpu._rel(0xa), &mut MockCPUBus::new());
+        cpu.bcc(&cpu._rel(0xa), &mut MockBus::new());
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -97,7 +98,7 @@ mod bcc_tests {
         cpu.pc = 0x81;
         cpu.c = false;
 
-        cpu.bcc(&cpu._rel(0x80), &mut MockCPUBus::new());
+        cpu.bcc(&cpu._rel(0x80), &mut MockBus::new());
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -107,7 +108,7 @@ mod bcc_tests {
         cpu.pc = 0x8081;
         cpu.c = false;
 
-        cpu.bcc(&cpu._rel(0x7f), &mut MockCPUBus::new());
+        cpu.bcc(&cpu._rel(0x7f), &mut MockBus::new());
         assert_eq!(0x8100, cpu.pc);
     }
 }

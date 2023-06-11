@@ -12,17 +12,17 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn indy(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn indy(&mut self, bus: &dyn Bus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._indy(addr, bus)
     }
 
-    pub(in crate::cpu) fn _indy(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _indy(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
         let low_byte_addr = addr;
         let high_byte_addr = low_byte_addr.wrapping_add(1);
 
@@ -50,12 +50,12 @@ mod indy_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::{addr::AddrModeResult, bus::MockCPUBus};
+    use crate::{bus::MockBus, cpu::addr::AddrModeResult};
 
     #[test]
     fn test_indy_addressing_mode_no_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut mock_bus = MockCPUBus::new();
+        let mut mock_bus = MockBus::new();
 
         mock_bus.expect_read().with(eq(0xff)).return_const(0x77);
         mock_bus.expect_read().with(eq(0x0)).return_const(0x88);
@@ -81,7 +81,7 @@ mod indy_tests {
     #[test]
     fn test_indy_addressing_mode_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut mock_bus = MockCPUBus::new();
+        let mut mock_bus = MockBus::new();
 
         mock_bus.expect_read().with(eq(0xff)).return_const(0x77);
         mock_bus.expect_read().with(eq(0x0)).return_const(0x88);

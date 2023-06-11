@@ -13,12 +13,12 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn rel(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn rel(&mut self, bus: &dyn Bus) -> AddrModeResult {
         let offset = self.fetch_byte(bus);
         self._rel(offset)
     }

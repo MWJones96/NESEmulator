@@ -15,7 +15,7 @@
     the N bit is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -28,7 +28,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn bpl(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn bpl(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         if !self.n {
             self.pc = mode.addr.unwrap();
         }
@@ -37,7 +37,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod bpl_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -83,7 +83,7 @@ mod bpl_tests {
 
         cpu.pc = 0x1234;
         cpu.n = true;
-        cpu.bpl(&cpu._rel(0x1), &mut MockCPUBus::new());
+        cpu.bpl(&cpu._rel(0x1), &mut MockBus::new());
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -93,7 +93,7 @@ mod bpl_tests {
 
         cpu.pc = 0x12ff;
         cpu.n = true;
-        cpu.bpl(&cpu._rel(0xa), &mut MockCPUBus::new());
+        cpu.bpl(&cpu._rel(0xa), &mut MockBus::new());
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -103,7 +103,7 @@ mod bpl_tests {
         cpu.pc = 0x81;
         cpu.n = false;
 
-        cpu.bpl(&cpu._rel(0x80), &mut MockCPUBus::new());
+        cpu.bpl(&cpu._rel(0x80), &mut MockBus::new());
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -113,7 +113,7 @@ mod bpl_tests {
         cpu.pc = 0x8081;
         cpu.n = false;
 
-        cpu.bpl(&cpu._rel(0x7f), &mut MockCPUBus::new());
+        cpu.bpl(&cpu._rel(0x7f), &mut MockBus::new());
         assert_eq!(0x8100, cpu.pc);
     }
 }

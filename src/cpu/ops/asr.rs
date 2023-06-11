@@ -14,7 +14,7 @@
     carry is set equal to bit 0 of the result of the "AND" operation.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -23,7 +23,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn asr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn asr(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         self.and(mode, bus);
         self.lsr(&self._acc(), bus)
     }
@@ -31,7 +31,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod asr_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -44,7 +44,7 @@ mod asr_tests {
     #[test]
     fn test_asr() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b1111_1111;
         cpu.n = true;
@@ -58,7 +58,7 @@ mod asr_tests {
     #[test]
     fn test_asr_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_0001;
 
@@ -70,7 +70,7 @@ mod asr_tests {
     #[test]
     fn test_asr_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_0001;
 

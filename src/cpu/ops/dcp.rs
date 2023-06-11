@@ -15,10 +15,12 @@
     is greater than the accumulator.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
-    NESCPU,
+use crate::{
+    bus::Bus,
+    cpu::{
+        addr::{AddrModeResult, AddrModeType},
+        NESCPU,
+    },
 };
 
 impl NESCPU {
@@ -31,7 +33,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn dcp(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn dcp(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let data = mode.data.unwrap();
         let data_to_write = data.wrapping_sub(1);
 
@@ -48,14 +50,14 @@ impl NESCPU {
 mod dcp_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_dcp_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.dcpc(&cpu._zp(0x0, &bus)));
@@ -64,7 +66,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.dcpc(&cpu._zpx(0x0, &bus)));
@@ -73,7 +75,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.dcpc(&cpu._abs(0x0, &bus)));
@@ -82,7 +84,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.dcpc(&cpu._absx(0x0, &bus)));
@@ -91,7 +93,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.dcpc(&cpu._absy(0x0, &bus)));
@@ -100,7 +102,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.dcpc(&cpu._indx(0x0, &bus)));
@@ -109,7 +111,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.dcpc(&cpu._indy(0x0, &bus)));
@@ -120,7 +122,7 @@ mod dcp_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x10;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x0)).once().return_const(0x2);
         bus.expect_write()
             .with(eq(0x0), eq(0x1))
@@ -136,7 +138,7 @@ mod dcp_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x81;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x0)).once().return_const(0x2);
         bus.expect_write()
             .with(eq(0x0), eq(0x1))
@@ -153,7 +155,7 @@ mod dcp_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x1;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x0)).once().return_const(0x2);
         bus.expect_write()
             .with(eq(0x0), eq(0x1))
@@ -170,7 +172,7 @@ mod dcp_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x10;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x0)).times(3).return_const(0x2);
         bus.expect_write()
             .with(eq(0x0), eq(0x1))

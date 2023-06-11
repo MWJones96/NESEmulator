@@ -16,14 +16,17 @@
     instruction only affects the index register Y.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn deyc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn dey(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn dey(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.y = self.y.wrapping_sub(1);
 
         self.n = (self.y & 0x80) > 0;
@@ -33,7 +36,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod dey_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -48,7 +51,7 @@ mod dey_tests {
         let mut cpu = NESCPU::new();
         cpu.y = 0x80;
 
-        cpu.dey(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.dey(&cpu._imp(), &mut MockBus::new());
 
         assert_eq!(0x7f, cpu.y);
     }
@@ -58,7 +61,7 @@ mod dey_tests {
         let mut cpu = NESCPU::new();
         cpu.y = 0x0;
 
-        cpu.dey(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.dey(&cpu._imp(), &mut MockBus::new());
 
         assert_eq!(0xff, cpu.y);
         assert_eq!(true, cpu.n);
@@ -69,7 +72,7 @@ mod dey_tests {
         let mut cpu = NESCPU::new();
         cpu.y = 0x1;
 
-        cpu.dey(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.dey(&cpu._imp(), &mut MockBus::new());
 
         assert_eq!(0x0, cpu.y);
         assert_eq!(true, cpu.z);

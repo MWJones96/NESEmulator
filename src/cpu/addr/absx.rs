@@ -14,17 +14,17 @@
     Bytes: 3
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn absx(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn absx(&mut self, bus: &dyn Bus) -> AddrModeResult {
         let addr = self.fetch_two_bytes_as_u16(bus);
         self._absx(addr, bus)
     }
 
-    pub(in crate::cpu) fn _absx(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _absx(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(self.x as u16);
         let page_after: u8 = (resolved_addr >> 8) as u8;
@@ -46,12 +46,12 @@ mod absx_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::{addr::AddrModeResult, bus::MockCPUBus};
+    use crate::{bus::MockBus, cpu::addr::AddrModeResult};
 
     #[test]
     fn test_absx_addressing_mode_no_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut mock_bus = MockCPUBus::new();
+        let mut mock_bus = MockBus::new();
 
         cpu.x = 0x2;
 
@@ -75,7 +75,7 @@ mod absx_tests {
     #[test]
     fn test_absx_addressing_mode_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut mock_bus = MockCPUBus::new();
+        let mut mock_bus = MockBus::new();
 
         cpu.x = 0x2;
 

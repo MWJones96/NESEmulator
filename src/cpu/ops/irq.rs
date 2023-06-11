@@ -1,11 +1,11 @@
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 impl NESCPU {
     pub(in crate::cpu) fn irqc(&self) -> u8 {
         7
     }
 
-    pub(in crate::cpu) fn irq(&mut self, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn irq(&mut self, bus: &mut dyn Bus) {
         let pc_high: u8 = (self.pc >> 8) as u8;
         let pc_low: u8 = self.pc as u8;
 
@@ -27,7 +27,7 @@ impl NESCPU {
 mod irq_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -40,7 +40,7 @@ mod irq_tests {
     #[test]
     fn test_irq() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.pc = 0x2040;
         cpu.sp = 0xff;

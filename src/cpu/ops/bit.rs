@@ -15,14 +15,17 @@
     It does not affect the accumulator.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn bitc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         let data = mode.data.unwrap();
 
         self.n = (data & 0b1000_0000) > 0;
@@ -35,14 +38,14 @@ impl NESCPU {
 mod bit_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_bit_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
@@ -52,7 +55,7 @@ mod bit_tests {
     #[test]
     fn test_bit_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
@@ -62,12 +65,12 @@ mod bit_tests {
     #[test]
     fn test_bit_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x80;
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x80);
 
-        cpu.bit(&cpu._zp(0x0, &bus), &mut MockCPUBus::new());
+        cpu.bit(&cpu._zp(0x0, &bus), &mut MockBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
@@ -77,12 +80,12 @@ mod bit_tests {
     #[test]
     fn test_bit_overflow_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.a = 0x40;
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x40);
 
-        cpu.bit(&cpu._zp(0x0, &bus), &mut MockCPUBus::new());
+        cpu.bit(&cpu._zp(0x0, &bus), &mut MockBus::new());
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
@@ -92,11 +95,11 @@ mod bit_tests {
     #[test]
     fn test_bit_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        cpu.bit(&cpu._zp(0x0, &bus), &mut MockCPUBus::new());
+        cpu.bit(&cpu._zp(0x0, &bus), &mut MockBus::new());
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

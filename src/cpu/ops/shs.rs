@@ -14,14 +14,17 @@
     operation.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn shsc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
 
-    pub(in crate::cpu) fn shs(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn shs(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         self.sp = self.a & self.x;
         let write_addr = mode.addr.unwrap();
         let h = ((write_addr.wrapping_sub(self.y as u16)) >> 8) as u8;
@@ -33,14 +36,14 @@ impl NESCPU {
 mod shs_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_shs_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.shsc(&cpu._absy(0x0, &bus)));
@@ -54,7 +57,7 @@ mod shs_tests {
 
         cpu.y = 0xff;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_write()
             .with(eq(0x1333), eq(0x1 & 0x13))
             .once()

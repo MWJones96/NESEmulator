@@ -10,7 +10,7 @@
     micropro­cessor.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -19,7 +19,7 @@ impl NESCPU {
         3
     }
 
-    pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn php(&mut self, _mode: &AddrModeResult, bus: &mut dyn Bus) {
         bus.write(0x100 + (self.sp as u16), self.get_status_byte(true));
         self.sp = self.sp.wrapping_sub(1);
     }
@@ -29,7 +29,7 @@ impl NESCPU {
 mod php_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -42,7 +42,7 @@ mod php_tests {
     #[test]
     fn test_php_push_status_onto_stack() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.c = true;
 
         bus.expect_write()
@@ -57,7 +57,7 @@ mod php_tests {
     #[test]
     fn test_php_push_status_onto_stack_with_overflow() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0x0;
 
         bus.expect_write().return_const(());

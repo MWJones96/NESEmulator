@@ -8,12 +8,12 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn imm(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn imm(&mut self, bus: &dyn Bus) -> AddrModeResult {
         let data = self.fetch_byte(bus);
         self._imm(data)
     }

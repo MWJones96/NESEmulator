@@ -8,7 +8,7 @@
     other than the program counter and then only if the N bit is on.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -21,7 +21,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn bmi(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn bmi(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         if self.n {
             self.pc = mode.addr.unwrap();
         }
@@ -30,7 +30,8 @@ impl NESCPU {
 
 #[cfg(test)]
 mod bmi_tests {
-    use crate::cpu::bus::MockCPUBus;
+
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -71,7 +72,7 @@ mod bmi_tests {
 
         cpu.pc = 0x1234;
         cpu.n = false;
-        cpu.bmi(&cpu._rel(0x1), &mut MockCPUBus::new());
+        cpu.bmi(&cpu._rel(0x1), &mut MockBus::new());
         assert_eq!(0x1234, cpu.pc);
     }
 
@@ -81,7 +82,7 @@ mod bmi_tests {
 
         cpu.pc = 0x12ff;
         cpu.n = false;
-        cpu.bmi(&cpu._rel(0xa), &mut MockCPUBus::new());
+        cpu.bmi(&cpu._rel(0xa), &mut MockBus::new());
         assert_eq!(0x12ff, cpu.pc);
     }
 
@@ -91,7 +92,7 @@ mod bmi_tests {
         cpu.pc = 0x81;
         cpu.n = true;
 
-        cpu.bmi(&cpu._rel(0x80), &mut MockCPUBus::new());
+        cpu.bmi(&cpu._rel(0x80), &mut MockBus::new());
         assert_eq!(0x1, cpu.pc);
     }
 
@@ -101,7 +102,7 @@ mod bmi_tests {
         cpu.pc = 0x8081;
         cpu.n = true;
 
-        cpu.bmi(&cpu._rel(0x7f), &mut MockCPUBus::new());
+        cpu.bmi(&cpu._rel(0x7f), &mut MockBus::new());
         assert_eq!(0x8100, cpu.pc);
     }
 }

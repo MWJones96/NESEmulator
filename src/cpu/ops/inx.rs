@@ -15,14 +15,17 @@
     INX does not affect any other register other than the X register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn inxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn inx(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn inx(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.x = self.x.wrapping_add(1);
 
         self.n = (self.x & 0x80) > 0;
@@ -32,7 +35,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod inx_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -47,7 +50,7 @@ mod inx_tests {
         let mut cpu = NESCPU::new();
         cpu.x = 0x80;
 
-        cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.inx(&cpu._imp(), &mut MockBus::new());
 
         assert_eq!(0x81, cpu.x);
     }
@@ -57,7 +60,7 @@ mod inx_tests {
         let mut cpu = NESCPU::new();
         cpu.x = 0x7f;
 
-        cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.inx(&cpu._imp(), &mut MockBus::new());
 
         assert_eq!(0x80, cpu.x);
         assert_eq!(true, cpu.n);
@@ -68,7 +71,7 @@ mod inx_tests {
         let mut cpu = NESCPU::new();
         cpu.x = 0xff;
 
-        cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.inx(&cpu._imp(), &mut MockBus::new());
 
         assert_eq!(0x0, cpu.x);
         assert_eq!(true, cpu.z);

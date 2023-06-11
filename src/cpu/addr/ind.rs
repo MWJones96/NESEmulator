@@ -17,17 +17,17 @@
     Bytes: 3
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn ind(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn ind(&mut self, bus: &dyn Bus) -> AddrModeResult {
         let addr = self.fetch_two_bytes_as_u16(bus);
         self._ind(addr, bus)
     }
 
-    pub(in crate::cpu) fn _ind(&self, addr: u16, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _ind(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
         let low_byte = bus.read(addr) as u16;
         let high_byte =
             bus.read((addr & 0xff00) + ((addr & 0xff) as u8).wrapping_add(1) as u16) as u16;
@@ -50,14 +50,14 @@ impl NESCPU {
 mod ind_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_ind_addressing_mode() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(0x0000))
@@ -87,7 +87,7 @@ mod ind_tests {
     #[test]
     fn test_ind_addressing_mode_hardware_bug() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(0x80ff))

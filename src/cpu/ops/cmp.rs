@@ -15,7 +15,7 @@
     The accumulator is not affected.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -24,7 +24,7 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         let data = mode.data.unwrap();
         let result = self.a.wrapping_add(!data).wrapping_add(1);
 
@@ -36,7 +36,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod cmp_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -50,7 +50,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.cmpc(&cpu._zp(0x0, &bus)));
@@ -59,7 +59,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmpc(&cpu._zpx(0x0, &bus)));
@@ -68,7 +68,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmpc(&cpu._abs(0x0, &bus)));
@@ -77,7 +77,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absx_no_page_cross_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmpc(&cpu._absx(0x0, &bus)));
@@ -86,7 +86,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absx_with_page_cross_correct_number_of_cycles() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.x = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -97,7 +97,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absy_no_page_cross_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cmpc(&cpu._absy(0x0, &bus)));
@@ -106,7 +106,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_absy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x0);
@@ -117,7 +117,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -127,7 +127,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_indy_no_page_cross_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -137,7 +137,7 @@ mod cmp_tests {
     #[test]
     fn test_cmp_indy_with_page_cross_correct_number_of_cycles() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.y = 0xff;
 
         bus.expect_read().return_const(0x80);
@@ -150,7 +150,7 @@ mod cmp_tests {
         let mut cpu = NESCPU::new();
 
         cpu.a = 0x10;
-        cpu.cmp(&cpu._imm(0x11), &mut MockCPUBus::new());
+        cpu.cmp(&cpu._imm(0x11), &mut MockBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(0x10, cpu.a);
@@ -161,7 +161,7 @@ mod cmp_tests {
         let mut cpu = NESCPU::new();
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x20), &mut MockCPUBus::new());
+        cpu.cmp(&cpu._imm(0x20), &mut MockBus::new());
 
         assert_eq!(true, cpu.z);
         assert_eq!(0x20, cpu.a);
@@ -172,19 +172,19 @@ mod cmp_tests {
         let mut cpu = NESCPU::new();
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x20), &mut MockCPUBus::new());
+        cpu.cmp(&cpu._imm(0x20), &mut MockBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.a);
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x10), &mut MockCPUBus::new());
+        cpu.cmp(&cpu._imm(0x10), &mut MockBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.a);
 
         cpu.a = 0x20;
-        cpu.cmp(&cpu._imm(0x21), &mut MockCPUBus::new());
+        cpu.cmp(&cpu._imm(0x21), &mut MockBus::new());
 
         assert_eq!(false, cpu.c);
         assert_eq!(0x20, cpu.a);

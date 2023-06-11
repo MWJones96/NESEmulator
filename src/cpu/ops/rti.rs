@@ -19,14 +19,17 @@
     registers in the microprocessor.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn rtic(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
-    pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn rti(&mut self, _mode: &AddrModeResult, bus: &mut dyn Bus) {
         let reg = bus.read(0x100 + (self.sp.wrapping_add(1) as u16));
         let pc_low = bus.read(0x100 + (self.sp.wrapping_add(2) as u16)) as u16;
         let pc_high = bus.read(0x100 + (self.sp.wrapping_add(3) as u16)) as u16;
@@ -48,7 +51,7 @@ impl NESCPU {
 mod rti_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -62,7 +65,7 @@ mod rti_tests {
     #[test]
     fn test_rti_returns_status_register_all_flags() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xfc;
 
         bus.expect_read()
@@ -87,7 +90,7 @@ mod rti_tests {
     #[test]
     fn test_rti_returns_status_register_no_flags() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xfc;
 
         bus.expect_read().return_const(0x0);
@@ -107,7 +110,7 @@ mod rti_tests {
     #[test]
     fn test_rti_returns_pc() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xfc;
 
         bus.expect_read()

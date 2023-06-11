@@ -26,14 +26,17 @@
 
 use rand::seq::SliceRandom;
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn xaac(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
 
-    pub(in crate::cpu) fn xaa(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn xaa(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         let magic_constant = *vec![0x00, 0xee, 0xef, 0xfe, 0xff]
             .choose(&mut rand::thread_rng())
             .unwrap() as u8;
@@ -46,7 +49,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod xaa_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -59,7 +62,7 @@ mod xaa_tests {
     #[test]
     fn test_xaa() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.x = 0xff;
         cpu.xaa(&cpu._imm(0xff), &mut bus);
 

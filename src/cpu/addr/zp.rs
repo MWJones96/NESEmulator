@@ -10,17 +10,17 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn zp(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn zp(&mut self, bus: &dyn Bus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._zp(addr, bus)
     }
 
-    pub(in crate::cpu) fn _zp(&self, addr: u8, bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn _zp(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
         AddrModeResult {
             data: Some(bus.read(addr as u16)),
             cycles: 1,
@@ -37,14 +37,14 @@ impl NESCPU {
 mod zp_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::{addr::AddrModeResult, bus::MockCPUBus};
+    use crate::{bus::MockBus, cpu::addr::AddrModeResult};
 
     use super::*;
 
     #[test]
     fn test_zp_addressing_mode() {
         let cpu = NESCPU::new();
-        let mut mock_bus = MockCPUBus::new();
+        let mut mock_bus = MockBus::new();
         mock_bus.expect_read().with(eq(0x0)).return_const(0x77);
 
         let result = cpu._zp(0x0, &mock_bus);

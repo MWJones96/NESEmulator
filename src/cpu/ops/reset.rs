@@ -1,11 +1,11 @@
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 impl NESCPU {
     pub(in crate::cpu) fn resetc(&self) -> u8 {
         7
     }
 
-    pub(in crate::cpu) fn reset(&mut self, bus: &dyn CPUBus) {
+    pub(in crate::cpu) fn reset(&mut self, bus: &dyn Bus) {
         let low_byte = bus.read(NESCPU::RESET_VECTOR) as u16;
         let high_byte = bus.read(NESCPU::RESET_VECTOR + 1) as u16;
 
@@ -19,7 +19,7 @@ impl NESCPU {
 mod reset_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -36,7 +36,7 @@ mod reset_tests {
         cpu.x = 0x1;
         cpu.y = 0x1;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read()
             .with(eq(NESCPU::RESET_VECTOR))

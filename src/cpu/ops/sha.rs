@@ -19,10 +19,12 @@
     operation.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
-    NESCPU,
+use crate::{
+    bus::Bus,
+    cpu::{
+        addr::{AddrModeResult, AddrModeType},
+        NESCPU,
+    },
 };
 
 impl NESCPU {
@@ -34,7 +36,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn sha(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sha(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let write_addr = mode.addr.unwrap();
         let ax = self.a & self.x;
 
@@ -57,12 +59,12 @@ mod sha_tests {
     use mockall::predicate::eq;
 
     use super::*;
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     #[test]
     fn test_sha_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.shac(&cpu._absy(0x0, &bus)));
@@ -71,7 +73,7 @@ mod sha_tests {
     #[test]
     fn test_sha_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.shac(&cpu._indy(0x0, &bus)));
@@ -84,7 +86,7 @@ mod sha_tests {
         cpu.x = 0xff;
         cpu.y = 0x1;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x1235)).once().return_const(0x0);
         bus.expect_write()
             .with(eq(0x1235), eq(0xff & 0x13))
@@ -101,7 +103,7 @@ mod sha_tests {
         cpu.x = 0xff;
         cpu.y = 0x1;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x0)).once().return_const(0x40);
         bus.expect_read().with(eq(0x1)).once().return_const(0x20);
         bus.expect_read().with(eq(0x2040)).once().return_const(0x10);

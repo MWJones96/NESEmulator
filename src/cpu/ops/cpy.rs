@@ -18,7 +18,7 @@
     it will be cleared.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -27,7 +27,7 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn cpy(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn cpy(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         let data = mode.data.unwrap();
         let result = self.y.wrapping_add(!data).wrapping_add(1);
 
@@ -39,7 +39,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod cpy_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -53,7 +53,7 @@ mod cpy_tests {
     #[test]
     fn test_cpy_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(3, cpu.cpyc(&cpu._zp(0x0, &bus)));
@@ -62,7 +62,7 @@ mod cpy_tests {
     #[test]
     fn test_cpy_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(4, cpu.cpyc(&cpu._abs(0x0, &bus)));
@@ -73,7 +73,7 @@ mod cpy_tests {
         let mut cpu = NESCPU::new();
 
         cpu.y = 0x10;
-        cpu.cpy(&cpu._imm(0x11), &mut MockCPUBus::new());
+        cpu.cpy(&cpu._imm(0x11), &mut MockBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(0x10, cpu.y);
@@ -84,7 +84,7 @@ mod cpy_tests {
         let mut cpu = NESCPU::new();
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu._imm(0x20), &mut MockCPUBus::new());
+        cpu.cpy(&cpu._imm(0x20), &mut MockBus::new());
 
         assert_eq!(true, cpu.z);
         assert_eq!(0x20, cpu.y);
@@ -95,19 +95,19 @@ mod cpy_tests {
         let mut cpu = NESCPU::new();
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu._imm(0x20), &mut MockCPUBus::new());
+        cpu.cpy(&cpu._imm(0x20), &mut MockBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.y);
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu._imm(0x10), &mut MockCPUBus::new());
+        cpu.cpy(&cpu._imm(0x10), &mut MockBus::new());
 
         assert_eq!(true, cpu.c);
         assert_eq!(0x20, cpu.y);
 
         cpu.y = 0x20;
-        cpu.cpy(&cpu._imm(0x21), &mut MockCPUBus::new());
+        cpu.cpy(&cpu._imm(0x21), &mut MockBus::new());
 
         assert_eq!(false, cpu.c);
         assert_eq!(0x20, cpu.y);

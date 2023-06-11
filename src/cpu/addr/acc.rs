@@ -7,12 +7,12 @@
     Bytes: 1
 */
 
-use crate::cpu::{bus::CPUBus, NESCPU};
+use crate::{bus::Bus, cpu::NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
 impl NESCPU {
-    pub(in crate::cpu) fn acc(&mut self, _bus: &dyn CPUBus) -> AddrModeResult {
+    pub(in crate::cpu) fn acc(&mut self, _bus: &dyn Bus) -> AddrModeResult {
         self._acc()
     }
 

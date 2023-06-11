@@ -18,7 +18,7 @@
     it is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -27,7 +27,7 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         self.adc(&self._imm(!mode.data.unwrap()), bus)
     }
 }
@@ -36,7 +36,7 @@ impl NESCPU {
 mod sbc_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -50,7 +50,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_zp_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._zp(0x0, &bus));
@@ -60,7 +60,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_zpx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._zpx(0x0, &bus));
@@ -70,7 +70,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_abs_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._abs(0x0, &bus));
@@ -80,7 +80,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_absx_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._absx(0x0, &bus));
@@ -90,7 +90,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_absx_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
 
@@ -101,7 +101,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_absy_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._absy(0x88, &bus));
@@ -111,7 +111,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_absy_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         cpu.y = 0xff;
@@ -122,7 +122,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_indx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._indx(0x88, &bus));
@@ -132,7 +132,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_indy_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.sbcc(&cpu._indy(0x88, &bus));
@@ -142,7 +142,7 @@ mod sbc_tests {
     #[test]
     fn test_sbc_indy_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x88)).return_const(0x11);
         bus.expect_read().with(eq(0x89)).return_const(0x22);
 
@@ -159,7 +159,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x2), &mut MockBus::new());
 
         assert_eq!(0xff, cpu.a);
     }
@@ -170,7 +170,7 @@ mod sbc_tests {
 
         cpu.c = false; //Borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x2), &mut MockBus::new());
 
         assert_eq!(0xfe, cpu.a);
     }
@@ -181,7 +181,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x2), &mut MockBus::new());
 
         assert_eq!(true, cpu.n);
     }
@@ -192,7 +192,7 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x1), &mut MockBus::new());
 
         assert_eq!(true, cpu.z);
     }
@@ -203,19 +203,19 @@ mod sbc_tests {
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x2), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x2), &mut MockBus::new());
 
         assert_eq!(false, cpu.c);
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
-        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x1), &mut MockBus::new());
 
         assert_eq!(true, cpu.c);
 
         cpu.c = true; //No borrow
         cpu.a = 0x2;
-        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x1), &mut MockBus::new());
 
         assert_eq!(true, cpu.c);
     }
@@ -227,20 +227,20 @@ mod sbc_tests {
         cpu.c = true;
         cpu.a = 0x7f;
 
-        cpu.sbc(&cpu._imm(0xff), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0xff), &mut MockBus::new());
 
         assert_eq!(true, cpu.v);
 
         cpu.c = true;
         cpu.a = 0x80;
 
-        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x1), &mut MockBus::new());
         assert_eq!(true, cpu.v);
 
         cpu.c = true;
         cpu.a = 0x1;
 
-        cpu.sbc(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.sbc(&cpu._imm(0x1), &mut MockBus::new());
         assert_eq!(false, cpu.v);
     }
 }

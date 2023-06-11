@@ -13,7 +13,7 @@
     register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -22,7 +22,7 @@ impl NESCPU {
         4
     }
 
-    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn plp(&mut self, _mode: &AddrModeResult, bus: &mut dyn Bus) {
         self.sp = self.sp.wrapping_add(1);
         let data = bus.read(0x100 + (self.sp as u16));
 
@@ -39,7 +39,7 @@ impl NESCPU {
 mod plp_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -52,7 +52,7 @@ mod plp_tests {
     #[test]
     fn test_plp_fetches_all_flags() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read()
@@ -75,7 +75,7 @@ mod plp_tests {
     #[test]
     fn test_plp_fetches_no_flags() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xfe;
 
         bus.expect_read()
@@ -98,7 +98,7 @@ mod plp_tests {
     #[test]
     fn test_plp_pull_from_empty_stack() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0xff;
 
         bus.expect_read().with(eq(0x100)).times(1).return_const(0x0);

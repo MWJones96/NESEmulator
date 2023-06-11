@@ -20,14 +20,17 @@
     program counter low and the program counter high.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn jsrc(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
 
-    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn jsr(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         //Set return address to last byte of JSR
         let return_addr = self.pc.wrapping_sub(1);
 
@@ -46,14 +49,14 @@ impl NESCPU {
 mod jsr_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_jsr_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -63,7 +66,7 @@ mod jsr_tests {
     #[test]
     fn test_jsr_pushes_onto_stack() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.pc = 0x1234;
         cpu.sp = 0x1;
@@ -88,7 +91,7 @@ mod jsr_tests {
     #[test]
     fn test_jsr_sets_pc_to_new_value() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 

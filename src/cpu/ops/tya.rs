@@ -1,4 +1,4 @@
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -7,7 +7,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn tya(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn tya(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.a = self.y;
 
         self.n = (self.a & 0x80) > 0;
@@ -17,7 +17,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod tya_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -32,7 +32,7 @@ mod tya_tests {
         let mut cpu = NESCPU::new();
         cpu.y = 0xcc;
 
-        cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tya(&cpu._imp(), &mut MockBus::new());
         assert_eq!(0xcc, cpu.a);
         assert_eq!(0xcc, cpu.y);
     }
@@ -42,7 +42,7 @@ mod tya_tests {
         let mut cpu = NESCPU::new();
         cpu.y = 0x80;
 
-        cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tya(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -51,7 +51,7 @@ mod tya_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
-        cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tya(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.z);
     }
 }

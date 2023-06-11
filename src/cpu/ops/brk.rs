@@ -14,7 +14,7 @@
     changes no values in either the registers or the flags.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -23,7 +23,7 @@ impl NESCPU {
         7
     }
 
-    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn brk(&mut self, _mode: &AddrModeResult, bus: &mut dyn Bus) {
         let pc_lsb = (self.pc & 0xff) as u8;
         let pc_msb = (self.pc >> 8) as u8;
 
@@ -45,14 +45,14 @@ impl NESCPU {
 mod brk_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_brk_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
@@ -62,7 +62,7 @@ mod brk_tests {
     #[test]
     fn test_brk_sets_interrupt_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
 
@@ -74,7 +74,7 @@ mod brk_tests {
     #[test]
     fn test_brk_pushes_pc_on_the_stack() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.pc = 0x2000;
 
         bus.expect_write()
@@ -96,7 +96,7 @@ mod brk_tests {
     #[test]
     fn test_push_status_register_on_the_stack() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.c = true;
         cpu.z = true;
 
@@ -117,7 +117,7 @@ mod brk_tests {
     #[test]
     fn test_program_goes_to_correct_address() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_write().return_const(());
 
@@ -141,7 +141,7 @@ mod brk_tests {
     #[test]
     fn test_push_onto_full_stack_underflow() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         cpu.sp = 0x0;
 
         bus.expect_read().return_const(0x0);

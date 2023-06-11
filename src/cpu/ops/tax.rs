@@ -13,7 +13,7 @@
     otherwise it is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -22,7 +22,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn tax(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn tax(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.x = self.a;
 
         self.n = (self.x & 0x80) > 0;
@@ -32,7 +32,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod tax_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -47,7 +47,7 @@ mod tax_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0xcc;
 
-        cpu.tax(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tax(&cpu._imp(), &mut MockBus::new());
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.a);
     }
@@ -57,7 +57,7 @@ mod tax_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0x80;
 
-        cpu.tax(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tax(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -66,7 +66,7 @@ mod tax_tests {
         let mut cpu = NESCPU::new();
         cpu.x = 0xff;
 
-        cpu.tax(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tax(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.z);
     }
 }

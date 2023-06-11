@@ -12,7 +12,7 @@
     to a 0.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -21,14 +21,14 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn clv(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn clv(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.v = false;
     }
 }
 
 #[cfg(test)]
 mod clv_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -44,10 +44,10 @@ mod clv_tests {
         let mut cpu = NESCPU::new();
         cpu.v = true;
 
-        cpu.clv(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.clv(&cpu._imp(), &mut MockBus::new());
         assert_eq!(false, cpu.v);
 
-        cpu.clv(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.clv(&cpu._imp(), &mut MockBus::new());
         assert_eq!(false, cpu.v);
     }
 }

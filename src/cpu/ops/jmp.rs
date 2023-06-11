@@ -8,28 +8,31 @@
     affects no flags in the status register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
+use crate::{
+    bus::Bus,
+    cpu::{addr::AddrModeResult, NESCPU},
+};
 
 impl NESCPU {
     pub(in crate::cpu) fn jmpc(&self, mode: &AddrModeResult) -> u8 {
         1 + mode.cycles
     }
 
-    pub(in crate::cpu) fn jmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn jmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.pc = mode.addr.unwrap();
     }
 }
 
 #[cfg(test)]
 mod jmp_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_jmp_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -39,7 +42,7 @@ mod jmp_tests {
     #[test]
     fn test_jmp_ind_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
@@ -49,11 +52,11 @@ mod jmp_tests {
     #[test]
     fn test_jmp_goes_to_correct_pc() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         bus.expect_read().return_const(0x0);
 
-        cpu.jmp(&cpu._abs(0x1234, &bus), &mut MockCPUBus::new());
+        cpu.jmp(&cpu._abs(0x1234, &bus), &mut MockBus::new());
         assert_eq!(0x1234, cpu.pc);
     }
 }

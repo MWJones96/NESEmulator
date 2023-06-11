@@ -15,10 +15,12 @@
     accumulator has bit 7 on, otherwise resets the negative flag.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
-    NESCPU,
+use crate::{
+    bus::Bus,
+    cpu::{
+        addr::{AddrModeResult, AddrModeType},
+        NESCPU,
+    },
 };
 
 impl NESCPU {
@@ -31,7 +33,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn rla(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn rla(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let data = mode.data.unwrap();
         let data_to_write = data << 1 | (self.c as u8);
         bus.write(mode.addr.unwrap(), data_to_write);
@@ -47,14 +49,14 @@ impl NESCPU {
 mod rla_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_rla_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.rlac(&cpu._zp(0x0, &bus)));
@@ -63,7 +65,7 @@ mod rla_tests {
     #[test]
     fn test_rla_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.rlac(&cpu._zpx(0x0, &bus)));
@@ -72,7 +74,7 @@ mod rla_tests {
     #[test]
     fn test_rla_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.rlac(&cpu._abs(0x0, &bus)));
@@ -81,7 +83,7 @@ mod rla_tests {
     #[test]
     fn test_rla_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.rlac(&cpu._absx(0x0, &bus)));
@@ -90,7 +92,7 @@ mod rla_tests {
     #[test]
     fn test_rla_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.rlac(&cpu._absy(0x0, &bus)));
@@ -99,7 +101,7 @@ mod rla_tests {
     #[test]
     fn test_rla_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.rlac(&cpu._indx(0x0, &bus)));
@@ -108,7 +110,7 @@ mod rla_tests {
     #[test]
     fn test_rla_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.rlac(&cpu._indy(0x0, &bus)));
@@ -120,7 +122,7 @@ mod rla_tests {
         cpu.a = 0xff;
         cpu.c = true;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read()
             .with(eq(0x0))
             .once()
@@ -140,7 +142,7 @@ mod rla_tests {
     fn test_rla_zero_flag() {
         let mut cpu = NESCPU::new();
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().with(eq(0x0)).once().return_const(0x0);
         bus.expect_write()
             .with(eq(0x0), eq(0x0))
@@ -157,7 +159,7 @@ mod rla_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0b1000_0000;
 
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read()
             .with(eq(0x0))
             .once()

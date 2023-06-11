@@ -13,7 +13,7 @@
     content of the stack pointer.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -22,7 +22,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn tsx(&mut self, _mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn tsx(&mut self, _mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.x = self.sp;
 
         self.n = (self.x & 0x80) > 0;
@@ -32,7 +32,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod tsx_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -47,7 +47,7 @@ mod tsx_tests {
         let mut cpu = NESCPU::new();
         cpu.sp = 0xcc;
 
-        cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tsx(&cpu._imp(), &mut MockBus::new());
         assert_eq!(0xcc, cpu.x);
         assert_eq!(0xcc, cpu.sp);
     }
@@ -57,7 +57,7 @@ mod tsx_tests {
         let mut cpu = NESCPU::new();
         cpu.sp = 0x80;
 
-        cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tsx(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.n);
     }
 
@@ -67,7 +67,7 @@ mod tsx_tests {
         cpu.x = 0xff;
         cpu.sp = 0x0;
 
-        cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
+        cpu.tsx(&cpu._imp(), &mut MockBus::new());
         assert_eq!(true, cpu.z);
     }
 }

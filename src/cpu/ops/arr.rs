@@ -24,7 +24,7 @@
     is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -33,7 +33,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn arr(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         self.and(mode, bus);
         self.ror(&self._acc(), bus);
 
@@ -44,7 +44,8 @@ impl NESCPU {
 
 #[cfg(test)]
 mod arr_tests {
-    use crate::cpu::bus::MockCPUBus;
+
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -57,7 +58,7 @@ mod arr_tests {
     #[test]
     fn test_arr() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_1111;
         cpu.arr(&cpu._imm(0b1111_1111), &mut bus);
@@ -68,7 +69,7 @@ mod arr_tests {
     #[test]
     fn test_arr_negative_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_0000;
         cpu.c = true;
@@ -81,7 +82,7 @@ mod arr_tests {
     #[test]
     fn test_arr_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b0000_0000;
         cpu.arr(&cpu._imm(0b1111_1111), &mut bus);
@@ -93,7 +94,7 @@ mod arr_tests {
     #[test]
     fn test_arr_carry_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b1000_0000;
         cpu.arr(&cpu._imm(0b1000_0000), &mut bus);
@@ -105,7 +106,7 @@ mod arr_tests {
     #[test]
     fn test_arr_overflow_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
 
         cpu.a = 0b1000_0000;
         cpu.arr(&cpu._imm(0b1000_0000), &mut bus);

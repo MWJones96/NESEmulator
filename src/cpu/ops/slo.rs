@@ -14,10 +14,12 @@
     flag.
 */
 
-use crate::cpu::{
-    addr::{AddrModeResult, AddrModeType},
-    bus::CPUBus,
-    NESCPU,
+use crate::{
+    bus::Bus,
+    cpu::{
+        addr::{AddrModeResult, AddrModeType},
+        NESCPU,
+    },
 };
 
 impl NESCPU {
@@ -30,7 +32,7 @@ impl NESCPU {
         }
     }
 
-    pub(in crate::cpu) fn slo(&mut self, mode: &AddrModeResult, bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn slo(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let data_to_write = mode.data.unwrap() << 1;
         bus.write(mode.addr.unwrap(), data_to_write);
         self.a |= data_to_write;
@@ -45,14 +47,14 @@ impl NESCPU {
 mod slo_tests {
     use mockall::predicate::eq;
 
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
     #[test]
     fn test_slo_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(5, cpu.sloc(&cpu._zp(0x0, &bus)));
@@ -61,7 +63,7 @@ mod slo_tests {
     #[test]
     fn test_slo_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.sloc(&cpu._zpx(0x0, &bus)));
@@ -70,7 +72,7 @@ mod slo_tests {
     #[test]
     fn test_slo_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(6, cpu.sloc(&cpu._abs(0x0, &bus)));
@@ -79,7 +81,7 @@ mod slo_tests {
     #[test]
     fn test_slo_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.sloc(&cpu._absx(0x0, &bus)));
@@ -88,7 +90,7 @@ mod slo_tests {
     #[test]
     fn test_slo_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(7, cpu.sloc(&cpu._absy(0x0, &bus)));
@@ -97,7 +99,7 @@ mod slo_tests {
     #[test]
     fn test_slo_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.sloc(&cpu._indx(0x0, &bus)));
@@ -106,7 +108,7 @@ mod slo_tests {
     #[test]
     fn test_slo_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         assert_eq!(8, cpu.sloc(&cpu._indy(0x0, &bus)));
@@ -116,7 +118,7 @@ mod slo_tests {
     fn test_slo() {
         let mut cpu = NESCPU::new();
         cpu.a = 0x1;
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0xff);
         bus.expect_write()
             .with(eq(0x0), eq(0xfe))
@@ -132,7 +134,7 @@ mod slo_tests {
     #[test]
     fn test_slo_zero_flag() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
         bus.expect_write()
             .with(eq(0x0), eq(0x0))

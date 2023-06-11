@@ -15,7 +15,7 @@
     the carry flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -24,7 +24,7 @@ impl NESCPU {
         2
     }
 
-    pub(in crate::cpu) fn anc(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn anc(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.a &= mode.data.unwrap();
 
         self.z = self.a == 0;
@@ -35,7 +35,8 @@ impl NESCPU {
 
 #[cfg(test)]
 mod anc_tests {
-    use crate::cpu::bus::MockCPUBus;
+
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -50,7 +51,7 @@ mod anc_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0b1010_1010_u8;
 
-        cpu.anc(&cpu._imm(0b0101_0101_u8), &mut MockCPUBus::new());
+        cpu.anc(&cpu._imm(0b0101_0101_u8), &mut MockBus::new());
 
         assert_eq!(0x0, cpu.a);
     }
@@ -60,7 +61,7 @@ mod anc_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
-        cpu.anc(&cpu._imm(0xff), &mut MockCPUBus::new());
+        cpu.anc(&cpu._imm(0xff), &mut MockBus::new());
 
         assert_eq!(0xff, cpu.a);
     }
@@ -70,7 +71,7 @@ mod anc_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1111_u8;
 
-        cpu.anc(&cpu._imm(0b0000_1111_u8), &mut MockCPUBus::new());
+        cpu.anc(&cpu._imm(0b0000_1111_u8), &mut MockBus::new());
 
         assert_eq!(0xf, cpu.a);
     }
@@ -80,11 +81,11 @@ mod anc_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1111_u8;
 
-        cpu.anc(&cpu._imm(0b0000_1111_u8), &mut MockCPUBus::new());
+        cpu.anc(&cpu._imm(0b0000_1111_u8), &mut MockBus::new());
 
         assert_eq!(false, cpu.z);
 
-        cpu.anc(&cpu._imm(0b0000_0000_u8), &mut MockCPUBus::new());
+        cpu.anc(&cpu._imm(0b0000_0000_u8), &mut MockBus::new());
 
         assert_eq!(true, cpu.z);
     }
@@ -94,7 +95,7 @@ mod anc_tests {
         let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
-        cpu.anc(&cpu._imm(0xff), &mut MockCPUBus::new());
+        cpu.anc(&cpu._imm(0xff), &mut MockBus::new());
 
         assert_eq!(true, cpu.n);
         assert_eq!(true, cpu.c);

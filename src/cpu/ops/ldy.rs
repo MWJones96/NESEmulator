@@ -11,7 +11,7 @@
     the Y register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
+use crate::{bus::Bus, cpu::addr::AddrModeResult};
 
 use super::super::NESCPU;
 
@@ -20,7 +20,7 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult, _bus: &mut dyn CPUBus) {
+    pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
         self.y = mode.data.unwrap();
         self.n = (self.y & 0x80) > 0;
         self.z = self.y == 0;
@@ -29,7 +29,7 @@ impl NESCPU {
 
 #[cfg(test)]
 mod ldy_tests {
-    use crate::cpu::bus::MockCPUBus;
+    use crate::bus::MockBus;
 
     use super::*;
 
@@ -43,7 +43,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_zp_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldyc(&cpu._zp(0x0, &bus));
@@ -53,7 +53,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_zpx_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldyc(&cpu._zpx(0x0, &bus));
@@ -63,7 +63,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_abs_correctc() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldyc(&cpu._abs(0x0, &bus));
@@ -73,7 +73,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_absx_correct_cycles_no_page_cross() {
         let cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         let cycles: u8 = cpu.ldyc(&cpu._absx(0x88, &bus));
@@ -83,7 +83,7 @@ mod ldy_tests {
     #[test]
     fn test_ldy_absx_correct_cycles_with_page_cross() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockCPUBus::new();
+        let mut bus = MockBus::new();
         bus.expect_read().return_const(0x0);
 
         cpu.x = 0xff;
@@ -94,25 +94,25 @@ mod ldy_tests {
     #[test]
     fn test_ldy_value_goes_to_y_register() {
         let mut cpu = NESCPU::new();
-        cpu.ldy(&cpu._imm(0xff), &mut MockCPUBus::new());
+        cpu.ldy(&cpu._imm(0xff), &mut MockBus::new());
         assert_eq!(0xff, cpu.y);
     }
 
     #[test]
     fn test_ldy_negative_flag() {
         let mut cpu = NESCPU::new();
-        cpu.ldy(&cpu._imm(0x80), &mut MockCPUBus::new());
+        cpu.ldy(&cpu._imm(0x80), &mut MockBus::new());
         assert_eq!(true, cpu.n);
-        cpu.ldy(&cpu._imm(0x7f), &mut MockCPUBus::new());
+        cpu.ldy(&cpu._imm(0x7f), &mut MockBus::new());
         assert_eq!(false, cpu.n);
     }
 
     #[test]
     fn test_ldy_zero_flag() {
         let mut cpu = NESCPU::new();
-        cpu.ldy(&cpu._imm(0x0), &mut MockCPUBus::new());
+        cpu.ldy(&cpu._imm(0x0), &mut MockBus::new());
         assert_eq!(true, cpu.z);
-        cpu.ldy(&cpu._imm(0x1), &mut MockCPUBus::new());
+        cpu.ldy(&cpu._imm(0x1), &mut MockBus::new());
         assert_eq!(false, cpu.z);
     }
 }
