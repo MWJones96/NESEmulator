@@ -6,7 +6,7 @@ mod mapper_0;
 #[automock]
 pub trait Mapper {
     fn read(&self, addr: u16, prg_banks: u8) -> u16;
-    fn write(&mut self, addr: u16, data: u8, prg_banks: u8);
+    fn write(&self, addr: u16, data: u8, prg_banks: u8);
 }
 
 pub fn mapper_factory(mapper: u8) -> impl Mapper {

@@ -5,7 +5,7 @@ use crate::mapper::Mapper;
 #[automock]
 pub trait Cartridge {
     fn read(&self, addr: u16) -> u8;
-    fn write(&mut self, addr: u16, data: u8);
+    fn write(&self, addr: u16, data: u8);
 }
 
 pub struct NESCartridge<'a> {
@@ -32,7 +32,7 @@ impl Cartridge for NESCartridge<'_> {
         self.prg_rom[self.mapper.read(addr, self.prg_rom_banks) as usize]
     }
 
-    fn write(&mut self, addr: u16, data: u8) {
+    fn write(&self, addr: u16, data: u8) {
         assert!((0x8000..=0xffff).contains(&addr));
         self.mapper.write(addr, data, self.prg_rom_banks);
     }
@@ -73,7 +73,7 @@ mod cartridge_tests {
             .once()
             .return_const(());
 
-        let mut cartridge = NESCartridge::new(
+        let cartridge = NESCartridge::new(
             &[0; NESCartridge::BYTES_PER_PRG_BANK as usize],
             Box::new(mapper),
         );

@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use crate::{
     cartridge::Cartridge,
     cpu::{bus::CPUBus, CPU},
@@ -5,12 +7,12 @@ use crate::{
 };
 pub struct MainBus<'a> {
     ppu: Box<dyn PPU + 'a>,
-    cartridge: Box<dyn Cartridge + 'a>,
+    cartridge: Rc<dyn Cartridge + 'a>,
     ram: [u8; 0x800],
 }
 
 impl<'a> MainBus<'a> {
-    pub fn new(ppu: Box<dyn PPU + 'a>, cartridge: Box<dyn Cartridge + 'a>) -> Self {
+    pub fn new(ppu: Box<dyn PPU + 'a>, cartridge: Rc<dyn Cartridge + 'a>) -> Self {
         Self {
             ppu,
             cartridge,
@@ -44,7 +46,7 @@ impl CPUBus for MainBus<'_> {
                 self.ram[(addr & 0x7ff) as usize] = data;
             }
             0x2000..=0x3fff | 0x4014 => self.ppu.write(addr, data),
-            0x8000..=0xffff => Cartridge::write(self.cartridge.as_mut(), addr, data),
+            0x8000..=0xffff => self.cartridge.write(addr, data),
             _ => {} //Open Bus Write
         }
     }
@@ -61,7 +63,7 @@ mod main_bus_tests {
     #[test]
     fn test_cpu_bus_read() {
         let cartridge = MockCartridge::new();
-        let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Box::new(cartridge));
+        let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
 
         main_bus.ram[0x0] = 0xff;
 
@@ -74,7 +76,7 @@ mod main_bus_tests {
     #[test]
     fn test_cpu_bus_write() {
         let cartridge = MockCartridge::new();
-        let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Box::new(cartridge));
+        let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
 
         main_bus.write(0x1, 0x34);
         assert_eq!(0x34, main_bus.ram[0x1]);
@@ -107,7 +109,7 @@ mod main_bus_tests {
             .once()
             .return_const(0x0);
 
-        let main_bus = MainBus::new(Box::new(MockPPU::new()), Box::new(cartridge));
+        let main_bus = MainBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
 
         main_bus.read(0x7fff);
         main_bus.read(0x8000);
@@ -132,7 +134,7 @@ mod main_bus_tests {
             .once()
             .return_const(());
 
-        let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Box::new(cartridge));
+        let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
 
         main_bus.write(0x7fff, 0x0);
         main_bus.write(0x8000, 0x0);
@@ -151,7 +153,7 @@ mod main_bus_tests {
         ppu.expect_read().with(eq(0x4000)).never().return_const(0x0);
         ppu.expect_read().with(eq(0x4014)).once().return_const(0x0);
 
-        let main_bus = MainBus::new(Box::new(ppu), Box::new(cartridge));
+        let main_bus = MainBus::new(Box::new(ppu), Rc::new(cartridge));
         main_bus.read(0x2000);
         main_bus.read(0x3fff);
         main_bus.read(0x1fff);
@@ -186,7 +188,7 @@ mod main_bus_tests {
             .once()
             .return_const(());
 
-        let mut main_bus = MainBus::new(Box::new(ppu), Box::new(cartridge));
+        let mut main_bus = MainBus::new(Box::new(ppu), Rc::new(cartridge));
         main_bus.write(0x2000, 0x0);
         main_bus.write(0x3fff, 0x0);
         main_bus.write(0x1fff, 0x0);

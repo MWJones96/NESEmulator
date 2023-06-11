@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
+use std::rc::Rc;
 
 use nes_emu::bus::main_bus::MainBus;
 use nes_emu::cartridge::NESCartridge;
@@ -27,7 +28,7 @@ fn test_nestest_rom() {
     let cartridge = NESCartridge::new(prg_rom, Box::new(mapper));
 
     let mut cpu = NESCPU::new();
-    let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Box::new(cartridge));
+    let mut main_bus = MainBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
 
     //Execute reset routine
     for _ in 0..7 {

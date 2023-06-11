@@ -20,7 +20,7 @@ impl Mapper for Mapper0 {
         }
     }
 
-    fn write(&mut self, _addr: u16, _data: u8, _prg_banks: u8) {
+    fn write(&self, _addr: u16, _data: u8, _prg_banks: u8) {
         assert!((0x8000..=0xffff).contains(&_addr));
     }
 }
