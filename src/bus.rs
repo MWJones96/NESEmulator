@@ -1,6 +1,7 @@
 use mockall::automock;
 
 pub mod cpu_bus;
+pub mod ppu_bus;
 
 #[automock]
 pub trait Bus {

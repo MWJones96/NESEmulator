@@ -51,7 +51,7 @@ impl Bus for CPUBus<'_> {
 }
 
 #[cfg(test)]
-mod main_bus_tests {
+mod cpu_bus_tests {
     use mockall::predicate::eq;
 
     use crate::{cartridge::MockCartridge, ppu::MockPPU};
