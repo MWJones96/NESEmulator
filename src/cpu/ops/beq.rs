@@ -13,9 +13,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn beqc(&self, mode: &AddrModeResult) -> u8 {
         if self.z {
             2 + 1 + mode.cycles
@@ -39,13 +39,13 @@ mod beq_tests {
 
     #[test]
     fn test_beq_no_branch_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.beqc(&cpu._rel(0x1)));
     }
 
     #[test]
     fn test_beq_no_branch_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x1234;
 
         assert_eq!(2, cpu.beqc(&cpu._rel(0xaa)));
@@ -53,7 +53,7 @@ mod beq_tests {
 
     #[test]
     fn test_beq_with_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.z = true;
 
         assert_eq!(3, cpu.beqc(&cpu._rel(0x7f)));
@@ -61,7 +61,7 @@ mod beq_tests {
 
     #[test]
     fn test_beq_with_branch_and_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.z = true;
         cpu.pc = 0x12ff;
 
@@ -70,7 +70,7 @@ mod beq_tests {
 
     #[test]
     fn test_beq_pc_no_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x1234;
         cpu.z = false;
@@ -80,7 +80,7 @@ mod beq_tests {
 
     #[test]
     fn test_beq_pc_no_branch_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x12ff;
         cpu.z = false;
@@ -90,7 +90,7 @@ mod beq_tests {
 
     #[test]
     fn test_beq_pc_with_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x81;
         cpu.z = true;
 
@@ -100,7 +100,7 @@ mod beq_tests {
 
     #[test]
     fn test_beq_pc_with_branch_and_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x8081;
         cpu.z = true;
 

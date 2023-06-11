@@ -19,9 +19,9 @@ use crate::cpu::{
     bus::CPUBus,
 };
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn rorc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Acc => 2,
@@ -56,7 +56,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_acc() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.a = 0x20;
         assert_eq!(2, cpu.rorc(&cpu._acc()));
@@ -64,7 +64,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_zp() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
@@ -74,7 +74,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_zpx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
@@ -85,7 +85,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_abs() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
@@ -98,7 +98,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_absx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
@@ -110,7 +110,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
@@ -123,7 +123,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_no_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
@@ -135,7 +135,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0x0;
@@ -148,7 +148,7 @@ mod ror_tests {
 
     #[test]
     fn test_ror_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0x1;

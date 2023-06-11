@@ -20,9 +20,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn sbcc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -42,14 +42,14 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_imm_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let cycles: u8 = cpu.sbcc(&cpu._imm(0x0));
         assert_eq!(2, cycles);
     }
 
     #[test]
     fn test_sbc_zp_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -59,7 +59,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_zpx_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -69,7 +69,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_abs_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -79,7 +79,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_absx_correct_cycles_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -89,7 +89,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_absx_correct_cycles_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
         cpu.x = 0xff;
@@ -100,7 +100,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_absy_correct_cycles_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -110,7 +110,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_absy_correct_cycles_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -121,7 +121,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_indx_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -131,7 +131,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_indy_correct_cycles_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -141,7 +141,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_indy_correct_cycles_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().with(eq(0x88)).return_const(0x11);
         bus.expect_read().with(eq(0x89)).return_const(0x22);
@@ -155,7 +155,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_no_borrow() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
@@ -166,7 +166,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_with_borrow() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.c = false; //Borrow
         cpu.a = 0x1;
@@ -177,7 +177,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_with_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
@@ -188,7 +188,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_with_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
@@ -199,7 +199,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_with_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.c = true; //No borrow
         cpu.a = 0x1;
@@ -222,7 +222,7 @@ mod sbc_tests {
 
     #[test]
     fn test_sbc_with_overflow_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.c = true;
         cpu.a = 0x7f;

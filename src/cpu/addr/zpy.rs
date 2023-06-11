@@ -14,11 +14,11 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn zpy(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._zpy(addr, bus)
@@ -48,7 +48,7 @@ mod zpy_tests {
 
     #[test]
     fn test_zpy_addressing_mode() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut mock_bus = MockCPUBus::new();
         cpu.y = 0x2;
 

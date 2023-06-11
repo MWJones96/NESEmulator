@@ -20,9 +20,9 @@
     program counter low and the program counter high.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn jsrc(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
@@ -52,7 +52,7 @@ mod jsr_tests {
 
     #[test]
     fn test_jsr_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -62,7 +62,7 @@ mod jsr_tests {
 
     #[test]
     fn test_jsr_pushes_onto_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.pc = 0x1234;
@@ -87,7 +87,7 @@ mod jsr_tests {
 
     #[test]
     fn test_jsr_sets_pc_to_new_value() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);

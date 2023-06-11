@@ -13,9 +13,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn clcc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -33,14 +33,14 @@ mod clc_tests {
 
     #[test]
     fn test_clc_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         assert_eq!(2, cpu.clcc(&cpu._imp()));
     }
 
     #[test]
     fn test_clc_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.c = true;
 
         cpu.clc(&cpu._imp(), &mut MockCPUBus::new());

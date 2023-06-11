@@ -18,9 +18,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn plac(&self, _mode: &AddrModeResult) -> u8 {
         4
     }
@@ -44,13 +44,13 @@ mod pla_tests {
 
     #[test]
     fn test_pla_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(4, cpu.plac(&cpu._imp()));
     }
 
     #[test]
     fn test_pla_fetches_accumulator() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
@@ -67,7 +67,7 @@ mod pla_tests {
 
     #[test]
     fn test_pla_sets_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
@@ -83,7 +83,7 @@ mod pla_tests {
 
     #[test]
     fn test_pla_sets_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
@@ -96,7 +96,7 @@ mod pla_tests {
 
     #[test]
     fn test_pla_pull_from_empty_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xff;
 

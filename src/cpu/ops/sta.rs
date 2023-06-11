@@ -13,9 +13,9 @@ use crate::cpu::{
     bus::CPUBus,
 };
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn stac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx | AddrModeType::Absy => 5,
@@ -39,7 +39,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -49,7 +49,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_zpx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -59,7 +59,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -69,7 +69,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_absx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -79,7 +79,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_absy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -89,7 +89,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -99,7 +99,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta_indy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -109,7 +109,7 @@ mod sta_tests {
 
     #[test]
     fn test_sta() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0xee;
 

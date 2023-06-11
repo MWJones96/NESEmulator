@@ -12,9 +12,9 @@
     as a result of the decrement, otherwise it resets the Z flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn dexc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -35,13 +35,13 @@ mod dex_tests {
 
     #[test]
     fn test_dex_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.dexc(&cpu._imp()));
     }
 
     #[test]
     fn test_dex() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0x80;
 
         cpu.dex(&cpu._imp(), &mut MockCPUBus::new());
@@ -51,7 +51,7 @@ mod dex_tests {
 
     #[test]
     fn test_dex_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0x0;
 
         cpu.dex(&cpu._imp(), &mut MockCPUBus::new());
@@ -62,7 +62,7 @@ mod dex_tests {
 
     #[test]
     fn test_dex_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0x1;
 
         cpu.dex(&cpu._imp(), &mut MockCPUBus::new());

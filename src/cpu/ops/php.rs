@@ -12,9 +12,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn phpc(&self, _mode: &AddrModeResult) -> u8 {
         3
     }
@@ -35,13 +35,13 @@ mod php_tests {
 
     #[test]
     fn test_php_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(3, cpu.phpc(&cpu._imp()));
     }
 
     #[test]
     fn test_php_push_status_onto_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.c = true;
 
@@ -56,7 +56,7 @@ mod php_tests {
 
     #[test]
     fn test_php_push_status_onto_stack_with_overflow() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0x0;
 

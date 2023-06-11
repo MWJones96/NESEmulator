@@ -14,11 +14,11 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn indx(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._indx(addr, bus)
@@ -52,7 +52,7 @@ mod indx_tests {
 
     #[test]
     fn test_indx_addressing_mode() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut mock_bus = MockCPUBus::new();
 
         mock_bus.expect_read().with(eq(0x1)).return_const(0x77);

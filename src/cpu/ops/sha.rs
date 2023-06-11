@@ -22,10 +22,10 @@
 use crate::cpu::{
     addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
-    CPU,
+    NESCPU,
 };
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn shac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absy => 5,
@@ -61,7 +61,7 @@ mod sha_tests {
 
     #[test]
     fn test_sha_absy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -70,7 +70,7 @@ mod sha_tests {
 
     #[test]
     fn test_sha_indy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -79,7 +79,7 @@ mod sha_tests {
 
     #[test]
     fn test_sha_absy() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
         cpu.x = 0xff;
         cpu.y = 0x1;
@@ -96,7 +96,7 @@ mod sha_tests {
 
     #[test]
     fn test_sha_indy() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
         cpu.x = 0xff;
         cpu.y = 0x1;

@@ -12,9 +12,9 @@ use crate::cpu::{
     bus::CPUBus,
 };
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn styc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 4,
@@ -37,7 +37,7 @@ mod sty_tests {
 
     #[test]
     fn test_sty_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -47,7 +47,7 @@ mod sty_tests {
 
     #[test]
     fn test_sty_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -57,7 +57,7 @@ mod sty_tests {
 
     #[test]
     fn test_sty_absx_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
 
@@ -68,7 +68,7 @@ mod sty_tests {
 
     #[test]
     fn test_sty() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xbb;
 

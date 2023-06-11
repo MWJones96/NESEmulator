@@ -1,3 +1,5 @@
+use mockall::automock;
+
 use self::{addr::AddrModeResult, bus::CPUBus};
 
 pub mod bus;
@@ -6,9 +8,9 @@ mod addr;
 mod ops;
 
 type Mnemonic = &'static str;
-type AddrModeFn = fn(&mut CPU, &dyn CPUBus) -> AddrModeResult;
-type CycleCountFn = fn(&CPU, &AddrModeResult) -> u8;
-type ExecuteFn = fn(&mut CPU, &AddrModeResult, &mut dyn CPUBus);
+type AddrModeFn = fn(&mut NESCPU, &dyn CPUBus) -> AddrModeResult;
+type CycleCountFn = fn(&NESCPU, &AddrModeResult) -> u8;
+type ExecuteFn = fn(&mut NESCPU, &AddrModeResult, &mut dyn CPUBus);
 
 #[derive(PartialEq, Debug, Clone)]
 enum InstructionType {
@@ -27,7 +29,17 @@ struct CurrentInstruction {
     remaining_cycles: u8,
     instruction_type: InstructionType,
 }
-pub struct CPU {
+
+#[automock]
+pub trait CPU {
+    fn clock(&mut self, bus: &mut dyn CPUBus);
+    fn cpu_reset(&mut self);
+    fn cpu_irq(&mut self, interrupt: bool);
+    fn cpu_nmi(&mut self);
+    fn cycles_remaining(&self) -> u8;
+}
+
+pub struct NESCPU {
     pc: u16,
     sp: u8,
 
@@ -53,7 +65,7 @@ pub struct CPU {
     elapsed_cycles: u64,
 }
 
-impl ToString for CPU {
+impl ToString for NESCPU {
     fn to_string(&self) -> String {
         match &self.current_instruction.instruction_type {
             InstructionType::Instruction { opcode, addr_mode } => {
@@ -62,7 +74,7 @@ impl ToString for CPU {
                     self.pc.wrapping_sub(addr_mode.bytes as u16),
                     *opcode,
                     addr_mode.operands,
-                    CPU::LOOKUP_TABLE[*opcode as usize].0,
+                    NESCPU::LOOKUP_TABLE[*opcode as usize].0,
                     addr_mode.repr,
                     self.a,
                     self.x,
@@ -80,29 +92,29 @@ impl ToString for CPU {
     }
 }
 
-impl CPU {
+impl NESCPU {
     const NMI_VECTOR: u16 = 0xfffa;
     const RESET_VECTOR: u16 = 0xfffc;
     const IRQ_VECTOR: u16 = 0xfffe;
 
     #[rustfmt::skip]
     const LOOKUP_TABLE: [(Mnemonic, AddrModeFn, CycleCountFn, ExecuteFn); 256] = [
-        ("BRK", CPU::imm, CPU::brkc, CPU::brk), ("ORA", CPU::indx, CPU::orac, CPU::ora), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SLO", CPU::indx, CPU::sloc, CPU::slo), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("ORA",  CPU::zp, CPU::orac, CPU::ora), ("ASL",  CPU::zp, CPU::aslc, CPU::asl), ("SLO",  CPU::zp, CPU::sloc, CPU::slo), ("PHP", CPU::imp, CPU::phpc, CPU::php), ("ORA",  CPU::imm, CPU::orac, CPU::ora), ("ASL", CPU::acc, CPU::aslc, CPU::asl), ("ANC",  CPU::imm, CPU::ancc, CPU::anc), ("NOP",  CPU::abs, CPU::nopc, CPU::nop), ("ORA",  CPU::abs, CPU::orac, CPU::ora), ("ASL",  CPU::abs, CPU::aslc, CPU::asl), ("SLO",  CPU::abs, CPU::sloc, CPU::slo),
-        ("BPL", CPU::rel, CPU::bplc, CPU::bpl), ("ORA", CPU::indy, CPU::orac, CPU::ora), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SLO", CPU::indy, CPU::sloc, CPU::slo), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("ORA", CPU::zpx, CPU::orac, CPU::ora), ("ASL", CPU::zpx, CPU::aslc, CPU::asl), ("SLO", CPU::zpx, CPU::sloc, CPU::slo), ("CLC", CPU::imp, CPU::clcc, CPU::clc), ("ORA", CPU::absy, CPU::orac, CPU::ora), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SLO", CPU::absy, CPU::sloc, CPU::slo), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("ORA", CPU::absx, CPU::orac, CPU::ora), ("ASL", CPU::absx, CPU::aslc, CPU::asl), ("SLO", CPU::absx, CPU::sloc, CPU::slo),
-        ("JSR", CPU::abs, CPU::jsrc, CPU::jsr), ("AND", CPU::indx, CPU::andc, CPU::and), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RLA", CPU::indx, CPU::rlac, CPU::rla), ("BIT",  CPU::zp, CPU::bitc, CPU::bit), ("AND",  CPU::zp, CPU::andc, CPU::and), ("ROL",  CPU::zp, CPU::rolc, CPU::rol), ("RLA",  CPU::zp, CPU::rlac, CPU::rla), ("PLP", CPU::imp, CPU::plpc, CPU::plp), ("AND",  CPU::imm, CPU::andc, CPU::and), ("ROL", CPU::acc, CPU::rolc, CPU::rol), ("ANC",  CPU::imm, CPU::ancc, CPU::anc), ("BIT",  CPU::abs, CPU::bitc, CPU::bit), ("AND",  CPU::abs, CPU::andc, CPU::and), ("ROL",  CPU::abs, CPU::rolc, CPU::rol), ("RLA",  CPU::abs, CPU::rlac, CPU::rla),
-        ("BMI", CPU::rel, CPU::bmic, CPU::bmi), ("AND", CPU::indy, CPU::andc, CPU::and), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RLA", CPU::indy, CPU::rlac, CPU::rla), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("AND", CPU::zpx, CPU::andc, CPU::and), ("ROL", CPU::zpx, CPU::rolc, CPU::rol), ("RLA", CPU::zpx, CPU::rlac, CPU::rla), ("SEC", CPU::imp, CPU::secc, CPU::sec), ("AND", CPU::absy, CPU::andc, CPU::and), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("RLA", CPU::absy, CPU::rlac, CPU::rla), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("AND", CPU::absx, CPU::andc, CPU::and), ("ROL", CPU::absx, CPU::rolc, CPU::rol), ("RLA", CPU::absx, CPU::rlac, CPU::rla),
-        ("RTI", CPU::imp, CPU::rtic, CPU::rti), ("EOR", CPU::indx, CPU::eorc, CPU::eor), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SRE", CPU::indx, CPU::srec, CPU::sre), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("EOR",  CPU::zp, CPU::eorc, CPU::eor), ("LSR",  CPU::zp, CPU::lsrc, CPU::lsr), ("SRE",  CPU::zp, CPU::srec, CPU::sre), ("PHA", CPU::imp, CPU::phac, CPU::pha), ("EOR",  CPU::imm, CPU::eorc, CPU::eor), ("LSR", CPU::acc, CPU::lsrc, CPU::lsr), ("ASR",  CPU::imm, CPU::asrc, CPU::asr), ("JMP",  CPU::abs, CPU::jmpc, CPU::jmp), ("EOR",  CPU::abs, CPU::eorc, CPU::eor), ("LSR",  CPU::abs, CPU::lsrc, CPU::lsr), ("SRE",  CPU::abs, CPU::srec, CPU::sre),
-        ("BVC", CPU::rel, CPU::bvcc, CPU::bvc), ("EOR", CPU::indy, CPU::eorc, CPU::eor), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SRE", CPU::indy, CPU::srec, CPU::sre), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("EOR", CPU::zpx, CPU::eorc, CPU::eor), ("LSR", CPU::zpx, CPU::lsrc, CPU::lsr), ("SRE", CPU::zpx, CPU::srec, CPU::sre), ("CLI", CPU::imp, CPU::clic, CPU::cli), ("EOR", CPU::absy, CPU::eorc, CPU::eor), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SRE", CPU::absy, CPU::srec, CPU::sre), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("EOR", CPU::absx, CPU::eorc, CPU::eor), ("LSR", CPU::absx, CPU::lsrc, CPU::lsr), ("SRE", CPU::absx, CPU::srec, CPU::sre),
-        ("RTS", CPU::imp, CPU::rtsc, CPU::rts), ("ADC", CPU::indx, CPU::adcc, CPU::adc), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RRA", CPU::indx, CPU::rrac, CPU::rra), ("NOP",  CPU::zp, CPU::nopc, CPU::nop), ("ADC",  CPU::zp, CPU::adcc, CPU::adc), ("ROR",  CPU::zp, CPU::rorc, CPU::ror), ("RRA",  CPU::zp, CPU::rrac, CPU::rra), ("PLA", CPU::imp, CPU::plac, CPU::pla), ("ADC",  CPU::imm, CPU::adcc, CPU::adc), ("ROR", CPU::acc, CPU::rorc, CPU::ror), ("ARR",  CPU::imm, CPU::arrc, CPU::arr), ("JMP",  CPU::ind, CPU::jmpc, CPU::jmp), ("ADC",  CPU::abs, CPU::adcc, CPU::adc), ("ROR",  CPU::abs, CPU::rorc, CPU::ror), ("RRA",  CPU::abs, CPU::rrac, CPU::rra),
-        ("BVS", CPU::rel, CPU::bvsc, CPU::bvs), ("ADC", CPU::indy, CPU::adcc, CPU::adc), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("RRA", CPU::indy, CPU::rrac, CPU::rra), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("ADC", CPU::zpx, CPU::adcc, CPU::adc), ("ROR", CPU::zpx, CPU::rorc, CPU::ror), ("RRA", CPU::zpx, CPU::rrac, CPU::rra), ("SEI", CPU::imp, CPU::seic, CPU::sei), ("ADC", CPU::absy, CPU::adcc, CPU::adc), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("RRA", CPU::absy, CPU::rrac, CPU::rra), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("ADC", CPU::absx, CPU::adcc, CPU::adc), ("ROR", CPU::absx, CPU::rorc, CPU::ror), ("RRA", CPU::absx, CPU::rrac, CPU::rra),
-        ("NOP", CPU::imm, CPU::nopc, CPU::nop), ("STA", CPU::indx, CPU::stac, CPU::sta), ("NOP", CPU::imm, CPU::nopc, CPU::nop),  ("SAX", CPU::indx, CPU::saxc, CPU::sax), ("STY",  CPU::zp, CPU::styc, CPU::sty), ("STA",  CPU::zp, CPU::stac, CPU::sta), ("STX",  CPU::zp, CPU::stxc, CPU::stx), ("SAX",  CPU::zp, CPU::saxc, CPU::sax), ("DEY", CPU::imp, CPU::deyc, CPU::dey), ("NOP",  CPU::imm, CPU::nopc, CPU::nop), ("TXA", CPU::imp, CPU::txac, CPU::txa), ("XAA",  CPU::imm, CPU::xaac, CPU::xaa), ("STY",  CPU::abs, CPU::styc, CPU::sty), ("STA",  CPU::abs, CPU::stac, CPU::sta), ("STX",  CPU::abs, CPU::stxc, CPU::stx), ("SAX",  CPU::abs, CPU::saxc, CPU::sax),
-        ("BCC", CPU::rel, CPU::bccc, CPU::bcc), ("STA", CPU::indy, CPU::stac, CPU::sta), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("SHA", CPU::indy, CPU::shac, CPU::sha), ("STY", CPU::zpx, CPU::styc, CPU::sty), ("STA", CPU::zpx, CPU::stac, CPU::sta), ("STX", CPU::zpy, CPU::stxc, CPU::stx), ("SAX", CPU::zpy, CPU::saxc, CPU::sax), ("TYA", CPU::imp, CPU::tyac, CPU::tya), ("STA", CPU::absy, CPU::stac, CPU::sta), ("TXS", CPU::imp, CPU::txsc, CPU::txs), ("SHS", CPU::absy, CPU::shsc, CPU::shs), ("SHY", CPU::absx, CPU::shyc, CPU::shy), ("STA", CPU::absx, CPU::stac, CPU::sta), ("SHX", CPU::absy, CPU::shxc, CPU::shx), ("SHA", CPU::absy, CPU::shac, CPU::sha),
-        ("LDY", CPU::imm, CPU::ldyc, CPU::ldy), ("LDA", CPU::indx, CPU::ldac, CPU::lda), ("LDX", CPU::imm, CPU::ldxc, CPU::ldx),  ("LAX", CPU::indx, CPU::laxc, CPU::lax), ("LDY",  CPU::zp, CPU::ldyc, CPU::ldy), ("LDA",  CPU::zp, CPU::ldac, CPU::lda), ("LDX",  CPU::zp, CPU::ldxc, CPU::ldx), ("LAX",  CPU::zp, CPU::laxc, CPU::lax), ("TAY", CPU::imp, CPU::tayc, CPU::tay), ("LDA",  CPU::imm, CPU::ldac, CPU::lda), ("TAX", CPU::imp, CPU::taxc, CPU::tax), ("LAX",  CPU::imm, CPU::laxc, CPU::lax), ("LDY",  CPU::abs, CPU::ldyc, CPU::ldy), ("LDA",  CPU::abs, CPU::ldac, CPU::lda), ("LDX",  CPU::abs, CPU::ldxc, CPU::ldx), ("LAX",  CPU::abs, CPU::laxc, CPU::lax),
-        ("BCS", CPU::rel, CPU::bcsc, CPU::bcs), ("LDA", CPU::indy, CPU::ldac, CPU::lda), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("LAX", CPU::indy, CPU::laxc, CPU::lax), ("LDY", CPU::zpx, CPU::ldyc, CPU::ldy), ("LDA", CPU::zpx, CPU::ldac, CPU::lda), ("LDX", CPU::zpy, CPU::ldxc, CPU::ldx), ("LAX", CPU::zpy, CPU::laxc, CPU::lax), ("CLV", CPU::imp, CPU::clvc, CPU::clv), ("LDA", CPU::absy, CPU::ldac, CPU::lda), ("TSX", CPU::imp, CPU::tsxc, CPU::tsx), ("LAS", CPU::absy, CPU::lasc, CPU::las), ("LDY", CPU::absx, CPU::ldyc, CPU::ldy), ("LDA", CPU::absx, CPU::ldac, CPU::lda), ("LDX", CPU::absy, CPU::ldxc, CPU::ldx), ("LAX", CPU::absy, CPU::laxc, CPU::lax),
-        ("CPY", CPU::imm, CPU::cpyc, CPU::cpy), ("CMP", CPU::indx, CPU::cmpc, CPU::cmp), ("NOP", CPU::imm, CPU::nopc, CPU::nop),  ("DCP", CPU::indx, CPU::dcpc, CPU::dcp), ("CPY",  CPU::zp, CPU::cpyc, CPU::cpy), ("CMP",  CPU::zp, CPU::cmpc, CPU::cmp), ("DEC",  CPU::zp, CPU::decc, CPU::dec), ("DCP",  CPU::zp, CPU::dcpc, CPU::dcp), ("INY", CPU::imp, CPU::inyc, CPU::iny), ("CMP",  CPU::imm, CPU::cmpc, CPU::cmp), ("DEX", CPU::imp, CPU::dexc, CPU::dex), ("SBX",  CPU::imm, CPU::sbxc, CPU::sbx), ("CPY",  CPU::abs, CPU::cpyc, CPU::cpy), ("CMP",  CPU::abs, CPU::cmpc, CPU::cmp), ("DEC",  CPU::abs, CPU::decc, CPU::dec), ("DCP",  CPU::abs, CPU::dcpc, CPU::dcp),
-        ("BNE", CPU::rel, CPU::bnec, CPU::bne), ("CMP", CPU::indy, CPU::cmpc, CPU::cmp), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("DCP", CPU::indy, CPU::dcpc, CPU::dcp), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("CMP", CPU::zpx, CPU::cmpc, CPU::cmp), ("DEC", CPU::zpx, CPU::decc, CPU::dec), ("DCP", CPU::zpx, CPU::dcpc, CPU::dcp), ("CLD", CPU::imp, CPU::cldc, CPU::cld), ("CMP", CPU::absy, CPU::cmpc, CPU::cmp), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("DCP", CPU::absy, CPU::dcpc, CPU::dcp), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("CMP", CPU::absx, CPU::cmpc, CPU::cmp), ("DEC", CPU::absx, CPU::decc, CPU::dec), ("DCP", CPU::absx, CPU::dcpc, CPU::dcp),
-        ("CPX", CPU::imm, CPU::cpxc, CPU::cpx), ("SBC", CPU::indx, CPU::sbcc, CPU::sbc), ("NOP", CPU::imm, CPU::nopc, CPU::nop),  ("ISC", CPU::indx, CPU::iscc, CPU::isc), ("CPX",  CPU::zp, CPU::cpxc, CPU::cpx), ("SBC",  CPU::zp, CPU::sbcc, CPU::sbc), ("INC",  CPU::zp, CPU::incc, CPU::inc), ("ISC",  CPU::zp, CPU::iscc, CPU::isc), ("INX", CPU::imp, CPU::inxc, CPU::inx), ("SBC",  CPU::imm, CPU::sbcc, CPU::sbc), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("SBC",  CPU::imm, CPU::sbcc, CPU::sbc), ("CPX",  CPU::abs, CPU::cpxc, CPU::cpx), ("SBC",  CPU::abs, CPU::sbcc, CPU::sbc), ("INC",  CPU::abs, CPU::incc, CPU::inc), ("ISC",  CPU::abs, CPU::iscc, CPU::isc),
-        ("BEQ", CPU::rel, CPU::beqc, CPU::beq), ("SBC", CPU::indy, CPU::sbcc, CPU::sbc), ("JAM", CPU::imp, CPU::jamc, CPU::_jam), ("ISC", CPU::indy, CPU::iscc, CPU::isc), ("NOP", CPU::zpx, CPU::nopc, CPU::nop), ("SBC", CPU::zpx, CPU::sbcc, CPU::sbc), ("INC", CPU::zpx, CPU::incc, CPU::inc), ("ISC", CPU::zpx, CPU::iscc, CPU::isc), ("SED", CPU::imp, CPU::sedc, CPU::sed), ("SBC", CPU::absy, CPU::sbcc, CPU::sbc), ("NOP", CPU::imp, CPU::nopc, CPU::nop), ("ISC", CPU::absy, CPU::iscc, CPU::isc), ("NOP", CPU::absx, CPU::nopc, CPU::nop), ("SBC", CPU::absx, CPU::sbcc, CPU::sbc), ("INC", CPU::absx, CPU::incc, CPU::inc), ("ISC", CPU::absx, CPU::iscc, CPU::isc),
+        ("BRK", NESCPU::imm, NESCPU::brkc, NESCPU::brk), ("ORA", NESCPU::indx, NESCPU::orac, NESCPU::ora), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("SLO", NESCPU::indx, NESCPU::sloc, NESCPU::slo), ("NOP",  NESCPU::zp, NESCPU::nopc, NESCPU::nop), ("ORA",  NESCPU::zp, NESCPU::orac, NESCPU::ora), ("ASL",  NESCPU::zp, NESCPU::aslc, NESCPU::asl), ("SLO",  NESCPU::zp, NESCPU::sloc, NESCPU::slo), ("PHP", NESCPU::imp, NESCPU::phpc, NESCPU::php), ("ORA",  NESCPU::imm, NESCPU::orac, NESCPU::ora), ("ASL", NESCPU::acc, NESCPU::aslc, NESCPU::asl), ("ANC",  NESCPU::imm, NESCPU::ancc, NESCPU::anc), ("NOP",  NESCPU::abs, NESCPU::nopc, NESCPU::nop), ("ORA",  NESCPU::abs, NESCPU::orac, NESCPU::ora), ("ASL",  NESCPU::abs, NESCPU::aslc, NESCPU::asl), ("SLO",  NESCPU::abs, NESCPU::sloc, NESCPU::slo),
+        ("BPL", NESCPU::rel, NESCPU::bplc, NESCPU::bpl), ("ORA", NESCPU::indy, NESCPU::orac, NESCPU::ora), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("SLO", NESCPU::indy, NESCPU::sloc, NESCPU::slo), ("NOP", NESCPU::zpx, NESCPU::nopc, NESCPU::nop), ("ORA", NESCPU::zpx, NESCPU::orac, NESCPU::ora), ("ASL", NESCPU::zpx, NESCPU::aslc, NESCPU::asl), ("SLO", NESCPU::zpx, NESCPU::sloc, NESCPU::slo), ("CLC", NESCPU::imp, NESCPU::clcc, NESCPU::clc), ("ORA", NESCPU::absy, NESCPU::orac, NESCPU::ora), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("SLO", NESCPU::absy, NESCPU::sloc, NESCPU::slo), ("NOP", NESCPU::absx, NESCPU::nopc, NESCPU::nop), ("ORA", NESCPU::absx, NESCPU::orac, NESCPU::ora), ("ASL", NESCPU::absx, NESCPU::aslc, NESCPU::asl), ("SLO", NESCPU::absx, NESCPU::sloc, NESCPU::slo),
+        ("JSR", NESCPU::abs, NESCPU::jsrc, NESCPU::jsr), ("AND", NESCPU::indx, NESCPU::andc, NESCPU::and), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("RLA", NESCPU::indx, NESCPU::rlac, NESCPU::rla), ("BIT",  NESCPU::zp, NESCPU::bitc, NESCPU::bit), ("AND",  NESCPU::zp, NESCPU::andc, NESCPU::and), ("ROL",  NESCPU::zp, NESCPU::rolc, NESCPU::rol), ("RLA",  NESCPU::zp, NESCPU::rlac, NESCPU::rla), ("PLP", NESCPU::imp, NESCPU::plpc, NESCPU::plp), ("AND",  NESCPU::imm, NESCPU::andc, NESCPU::and), ("ROL", NESCPU::acc, NESCPU::rolc, NESCPU::rol), ("ANC",  NESCPU::imm, NESCPU::ancc, NESCPU::anc), ("BIT",  NESCPU::abs, NESCPU::bitc, NESCPU::bit), ("AND",  NESCPU::abs, NESCPU::andc, NESCPU::and), ("ROL",  NESCPU::abs, NESCPU::rolc, NESCPU::rol), ("RLA",  NESCPU::abs, NESCPU::rlac, NESCPU::rla),
+        ("BMI", NESCPU::rel, NESCPU::bmic, NESCPU::bmi), ("AND", NESCPU::indy, NESCPU::andc, NESCPU::and), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("RLA", NESCPU::indy, NESCPU::rlac, NESCPU::rla), ("NOP", NESCPU::zpx, NESCPU::nopc, NESCPU::nop), ("AND", NESCPU::zpx, NESCPU::andc, NESCPU::and), ("ROL", NESCPU::zpx, NESCPU::rolc, NESCPU::rol), ("RLA", NESCPU::zpx, NESCPU::rlac, NESCPU::rla), ("SEC", NESCPU::imp, NESCPU::secc, NESCPU::sec), ("AND", NESCPU::absy, NESCPU::andc, NESCPU::and), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("RLA", NESCPU::absy, NESCPU::rlac, NESCPU::rla), ("NOP", NESCPU::absx, NESCPU::nopc, NESCPU::nop), ("AND", NESCPU::absx, NESCPU::andc, NESCPU::and), ("ROL", NESCPU::absx, NESCPU::rolc, NESCPU::rol), ("RLA", NESCPU::absx, NESCPU::rlac, NESCPU::rla),
+        ("RTI", NESCPU::imp, NESCPU::rtic, NESCPU::rti), ("EOR", NESCPU::indx, NESCPU::eorc, NESCPU::eor), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("SRE", NESCPU::indx, NESCPU::srec, NESCPU::sre), ("NOP",  NESCPU::zp, NESCPU::nopc, NESCPU::nop), ("EOR",  NESCPU::zp, NESCPU::eorc, NESCPU::eor), ("LSR",  NESCPU::zp, NESCPU::lsrc, NESCPU::lsr), ("SRE",  NESCPU::zp, NESCPU::srec, NESCPU::sre), ("PHA", NESCPU::imp, NESCPU::phac, NESCPU::pha), ("EOR",  NESCPU::imm, NESCPU::eorc, NESCPU::eor), ("LSR", NESCPU::acc, NESCPU::lsrc, NESCPU::lsr), ("ASR",  NESCPU::imm, NESCPU::asrc, NESCPU::asr), ("JMP",  NESCPU::abs, NESCPU::jmpc, NESCPU::jmp), ("EOR",  NESCPU::abs, NESCPU::eorc, NESCPU::eor), ("LSR",  NESCPU::abs, NESCPU::lsrc, NESCPU::lsr), ("SRE",  NESCPU::abs, NESCPU::srec, NESCPU::sre),
+        ("BVC", NESCPU::rel, NESCPU::bvcc, NESCPU::bvc), ("EOR", NESCPU::indy, NESCPU::eorc, NESCPU::eor), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("SRE", NESCPU::indy, NESCPU::srec, NESCPU::sre), ("NOP", NESCPU::zpx, NESCPU::nopc, NESCPU::nop), ("EOR", NESCPU::zpx, NESCPU::eorc, NESCPU::eor), ("LSR", NESCPU::zpx, NESCPU::lsrc, NESCPU::lsr), ("SRE", NESCPU::zpx, NESCPU::srec, NESCPU::sre), ("CLI", NESCPU::imp, NESCPU::clic, NESCPU::cli), ("EOR", NESCPU::absy, NESCPU::eorc, NESCPU::eor), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("SRE", NESCPU::absy, NESCPU::srec, NESCPU::sre), ("NOP", NESCPU::absx, NESCPU::nopc, NESCPU::nop), ("EOR", NESCPU::absx, NESCPU::eorc, NESCPU::eor), ("LSR", NESCPU::absx, NESCPU::lsrc, NESCPU::lsr), ("SRE", NESCPU::absx, NESCPU::srec, NESCPU::sre),
+        ("RTS", NESCPU::imp, NESCPU::rtsc, NESCPU::rts), ("ADC", NESCPU::indx, NESCPU::adcc, NESCPU::adc), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("RRA", NESCPU::indx, NESCPU::rrac, NESCPU::rra), ("NOP",  NESCPU::zp, NESCPU::nopc, NESCPU::nop), ("ADC",  NESCPU::zp, NESCPU::adcc, NESCPU::adc), ("ROR",  NESCPU::zp, NESCPU::rorc, NESCPU::ror), ("RRA",  NESCPU::zp, NESCPU::rrac, NESCPU::rra), ("PLA", NESCPU::imp, NESCPU::plac, NESCPU::pla), ("ADC",  NESCPU::imm, NESCPU::adcc, NESCPU::adc), ("ROR", NESCPU::acc, NESCPU::rorc, NESCPU::ror), ("ARR",  NESCPU::imm, NESCPU::arrc, NESCPU::arr), ("JMP",  NESCPU::ind, NESCPU::jmpc, NESCPU::jmp), ("ADC",  NESCPU::abs, NESCPU::adcc, NESCPU::adc), ("ROR",  NESCPU::abs, NESCPU::rorc, NESCPU::ror), ("RRA",  NESCPU::abs, NESCPU::rrac, NESCPU::rra),
+        ("BVS", NESCPU::rel, NESCPU::bvsc, NESCPU::bvs), ("ADC", NESCPU::indy, NESCPU::adcc, NESCPU::adc), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("RRA", NESCPU::indy, NESCPU::rrac, NESCPU::rra), ("NOP", NESCPU::zpx, NESCPU::nopc, NESCPU::nop), ("ADC", NESCPU::zpx, NESCPU::adcc, NESCPU::adc), ("ROR", NESCPU::zpx, NESCPU::rorc, NESCPU::ror), ("RRA", NESCPU::zpx, NESCPU::rrac, NESCPU::rra), ("SEI", NESCPU::imp, NESCPU::seic, NESCPU::sei), ("ADC", NESCPU::absy, NESCPU::adcc, NESCPU::adc), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("RRA", NESCPU::absy, NESCPU::rrac, NESCPU::rra), ("NOP", NESCPU::absx, NESCPU::nopc, NESCPU::nop), ("ADC", NESCPU::absx, NESCPU::adcc, NESCPU::adc), ("ROR", NESCPU::absx, NESCPU::rorc, NESCPU::ror), ("RRA", NESCPU::absx, NESCPU::rrac, NESCPU::rra),
+        ("NOP", NESCPU::imm, NESCPU::nopc, NESCPU::nop), ("STA", NESCPU::indx, NESCPU::stac, NESCPU::sta), ("NOP", NESCPU::imm, NESCPU::nopc, NESCPU::nop),  ("SAX", NESCPU::indx, NESCPU::saxc, NESCPU::sax), ("STY",  NESCPU::zp, NESCPU::styc, NESCPU::sty), ("STA",  NESCPU::zp, NESCPU::stac, NESCPU::sta), ("STX",  NESCPU::zp, NESCPU::stxc, NESCPU::stx), ("SAX",  NESCPU::zp, NESCPU::saxc, NESCPU::sax), ("DEY", NESCPU::imp, NESCPU::deyc, NESCPU::dey), ("NOP",  NESCPU::imm, NESCPU::nopc, NESCPU::nop), ("TXA", NESCPU::imp, NESCPU::txac, NESCPU::txa), ("XAA",  NESCPU::imm, NESCPU::xaac, NESCPU::xaa), ("STY",  NESCPU::abs, NESCPU::styc, NESCPU::sty), ("STA",  NESCPU::abs, NESCPU::stac, NESCPU::sta), ("STX",  NESCPU::abs, NESCPU::stxc, NESCPU::stx), ("SAX",  NESCPU::abs, NESCPU::saxc, NESCPU::sax),
+        ("BCC", NESCPU::rel, NESCPU::bccc, NESCPU::bcc), ("STA", NESCPU::indy, NESCPU::stac, NESCPU::sta), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("SHA", NESCPU::indy, NESCPU::shac, NESCPU::sha), ("STY", NESCPU::zpx, NESCPU::styc, NESCPU::sty), ("STA", NESCPU::zpx, NESCPU::stac, NESCPU::sta), ("STX", NESCPU::zpy, NESCPU::stxc, NESCPU::stx), ("SAX", NESCPU::zpy, NESCPU::saxc, NESCPU::sax), ("TYA", NESCPU::imp, NESCPU::tyac, NESCPU::tya), ("STA", NESCPU::absy, NESCPU::stac, NESCPU::sta), ("TXS", NESCPU::imp, NESCPU::txsc, NESCPU::txs), ("SHS", NESCPU::absy, NESCPU::shsc, NESCPU::shs), ("SHY", NESCPU::absx, NESCPU::shyc, NESCPU::shy), ("STA", NESCPU::absx, NESCPU::stac, NESCPU::sta), ("SHX", NESCPU::absy, NESCPU::shxc, NESCPU::shx), ("SHA", NESCPU::absy, NESCPU::shac, NESCPU::sha),
+        ("LDY", NESCPU::imm, NESCPU::ldyc, NESCPU::ldy), ("LDA", NESCPU::indx, NESCPU::ldac, NESCPU::lda), ("LDX", NESCPU::imm, NESCPU::ldxc, NESCPU::ldx),  ("LAX", NESCPU::indx, NESCPU::laxc, NESCPU::lax), ("LDY",  NESCPU::zp, NESCPU::ldyc, NESCPU::ldy), ("LDA",  NESCPU::zp, NESCPU::ldac, NESCPU::lda), ("LDX",  NESCPU::zp, NESCPU::ldxc, NESCPU::ldx), ("LAX",  NESCPU::zp, NESCPU::laxc, NESCPU::lax), ("TAY", NESCPU::imp, NESCPU::tayc, NESCPU::tay), ("LDA",  NESCPU::imm, NESCPU::ldac, NESCPU::lda), ("TAX", NESCPU::imp, NESCPU::taxc, NESCPU::tax), ("LAX",  NESCPU::imm, NESCPU::laxc, NESCPU::lax), ("LDY",  NESCPU::abs, NESCPU::ldyc, NESCPU::ldy), ("LDA",  NESCPU::abs, NESCPU::ldac, NESCPU::lda), ("LDX",  NESCPU::abs, NESCPU::ldxc, NESCPU::ldx), ("LAX",  NESCPU::abs, NESCPU::laxc, NESCPU::lax),
+        ("BCS", NESCPU::rel, NESCPU::bcsc, NESCPU::bcs), ("LDA", NESCPU::indy, NESCPU::ldac, NESCPU::lda), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("LAX", NESCPU::indy, NESCPU::laxc, NESCPU::lax), ("LDY", NESCPU::zpx, NESCPU::ldyc, NESCPU::ldy), ("LDA", NESCPU::zpx, NESCPU::ldac, NESCPU::lda), ("LDX", NESCPU::zpy, NESCPU::ldxc, NESCPU::ldx), ("LAX", NESCPU::zpy, NESCPU::laxc, NESCPU::lax), ("CLV", NESCPU::imp, NESCPU::clvc, NESCPU::clv), ("LDA", NESCPU::absy, NESCPU::ldac, NESCPU::lda), ("TSX", NESCPU::imp, NESCPU::tsxc, NESCPU::tsx), ("LAS", NESCPU::absy, NESCPU::lasc, NESCPU::las), ("LDY", NESCPU::absx, NESCPU::ldyc, NESCPU::ldy), ("LDA", NESCPU::absx, NESCPU::ldac, NESCPU::lda), ("LDX", NESCPU::absy, NESCPU::ldxc, NESCPU::ldx), ("LAX", NESCPU::absy, NESCPU::laxc, NESCPU::lax),
+        ("CPY", NESCPU::imm, NESCPU::cpyc, NESCPU::cpy), ("CMP", NESCPU::indx, NESCPU::cmpc, NESCPU::cmp), ("NOP", NESCPU::imm, NESCPU::nopc, NESCPU::nop),  ("DCP", NESCPU::indx, NESCPU::dcpc, NESCPU::dcp), ("CPY",  NESCPU::zp, NESCPU::cpyc, NESCPU::cpy), ("CMP",  NESCPU::zp, NESCPU::cmpc, NESCPU::cmp), ("DEC",  NESCPU::zp, NESCPU::decc, NESCPU::dec), ("DCP",  NESCPU::zp, NESCPU::dcpc, NESCPU::dcp), ("INY", NESCPU::imp, NESCPU::inyc, NESCPU::iny), ("CMP",  NESCPU::imm, NESCPU::cmpc, NESCPU::cmp), ("DEX", NESCPU::imp, NESCPU::dexc, NESCPU::dex), ("SBX",  NESCPU::imm, NESCPU::sbxc, NESCPU::sbx), ("CPY",  NESCPU::abs, NESCPU::cpyc, NESCPU::cpy), ("CMP",  NESCPU::abs, NESCPU::cmpc, NESCPU::cmp), ("DEC",  NESCPU::abs, NESCPU::decc, NESCPU::dec), ("DCP",  NESCPU::abs, NESCPU::dcpc, NESCPU::dcp),
+        ("BNE", NESCPU::rel, NESCPU::bnec, NESCPU::bne), ("CMP", NESCPU::indy, NESCPU::cmpc, NESCPU::cmp), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("DCP", NESCPU::indy, NESCPU::dcpc, NESCPU::dcp), ("NOP", NESCPU::zpx, NESCPU::nopc, NESCPU::nop), ("CMP", NESCPU::zpx, NESCPU::cmpc, NESCPU::cmp), ("DEC", NESCPU::zpx, NESCPU::decc, NESCPU::dec), ("DCP", NESCPU::zpx, NESCPU::dcpc, NESCPU::dcp), ("CLD", NESCPU::imp, NESCPU::cldc, NESCPU::cld), ("CMP", NESCPU::absy, NESCPU::cmpc, NESCPU::cmp), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("DCP", NESCPU::absy, NESCPU::dcpc, NESCPU::dcp), ("NOP", NESCPU::absx, NESCPU::nopc, NESCPU::nop), ("CMP", NESCPU::absx, NESCPU::cmpc, NESCPU::cmp), ("DEC", NESCPU::absx, NESCPU::decc, NESCPU::dec), ("DCP", NESCPU::absx, NESCPU::dcpc, NESCPU::dcp),
+        ("CPX", NESCPU::imm, NESCPU::cpxc, NESCPU::cpx), ("SBC", NESCPU::indx, NESCPU::sbcc, NESCPU::sbc), ("NOP", NESCPU::imm, NESCPU::nopc, NESCPU::nop),  ("ISC", NESCPU::indx, NESCPU::iscc, NESCPU::isc), ("CPX",  NESCPU::zp, NESCPU::cpxc, NESCPU::cpx), ("SBC",  NESCPU::zp, NESCPU::sbcc, NESCPU::sbc), ("INC",  NESCPU::zp, NESCPU::incc, NESCPU::inc), ("ISC",  NESCPU::zp, NESCPU::iscc, NESCPU::isc), ("INX", NESCPU::imp, NESCPU::inxc, NESCPU::inx), ("SBC",  NESCPU::imm, NESCPU::sbcc, NESCPU::sbc), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("SBC",  NESCPU::imm, NESCPU::sbcc, NESCPU::sbc), ("CPX",  NESCPU::abs, NESCPU::cpxc, NESCPU::cpx), ("SBC",  NESCPU::abs, NESCPU::sbcc, NESCPU::sbc), ("INC",  NESCPU::abs, NESCPU::incc, NESCPU::inc), ("ISC",  NESCPU::abs, NESCPU::iscc, NESCPU::isc),
+        ("BEQ", NESCPU::rel, NESCPU::beqc, NESCPU::beq), ("SBC", NESCPU::indy, NESCPU::sbcc, NESCPU::sbc), ("JAM", NESCPU::imp, NESCPU::jamc, NESCPU::_jam), ("ISC", NESCPU::indy, NESCPU::iscc, NESCPU::isc), ("NOP", NESCPU::zpx, NESCPU::nopc, NESCPU::nop), ("SBC", NESCPU::zpx, NESCPU::sbcc, NESCPU::sbc), ("INC", NESCPU::zpx, NESCPU::incc, NESCPU::inc), ("ISC", NESCPU::zpx, NESCPU::iscc, NESCPU::isc), ("SED", NESCPU::imp, NESCPU::sedc, NESCPU::sed), ("SBC", NESCPU::absy, NESCPU::sbcc, NESCPU::sbc), ("NOP", NESCPU::imp, NESCPU::nopc, NESCPU::nop), ("ISC", NESCPU::absy, NESCPU::iscc, NESCPU::isc), ("NOP", NESCPU::absx, NESCPU::nopc, NESCPU::nop), ("SBC", NESCPU::absx, NESCPU::sbcc, NESCPU::sbc), ("INC", NESCPU::absx, NESCPU::incc, NESCPU::inc), ("ISC", NESCPU::absx, NESCPU::iscc, NESCPU::isc),
     ];
 
     pub fn new() -> Self {
@@ -134,25 +146,27 @@ impl CPU {
             elapsed_cycles: 0,
         }
     }
+}
 
-    pub fn cpu_nmi(&mut self) {
+impl CPU for NESCPU {
+    fn cpu_nmi(&mut self) {
         //Edge-detected
         self.pending_nmi = true;
     }
 
-    pub fn cpu_irq(&mut self, interrupt: bool) {
+    fn cpu_irq(&mut self, interrupt: bool) {
         //Level-detected
         self.pending_irq = interrupt;
     }
 
-    pub fn cpu_reset(&mut self) {
+    fn cpu_reset(&mut self) {
         self.current_instruction = CurrentInstruction {
             remaining_cycles: self.resetc(),
             instruction_type: InstructionType::Reset,
         }
     }
 
-    pub fn clock(&mut self, bus: &mut dyn CPUBus) {
+    fn clock(&mut self, bus: &mut dyn CPUBus) {
         self.elapsed_cycles += 1;
         self.current_instruction.remaining_cycles -= 1;
 
@@ -161,18 +175,18 @@ impl CPU {
         }
     }
 
-    pub fn cycles_remaining(&self) -> u8 {
+    fn cycles_remaining(&self) -> u8 {
         self.current_instruction.remaining_cycles
     }
 }
 
-impl Default for CPU {
+impl Default for NESCPU {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl CPU {
+impl NESCPU {
     fn execute_operation(&mut self, bus: &mut dyn CPUBus) {
         let current_instruction = self.current_instruction.clone();
         match current_instruction.instruction_type {
@@ -197,7 +211,7 @@ impl CPU {
             } => {
                 let i_flag_before = self.i;
 
-                let exec_fn = CPU::LOOKUP_TABLE[opcode as usize].3;
+                let exec_fn = NESCPU::LOOKUP_TABLE[opcode as usize].3;
                 exec_fn(self, &addressing_mode, bus);
 
                 let i_flag_after = self.i;
@@ -235,7 +249,7 @@ impl CPU {
 
     fn fetch_next_instruction(&mut self, bus: &mut dyn CPUBus) -> CurrentInstruction {
         let opcode = self.fetch_byte(bus);
-        let (_, addr_mode_fn, cycles_fn, _) = CPU::LOOKUP_TABLE[opcode as usize];
+        let (_, addr_mode_fn, cycles_fn, _) = NESCPU::LOOKUP_TABLE[opcode as usize];
         let addr_mode = addr_mode_fn(self, bus);
         let cycles = cycles_fn(self, &addr_mode);
         if cycles == 0 {
@@ -288,7 +302,7 @@ mod cpu_tests {
 
     #[test]
     fn test_cpu_initial_state() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         assert_eq!(0, cpu.pc);
         assert_eq!(0xff, cpu.sp);
@@ -318,14 +332,14 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_no_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         assert_eq!(0b0010_0000, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         cpu.n = true;
         assert_eq!(0b1010_0000, cpu.get_status_byte(false))
@@ -333,7 +347,7 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_overflow_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         cpu.v = true;
         assert_eq!(0b0110_0000, cpu.get_status_byte(false))
@@ -341,14 +355,14 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_break_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         assert_eq!(0b0011_0000, cpu.get_status_byte(true))
     }
 
     #[test]
     fn test_get_status_byte_decimal_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         cpu.d = true;
         assert_eq!(0b0010_1000, cpu.get_status_byte(false))
@@ -356,13 +370,13 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_interrupt_flag() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(0b0010_0100, cpu.get_status_byte(false))
     }
 
     #[test]
     fn test_get_status_byte_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         cpu.z = true;
         assert_eq!(0b0010_0010, cpu.get_status_byte(false))
@@ -370,7 +384,7 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
         cpu.c = true;
         assert_eq!(0b0010_0001, cpu.get_status_byte(false))
@@ -378,7 +392,7 @@ mod cpu_tests {
 
     #[test]
     fn test_get_status_byte_all_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.n = true;
         cpu.v = true;
         cpu.d = true;
@@ -391,7 +405,7 @@ mod cpu_tests {
 
     #[test]
     fn test_fetch_next_byte() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.pc = 0xffff;
@@ -407,7 +421,7 @@ mod cpu_tests {
 
     #[test]
     fn test_fetch_next_two_bytes_as_u16() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.pc = 0xffff;
@@ -424,16 +438,16 @@ mod cpu_tests {
 
     #[test]
     fn test_cpu_reset() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .once()
             .return_const(0x40);
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .once()
             .return_const(0x20);
 
@@ -470,7 +484,7 @@ mod cpu_tests {
 
     #[test]
     fn test_cpu_system_reset() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -496,14 +510,14 @@ mod cpu_tests {
 
     #[test]
     fn test_nmi_request_triggered() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .return_const(0x20);
         bus.expect_read().with(eq(0x2040)).return_const(0x69);
         bus.expect_read().with(eq(0x2041)).return_const(0x69);
@@ -546,14 +560,14 @@ mod cpu_tests {
 
     #[test]
     fn test_irq_request_triggered() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .return_const(0x20);
         bus.expect_read().with(eq(0x2040)).return_const(0x69);
         bus.expect_read().with(eq(0x2041)).return_const(0x69);
@@ -583,14 +597,14 @@ mod cpu_tests {
 
     #[test]
     fn test_irq_request_ignored_on_flag_set() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .return_const(0x20);
         bus.expect_read().with(eq(0x2040)).return_const(0x69);
         bus.expect_read().with(eq(0x2041)).return_const(0x69);
@@ -623,15 +637,15 @@ mod cpu_tests {
 
     #[test]
     fn test_cpu_cli_delays_interrupt() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .once()
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .once()
             .return_const(0x20);
         bus.expect_read().with(eq(0x2040)).once().return_const(0x58); //CLI
@@ -687,15 +701,15 @@ mod cpu_tests {
 
     #[test]
     fn test_cpu_sei_triggers_interrupt() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .once()
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .once()
             .return_const(0x20);
         bus.expect_read().with(eq(0x2040)).once().return_const(0x78); //SEI
@@ -737,15 +751,15 @@ mod cpu_tests {
 
     #[test]
     fn test_cpu_plp_triggers_interrupt() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .once()
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .once()
             .return_const(0x20);
 
@@ -792,15 +806,15 @@ mod cpu_tests {
 
     #[test]
     fn test_jam() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .once()
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .once()
             .return_const(0x20);
 

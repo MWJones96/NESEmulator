@@ -14,9 +14,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn tayc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -37,13 +37,13 @@ mod tay_tests {
 
     #[test]
     fn test_tay_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.tayc(&cpu._imp()));
     }
 
     #[test]
     fn test_tay() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xcc;
 
         cpu.tay(&cpu._imp(), &mut MockCPUBus::new());
@@ -53,7 +53,7 @@ mod tay_tests {
 
     #[test]
     fn test_tay_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x80;
 
         cpu.tay(&cpu._imp(), &mut MockCPUBus::new());
@@ -62,7 +62,7 @@ mod tay_tests {
 
     #[test]
     fn test_tay_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xff;
 
         cpu.tay(&cpu._imp(), &mut MockCPUBus::new());

@@ -11,9 +11,9 @@
     operation.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn shxc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
@@ -35,7 +35,7 @@ mod shx_tests {
 
     #[test]
     fn test_shxc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -44,7 +44,7 @@ mod shx_tests {
 
     #[test]
     fn test_shx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0xff;
         cpu.y = 0xff;
 

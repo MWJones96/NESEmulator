@@ -7,11 +7,11 @@
     Bytes: 1
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn acc(&mut self, _bus: &dyn CPUBus) -> AddrModeResult {
         self._acc()
     }
@@ -37,7 +37,7 @@ mod acc_tests {
 
     #[test]
     fn test_acc_addressing_mode() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xcc;
 
         assert_eq!(

@@ -12,9 +12,9 @@
     If the result is zero, then the Z flag is set, otherwise it is reset.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn lasc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -36,7 +36,7 @@ mod las_tests {
 
     #[test]
     fn test_las_cycles_absy_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -45,7 +45,7 @@ mod las_tests {
 
     #[test]
     fn test_las_cycles_absy_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xff;
 
         let mut bus = MockCPUBus::new();
@@ -56,7 +56,7 @@ mod las_tests {
 
     #[test]
     fn test_las() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.sp = 0b1111_0000;
 
         let mut bus = MockCPUBus::new();

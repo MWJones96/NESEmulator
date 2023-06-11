@@ -13,11 +13,11 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn rel(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let offset = self.fetch_byte(bus);
         self._rel(offset)
@@ -53,7 +53,7 @@ mod rel_tests {
 
     #[test]
     fn test_rel_forward_one() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x0;
         let result = cpu._rel(0x1);
@@ -73,7 +73,7 @@ mod rel_tests {
 
     #[test]
     fn test_rel_back_one() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x1234;
         let result = cpu._rel(0xff);
@@ -93,7 +93,7 @@ mod rel_tests {
 
     #[test]
     fn test_rel_forward_cross_page_boundary() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0xffff;
         let result = cpu._rel(0x2);
@@ -113,7 +113,7 @@ mod rel_tests {
 
     #[test]
     fn test_rel_backwards_cross_page_boundary() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x0;
         let result = cpu._rel(0xfe);

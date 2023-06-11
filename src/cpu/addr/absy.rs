@@ -14,11 +14,11 @@
     Bytes: 3
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn absy(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_two_bytes_as_u16(bus);
         self._absy(addr, bus)
@@ -50,7 +50,7 @@ mod absy_tests {
 
     #[test]
     fn test_absy_addressing_mode_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut mock_bus = MockCPUBus::new();
 
         cpu.y = 0x2;
@@ -74,7 +74,7 @@ mod absy_tests {
 
     #[test]
     fn test_absy_addressing_mode_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut mock_bus = MockCPUBus::new();
 
         cpu.y = 0x2;

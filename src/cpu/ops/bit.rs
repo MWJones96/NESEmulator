@@ -15,9 +15,9 @@
     It does not affect the accumulator.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn bitc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -41,7 +41,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
@@ -51,7 +51,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
@@ -61,7 +61,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0x80;
 
@@ -76,7 +76,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_overflow_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0x40;
 
@@ -91,7 +91,7 @@ mod bit_tests {
 
     #[test]
     fn test_bit_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);

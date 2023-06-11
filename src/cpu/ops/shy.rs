@@ -11,9 +11,9 @@
     operation.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn shyc(&self, _mode: &AddrModeResult) -> u8 {
         5
     }
@@ -35,7 +35,7 @@ mod shy_tests {
 
     #[test]
     fn test_shyc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -44,7 +44,7 @@ mod shy_tests {
 
     #[test]
     fn test_shy() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xff;
         cpu.x = 0xff;
 

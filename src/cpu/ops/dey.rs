@@ -16,9 +16,9 @@
     instruction only affects the index register Y.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn deyc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -39,13 +39,13 @@ mod dey_tests {
 
     #[test]
     fn test_dey_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.deyc(&cpu._imp()));
     }
 
     #[test]
     fn test_dey() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0x80;
 
         cpu.dey(&cpu._imp(), &mut MockCPUBus::new());
@@ -55,7 +55,7 @@ mod dey_tests {
 
     #[test]
     fn test_dey_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0x0;
 
         cpu.dey(&cpu._imp(), &mut MockCPUBus::new());
@@ -66,7 +66,7 @@ mod dey_tests {
 
     #[test]
     fn test_dey_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0x1;
 
         cpu.dey(&cpu._imp(), &mut MockCPUBus::new());

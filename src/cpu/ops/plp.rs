@@ -15,9 +15,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn plpc(&self, _mode: &AddrModeResult) -> u8 {
         4
     }
@@ -45,13 +45,13 @@ mod plp_tests {
 
     #[test]
     fn test_plp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(4, cpu.plpc(&cpu._imp()));
     }
 
     #[test]
     fn test_plp_fetches_all_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
@@ -74,7 +74,7 @@ mod plp_tests {
 
     #[test]
     fn test_plp_fetches_no_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfe;
 
@@ -97,7 +97,7 @@ mod plp_tests {
 
     #[test]
     fn test_plp_pull_from_empty_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xff;
 

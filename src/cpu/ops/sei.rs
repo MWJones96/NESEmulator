@@ -12,9 +12,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn seic(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -32,14 +32,14 @@ mod sei_tests {
 
     #[test]
     fn test_sei_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         assert_eq!(2, cpu.seic(&cpu._imp()));
     }
 
     #[test]
     fn test_sei_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.i = false;
 
         cpu.sei(&cpu._imp(), &mut MockCPUBus::new());

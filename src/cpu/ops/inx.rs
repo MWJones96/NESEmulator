@@ -15,9 +15,9 @@
     INX does not affect any other register other than the X register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn inxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -38,13 +38,13 @@ mod inx_tests {
 
     #[test]
     fn test_inx_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.inxc(&cpu._imp()));
     }
 
     #[test]
     fn test_inx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0x80;
 
         cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
@@ -54,7 +54,7 @@ mod inx_tests {
 
     #[test]
     fn test_inx_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0x7f;
 
         cpu.inx(&cpu._imp(), &mut MockCPUBus::new());
@@ -65,7 +65,7 @@ mod inx_tests {
 
     #[test]
     fn test_inx_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0xff;
 
         cpu.inx(&cpu._imp(), &mut MockCPUBus::new());

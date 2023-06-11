@@ -10,9 +10,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn bcsc(&self, mode: &AddrModeResult) -> u8 {
         if self.c {
             2 + 1 + mode.cycles
@@ -36,13 +36,13 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_no_branch_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.bcsc(&cpu._rel(0x1)));
     }
 
     #[test]
     fn test_bcs_no_branch_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x1234;
 
         assert_eq!(2, cpu.bcsc(&cpu._rel(0xaa)));
@@ -50,7 +50,7 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_with_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.c = true;
 
         assert_eq!(3, cpu.bcsc(&cpu._rel(0x7f)));
@@ -58,7 +58,7 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_with_branch_and_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.c = true;
         cpu.pc = 0x12ff;
 
@@ -67,7 +67,7 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_pc_no_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x1234;
         cpu.c = false;
@@ -77,7 +77,7 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_pc_no_branch_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x12ff;
         cpu.c = false;
@@ -87,7 +87,7 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_pc_with_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x81;
         cpu.c = true;
 
@@ -97,7 +97,7 @@ mod bcs_tests {
 
     #[test]
     fn test_bcs_pc_with_branch_and_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x8081;
         cpu.c = true;
 

@@ -10,11 +10,11 @@
     Bytes: 2
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn zp(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_byte(bus);
         self._zp(addr, bus)
@@ -43,7 +43,7 @@ mod zp_tests {
 
     #[test]
     fn test_zp_addressing_mode() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut mock_bus = MockCPUBus::new();
         mock_bus.expect_read().with(eq(0x0)).return_const(0x77);
 

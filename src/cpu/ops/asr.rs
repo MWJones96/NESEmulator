@@ -16,9 +16,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn asrc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -37,13 +37,13 @@ mod asr_tests {
 
     #[test]
     fn test_asr_imm_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.asrc(&cpu._imm(0xff)));
     }
 
     #[test]
     fn test_asr() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b1111_1111;
@@ -57,7 +57,7 @@ mod asr_tests {
 
     #[test]
     fn test_asr_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;
@@ -69,7 +69,7 @@ mod asr_tests {
 
     #[test]
     fn test_asr_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.a = 0b0000_0001;

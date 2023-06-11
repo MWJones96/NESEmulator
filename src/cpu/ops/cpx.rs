@@ -23,9 +23,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn cpxc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -48,14 +48,14 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_imm_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         assert_eq!(2, cpu.cpxc(&cpu._imm(0x0)));
     }
 
     #[test]
     fn test_cpx_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -64,7 +64,7 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -73,7 +73,7 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.x = 0x10;
         cpu.cpx(&cpu._imm(0x11), &mut MockCPUBus::new());
@@ -84,7 +84,7 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.x = 0x20;
         cpu.cpx(&cpu._imm(0x20), &mut MockCPUBus::new());
@@ -95,7 +95,7 @@ mod cpx_tests {
 
     #[test]
     fn test_cpx_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.x = 0x20;
         cpu.cpx(&cpu._imm(0x20), &mut MockCPUBus::new());

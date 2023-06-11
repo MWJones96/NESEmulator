@@ -15,9 +15,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn andc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -40,13 +40,13 @@ mod and_tests {
 
     #[test]
     fn test_and_imm_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.andc(&cpu._imm(0xff)));
     }
 
     #[test]
     fn test_and_zp_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -55,7 +55,7 @@ mod and_tests {
 
     #[test]
     fn test_and_zpx_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -64,7 +64,7 @@ mod and_tests {
 
     #[test]
     fn test_and_abs_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -73,7 +73,7 @@ mod and_tests {
 
     #[test]
     fn test_and_absx_correct_cycles_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -82,7 +82,7 @@ mod and_tests {
 
     #[test]
     fn test_and_absx_correct_cycles_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -92,7 +92,7 @@ mod and_tests {
 
     #[test]
     fn test_and_absy_correct_cycles_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -101,7 +101,7 @@ mod and_tests {
 
     #[test]
     fn test_and_absy_correct_cycles_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -111,7 +111,7 @@ mod and_tests {
 
     #[test]
     fn test_and_indx_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -120,7 +120,7 @@ mod and_tests {
 
     #[test]
     fn test_and_indy_correct_cycles_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -129,7 +129,7 @@ mod and_tests {
 
     #[test]
     fn test_and_indy_correct_cycles_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().with(eq(0x88)).return_const(0x11);
         bus.expect_read().with(eq(0x89)).return_const(0x22);
@@ -142,7 +142,7 @@ mod and_tests {
 
     #[test]
     fn test_and() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b1010_1010_u8;
 
         cpu.and(&cpu._imm(0b0101_0101_u8), &mut MockCPUBus::new());
@@ -152,7 +152,7 @@ mod and_tests {
 
     #[test]
     fn test_and_all_ones() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
         cpu.and(&cpu._imm(0xff), &mut MockCPUBus::new());
@@ -162,7 +162,7 @@ mod and_tests {
 
     #[test]
     fn test_and_half_ones() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1111_u8;
 
         cpu.and(&cpu._imm(0b0000_1111_u8), &mut MockCPUBus::new());
@@ -172,7 +172,7 @@ mod and_tests {
 
     #[test]
     fn test_and_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1111_u8;
 
         cpu.and(&cpu._imm(0b0000_1111_u8), &mut MockCPUBus::new());
@@ -186,7 +186,7 @@ mod and_tests {
 
     #[test]
     fn test_and_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
         cpu.and(&cpu._imm(0xff), &mut MockCPUBus::new());

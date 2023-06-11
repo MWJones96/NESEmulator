@@ -16,9 +16,9 @@
     not affected at all.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn sbxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -40,13 +40,13 @@ mod sbx_tests {
 
     #[test]
     fn test_sbx_imm_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.sbxc(&cpu._imm(0x0)))
     }
 
     #[test]
     fn test_sbx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
@@ -57,7 +57,7 @@ mod sbx_tests {
 
     #[test]
     fn test_sbx_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 
@@ -67,7 +67,7 @@ mod sbx_tests {
 
     #[test]
     fn test_sbx_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1010;
         cpu.x = 0b0000_1111;
 

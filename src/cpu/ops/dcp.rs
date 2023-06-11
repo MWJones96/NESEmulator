@@ -18,10 +18,10 @@
 use crate::cpu::{
     addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
-    CPU,
+    NESCPU,
 };
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn dcpc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -54,7 +54,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -63,7 +63,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_zpx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -72,7 +72,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -81,7 +81,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_absx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -90,7 +90,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_absy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -99,7 +99,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -108,7 +108,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_indy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -117,7 +117,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x10;
 
         let mut bus = MockCPUBus::new();
@@ -133,7 +133,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x81;
 
         let mut bus = MockCPUBus::new();
@@ -150,7 +150,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x1;
 
         let mut bus = MockCPUBus::new();
@@ -167,7 +167,7 @@ mod dcp_tests {
 
     #[test]
     fn test_dcp_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x10;
 
         let mut bus = MockCPUBus::new();

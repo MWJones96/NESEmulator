@@ -12,9 +12,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn bvcc(&self, mode: &AddrModeResult) -> u8 {
         if !self.v {
             2 + 1 + mode.cycles
@@ -38,7 +38,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_no_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x1234;
         cpu.v = true;
@@ -47,7 +47,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_no_branch_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x12ff;
         cpu.v = true;
@@ -56,7 +56,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_with_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x81;
         cpu.v = false;
 
@@ -65,7 +65,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_with_branch_and_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x8081;
         cpu.v = false;
 
@@ -74,7 +74,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_pc_no_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x1234;
         cpu.v = true;
@@ -84,7 +84,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_pc_no_branch_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.pc = 0x12ff;
         cpu.v = true;
@@ -94,7 +94,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_pc_with_branch_no_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x81;
         cpu.v = false;
 
@@ -104,7 +104,7 @@ mod bvc_tests {
 
     #[test]
     fn test_bvc_pc_with_branch_and_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.pc = 0x8081;
         cpu.v = false;
 

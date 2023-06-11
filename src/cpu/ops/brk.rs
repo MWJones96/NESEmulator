@@ -16,9 +16,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn brkc(&self, _mode: &AddrModeResult) -> u8 {
         7
     }
@@ -36,7 +36,8 @@ impl CPU {
 
         self.i = true;
         self.sp = self.sp.wrapping_sub(3);
-        self.pc = (bus.read(CPU::IRQ_VECTOR + 1) as u16) << 8 | bus.read(CPU::IRQ_VECTOR) as u16;
+        self.pc =
+            (bus.read(NESCPU::IRQ_VECTOR + 1) as u16) << 8 | bus.read(NESCPU::IRQ_VECTOR) as u16;
     }
 }
 
@@ -50,7 +51,7 @@ mod brk_tests {
 
     #[test]
     fn test_brk_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
@@ -60,7 +61,7 @@ mod brk_tests {
 
     #[test]
     fn test_brk_sets_interrupt_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_write().return_const(());
         bus.expect_read().return_const(0x0);
@@ -72,7 +73,7 @@ mod brk_tests {
 
     #[test]
     fn test_brk_pushes_pc_on_the_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.pc = 0x2000;
 
@@ -94,7 +95,7 @@ mod brk_tests {
 
     #[test]
     fn test_push_status_register_on_the_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.c = true;
         cpu.z = true;
@@ -115,18 +116,18 @@ mod brk_tests {
 
     #[test]
     fn test_program_goes_to_correct_address() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_write().return_const(());
 
         bus.expect_read()
-            .with(eq(CPU::IRQ_VECTOR))
+            .with(eq(NESCPU::IRQ_VECTOR))
             .times(1)
             .return_const(0x20);
 
         bus.expect_read()
-            .with(eq(CPU::IRQ_VECTOR + 1))
+            .with(eq(NESCPU::IRQ_VECTOR + 1))
             .times(1)
             .return_const(0x40);
 
@@ -139,7 +140,7 @@ mod brk_tests {
 
     #[test]
     fn test_push_onto_full_stack_underflow() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0x0;
 

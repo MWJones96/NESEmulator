@@ -18,10 +18,10 @@
 use crate::cpu::{
     addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
-    CPU,
+    NESCPU,
 };
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn rlac(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -53,7 +53,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -62,7 +62,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_zpx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -71,7 +71,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -80,7 +80,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_absx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -89,7 +89,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_absy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -98,7 +98,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -107,7 +107,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_indy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -116,7 +116,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
         cpu.c = true;
 
@@ -138,7 +138,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         let mut bus = MockCPUBus::new();
         bus.expect_read().with(eq(0x0)).once().return_const(0x0);
@@ -154,7 +154,7 @@ mod rla_tests {
 
     #[test]
     fn test_rla_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b1000_0000;
 
         let mut bus = MockCPUBus::new();

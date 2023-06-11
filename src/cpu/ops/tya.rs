@@ -1,8 +1,8 @@
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn tyac(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -23,13 +23,13 @@ mod tya_tests {
 
     #[test]
     fn test_tya_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.tyac(&cpu._imp()));
     }
 
     #[test]
     fn test_tya() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xcc;
 
         cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
@@ -39,7 +39,7 @@ mod tya_tests {
 
     #[test]
     fn test_tya_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0x80;
 
         cpu.tya(&cpu._imp(), &mut MockCPUBus::new());
@@ -48,7 +48,7 @@ mod tya_tests {
 
     #[test]
     fn test_tya_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
         cpu.tya(&cpu._imp(), &mut MockCPUBus::new());

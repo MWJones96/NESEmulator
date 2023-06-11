@@ -15,9 +15,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn tsxc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -38,13 +38,13 @@ mod tsx_tests {
 
     #[test]
     fn test_tsx_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.tsxc(&cpu._imp()));
     }
 
     #[test]
     fn test_tsx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.sp = 0xcc;
 
         cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
@@ -54,7 +54,7 @@ mod tsx_tests {
 
     #[test]
     fn test_tsx_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.sp = 0x80;
 
         cpu.tsx(&cpu._imp(), &mut MockCPUBus::new());
@@ -63,7 +63,7 @@ mod tsx_tests {
 
     #[test]
     fn test_tsx_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.x = 0xff;
         cpu.sp = 0x0;
 

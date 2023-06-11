@@ -19,9 +19,9 @@
     registers in the microprocessor.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn rtic(&self, _mode: &AddrModeResult) -> u8 {
         6
     }
@@ -54,14 +54,14 @@ mod rti_tests {
 
     #[test]
     fn test_rti_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         assert_eq!(6, cpu.rtic(&cpu._imp()));
     }
 
     #[test]
     fn test_rti_returns_status_register_all_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfc;
 
@@ -86,7 +86,7 @@ mod rti_tests {
 
     #[test]
     fn test_rti_returns_status_register_no_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfc;
 
@@ -106,7 +106,7 @@ mod rti_tests {
 
     #[test]
     fn test_rti_returns_pc() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0xfc;
 

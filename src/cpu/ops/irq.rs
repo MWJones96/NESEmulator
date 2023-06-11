@@ -1,6 +1,6 @@
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn irqc(&self) -> u8 {
         7
     }
@@ -18,7 +18,8 @@ impl CPU {
 
         self.i = true;
         self.sp = self.sp.wrapping_sub(3);
-        self.pc = (bus.read(CPU::IRQ_VECTOR + 1) as u16) << 8 | bus.read(CPU::IRQ_VECTOR) as u16;
+        self.pc =
+            (bus.read(NESCPU::IRQ_VECTOR + 1) as u16) << 8 | bus.read(NESCPU::IRQ_VECTOR) as u16;
     }
 }
 
@@ -32,13 +33,13 @@ mod irq_tests {
 
     #[test]
     fn test_irq_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(7, cpu.irqc());
     }
 
     #[test]
     fn test_irq() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.pc = 0x2040;
@@ -60,12 +61,12 @@ mod irq_tests {
             .return_const(());
 
         bus.expect_read()
-            .with(eq(CPU::IRQ_VECTOR))
+            .with(eq(NESCPU::IRQ_VECTOR))
             .once()
             .return_const(0x00);
 
         bus.expect_read()
-            .with(eq(CPU::IRQ_VECTOR + 1))
+            .with(eq(NESCPU::IRQ_VECTOR + 1))
             .once()
             .return_const(0x80);
 

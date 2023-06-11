@@ -17,10 +17,10 @@
 use crate::cpu::{
     addr::{AddrModeResult, AddrModeType},
     bus::CPUBus,
-    CPU,
+    NESCPU,
 };
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn sloc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Absx => 7,
@@ -51,7 +51,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -60,7 +60,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_zpx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -69,7 +69,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -78,7 +78,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_absx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -87,7 +87,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_absy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -96,7 +96,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -105,7 +105,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_indy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -114,7 +114,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x1;
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0xff);
@@ -131,7 +131,7 @@ mod slo_tests {
 
     #[test]
     fn test_slo_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
         bus.expect_write()

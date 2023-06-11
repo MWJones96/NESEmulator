@@ -20,9 +20,9 @@ use crate::cpu::{
     bus::CPUBus,
 };
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn rolc(&self, mode: &AddrModeResult) -> u8 {
         match mode.mode {
             AddrModeType::Acc => 2,
@@ -56,7 +56,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_acc() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.a = 0x20;
         assert_eq!(2, cpu.rolc(&cpu._acc()));
@@ -64,7 +64,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_zp() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
@@ -74,7 +74,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_zpx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
@@ -85,7 +85,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_abs() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
@@ -98,7 +98,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_absx() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         cpu.x = 0x2;
@@ -110,7 +110,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_no_carry_flag_set_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0xff;
 
@@ -121,7 +121,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_no_carry_flag_no_set_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0x1;
 
@@ -132,7 +132,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_with_carry_flag_no_set_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0x1;
         cpu.c = true;
@@ -144,7 +144,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_with_carry_flag_and_set_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0b1000_0001;
         cpu.c = true;
@@ -156,7 +156,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0b1000_0000;
 
@@ -166,7 +166,7 @@ mod rol_tests {
 
     #[test]
     fn test_rol_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0b0100_0000;
 

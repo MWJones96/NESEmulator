@@ -17,9 +17,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn ancc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -41,13 +41,13 @@ mod anc_tests {
 
     #[test]
     fn test_anc_imm_correctc() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.ancc(&cpu._imm(0xff)));
     }
 
     #[test]
     fn test_anc() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b1010_1010_u8;
 
         cpu.anc(&cpu._imm(0b0101_0101_u8), &mut MockCPUBus::new());
@@ -57,7 +57,7 @@ mod anc_tests {
 
     #[test]
     fn test_anc_all_ones() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
         cpu.anc(&cpu._imm(0xff), &mut MockCPUBus::new());
@@ -67,7 +67,7 @@ mod anc_tests {
 
     #[test]
     fn test_anc_half_ones() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1111_u8;
 
         cpu.anc(&cpu._imm(0b0000_1111_u8), &mut MockCPUBus::new());
@@ -77,7 +77,7 @@ mod anc_tests {
 
     #[test]
     fn test_anc_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b0000_1111_u8;
 
         cpu.anc(&cpu._imm(0b0000_1111_u8), &mut MockCPUBus::new());
@@ -91,7 +91,7 @@ mod anc_tests {
 
     #[test]
     fn test_anc_negative_and_carry_flags() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0xff;
 
         cpu.anc(&cpu._imm(0xff), &mut MockCPUBus::new());

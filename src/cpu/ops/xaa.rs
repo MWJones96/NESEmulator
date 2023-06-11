@@ -26,9 +26,9 @@
 
 use rand::seq::SliceRandom;
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn xaac(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -52,13 +52,13 @@ mod xaa_tests {
 
     #[test]
     fn test_xaa_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.xaac(&cpu._imm(0x00)));
     }
 
     #[test]
     fn test_xaa() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
         cpu.xaa(&cpu._imm(0xff), &mut bus);

@@ -10,9 +10,9 @@
     is a 1; otherwise N is reset, and affects only the X register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn laxc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -38,13 +38,13 @@ mod lax_tests {
 
     #[test]
     fn test_lax_imm_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.laxc(&cpu._imm(0x0)));
     }
 
     #[test]
     fn test_lax_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -53,7 +53,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_zpy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -62,7 +62,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -71,7 +71,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_cycles_absy_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -80,7 +80,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_cycles_absy_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xff;
 
         let mut bus = MockCPUBus::new();
@@ -91,7 +91,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_cycles_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -101,7 +101,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_cycles_indy_no_page_cross() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
@@ -111,7 +111,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax_cycles_indy_with_page_cross() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xff;
 
         let mut bus = MockCPUBus::new();
@@ -124,7 +124,7 @@ mod lax_tests {
 
     #[test]
     fn test_lax() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.lax(&cpu._imm(0xee), &mut MockCPUBus::new());
 

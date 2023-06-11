@@ -14,9 +14,9 @@
     the negative flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn orac(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -37,13 +37,13 @@ mod ora_tests {
 
     #[test]
     fn test_ora_imm_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.orac(&cpu._imm(0x0)));
     }
 
     #[test]
     fn test_ora_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -53,7 +53,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_zpx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -63,7 +63,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -73,7 +73,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_absx_no_page_cross_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -83,7 +83,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_absx_with_page_cross_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.x = 0xff;
 
@@ -94,7 +94,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_absy_no_page_cross_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -104,7 +104,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_absy_with_page_cross_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
@@ -115,7 +115,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -125,7 +125,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_indy_no_page_cross_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -135,7 +135,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_indy_with_page_cross_correct_number_of_cycles() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.y = 0xff;
 
@@ -146,7 +146,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.a = 0b1111_0000;
         cpu.ora(&cpu._imm(0b1010_1010), &mut MockCPUBus::new());
@@ -156,7 +156,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.a = 0x80;
         cpu.ora(&cpu._imm(0x80), &mut MockCPUBus::new());
@@ -166,7 +166,7 @@ mod ora_tests {
 
     #[test]
     fn test_ora_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.a = 0x0;
         cpu.ora(&cpu._imm(0x0), &mut MockCPUBus::new());

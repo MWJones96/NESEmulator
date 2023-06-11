@@ -20,9 +20,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn cpyc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -45,14 +45,14 @@ mod cpy_tests {
 
     #[test]
     fn test_cpy_imm_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
 
         assert_eq!(2, cpu.cpyc(&cpu._imm(0x0)));
     }
 
     #[test]
     fn test_cpy_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -61,7 +61,7 @@ mod cpy_tests {
 
     #[test]
     fn test_cpy_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -70,7 +70,7 @@ mod cpy_tests {
 
     #[test]
     fn test_cpy_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.y = 0x10;
         cpu.cpy(&cpu._imm(0x11), &mut MockCPUBus::new());
@@ -81,7 +81,7 @@ mod cpy_tests {
 
     #[test]
     fn test_cpy_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.y = 0x20;
         cpu.cpy(&cpu._imm(0x20), &mut MockCPUBus::new());
@@ -92,7 +92,7 @@ mod cpy_tests {
 
     #[test]
     fn test_cpy_carry_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
 
         cpu.y = 0x20;
         cpu.cpy(&cpu._imm(0x20), &mut MockCPUBus::new());

@@ -8,9 +8,9 @@
     affects no flags in the status register.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn jmpc(&self, mode: &AddrModeResult) -> u8 {
         1 + mode.cycles
     }
@@ -28,7 +28,7 @@ mod jmp_tests {
 
     #[test]
     fn test_jmp_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -38,7 +38,7 @@ mod jmp_tests {
 
     #[test]
     fn test_jmp_ind_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);
@@ -48,7 +48,7 @@ mod jmp_tests {
 
     #[test]
     fn test_jmp_goes_to_correct_pc() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
 
         bus.expect_read().return_const(0x0);

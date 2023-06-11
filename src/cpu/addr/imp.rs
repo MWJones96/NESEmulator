@@ -8,11 +8,11 @@
     Bytes: 1
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn imp(&mut self, _bus: &dyn CPUBus) -> AddrModeResult {
         self._imp()
     }
@@ -36,7 +36,7 @@ mod imp_tests {
 
     #[test]
     fn test_imp_addressing_mode() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let imp = cpu._imp();
 
         assert_eq!(

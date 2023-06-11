@@ -14,9 +14,9 @@
 
 use crate::cpu::{addr::AddrModeResult, bus::CPUBus};
 
-use super::super::CPU;
+use super::super::NESCPU;
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn phac(&self, _mode: &AddrModeResult) -> u8 {
         3
     }
@@ -37,13 +37,13 @@ mod pha_tests {
 
     #[test]
     fn test_pha_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(3, cpu.phac(&cpu._imp()));
     }
 
     #[test]
     fn test_pha_push_acc_onto_stack() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.a = 0xee;
 
@@ -58,7 +58,7 @@ mod pha_tests {
 
     #[test]
     fn test_pha_push_acc_onto_stack_with_overflow() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         cpu.sp = 0x0;
 

@@ -15,9 +15,9 @@
     otherwise resets the Z flag.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn inyc(&self, _mode: &AddrModeResult) -> u8 {
         2
     }
@@ -38,13 +38,13 @@ mod iny_tests {
 
     #[test]
     fn test_iny_returns_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(2, cpu.inyc(&cpu._imp()));
     }
 
     #[test]
     fn test_iny() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0x80;
 
         cpu.iny(&cpu._imp(), &mut MockCPUBus::new());
@@ -54,7 +54,7 @@ mod iny_tests {
 
     #[test]
     fn test_iny_negative_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0x7f;
 
         cpu.iny(&cpu._imp(), &mut MockCPUBus::new());
@@ -65,7 +65,7 @@ mod iny_tests {
 
     #[test]
     fn test_iny_zero_flag() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.y = 0xff;
 
         cpu.iny(&cpu._imp(), &mut MockCPUBus::new());

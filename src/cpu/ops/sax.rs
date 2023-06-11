@@ -10,9 +10,9 @@
     the store operation.
 */
 
-use crate::cpu::{addr::AddrModeResult, bus::CPUBus, CPU};
+use crate::cpu::{addr::AddrModeResult, bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn saxc(&self, mode: &AddrModeResult) -> u8 {
         2 + mode.cycles
     }
@@ -32,7 +32,7 @@ mod sax_tests {
 
     #[test]
     fn test_sax_zp_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -41,7 +41,7 @@ mod sax_tests {
 
     #[test]
     fn test_sax_zpy_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -50,7 +50,7 @@ mod sax_tests {
 
     #[test]
     fn test_sax_abs_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -59,7 +59,7 @@ mod sax_tests {
 
     #[test]
     fn test_sax_indx_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut bus = MockCPUBus::new();
         bus.expect_read().return_const(0x0);
 
@@ -68,7 +68,7 @@ mod sax_tests {
 
     #[test]
     fn test_sax() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0b1010_1010;
         cpu.x = 0b0101_0101;
 

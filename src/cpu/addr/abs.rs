@@ -10,11 +10,11 @@
     Bytes: 3
 */
 
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
 use super::{AddrModeResult, AddrModeType};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn abs(&mut self, bus: &dyn CPUBus) -> AddrModeResult {
         let addr = self.fetch_two_bytes_as_u16(bus);
         self._abs(addr, bus)
@@ -42,7 +42,7 @@ mod abs_tests {
 
     #[test]
     fn test_abs_addressing_mode() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         let mut mock_bus = MockCPUBus::new();
 
         mock_bus.expect_read().with(eq(0xffff)).return_const(0x88);

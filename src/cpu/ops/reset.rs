@@ -1,13 +1,13 @@
-use crate::cpu::{bus::CPUBus, CPU};
+use crate::cpu::{bus::CPUBus, NESCPU};
 
-impl CPU {
+impl NESCPU {
     pub(in crate::cpu) fn resetc(&self) -> u8 {
         7
     }
 
     pub(in crate::cpu) fn reset(&mut self, bus: &dyn CPUBus) {
-        let low_byte = bus.read(CPU::RESET_VECTOR) as u16;
-        let high_byte = bus.read(CPU::RESET_VECTOR + 1) as u16;
+        let low_byte = bus.read(NESCPU::RESET_VECTOR) as u16;
+        let high_byte = bus.read(NESCPU::RESET_VECTOR + 1) as u16;
 
         self.i = true;
         self.pc = high_byte << 8 | low_byte;
@@ -25,13 +25,13 @@ mod reset_tests {
 
     #[test]
     fn test_reset_correct_number_of_cycles() {
-        let cpu = CPU::new();
+        let cpu = NESCPU::new();
         assert_eq!(7, cpu.resetc())
     }
 
     #[test]
     fn test_reset() {
-        let mut cpu = CPU::new();
+        let mut cpu = NESCPU::new();
         cpu.a = 0x1;
         cpu.x = 0x1;
         cpu.y = 0x1;
@@ -39,11 +39,11 @@ mod reset_tests {
         let mut bus = MockCPUBus::new();
 
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR))
+            .with(eq(NESCPU::RESET_VECTOR))
             .once()
             .return_const(0x40);
         bus.expect_read()
-            .with(eq(CPU::RESET_VECTOR + 1))
+            .with(eq(NESCPU::RESET_VECTOR + 1))
             .once()
             .return_const(0x20);
 
