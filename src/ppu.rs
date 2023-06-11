@@ -8,6 +8,7 @@ mod registers;
 pub trait PPU {
     fn read(&self, addr: u16) -> u8;
     fn write(&mut self, addr: u16, data: u8);
+    fn reset(&mut self);
 }
 
 pub struct NESPPU {
@@ -20,8 +21,10 @@ impl NESPPU {
             registers: Registers::new(),
         }
     }
+}
 
-    pub fn read(&self, addr: u16) -> u8 {
+impl PPU for NESPPU {
+    fn read(&self, addr: u16) -> u8 {
         assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
 
         if addr == 0x4014 {
@@ -47,7 +50,7 @@ impl NESPPU {
         }
     }
 
-    pub fn write(&mut self, addr: u16, data: u8) {
+    fn write(&mut self, addr: u16, data: u8) {
         assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
 
         if addr == 0x4014 {
@@ -85,9 +88,7 @@ impl NESPPU {
         }
     }
 
-    pub fn get_screen(&self) -> &[[u8; 256]; 240] {
-        &[[0x0; 256]; 240] //Black screen
-    }
+    fn reset(&mut self) {}
 }
 
 impl Default for NESPPU {
@@ -101,14 +102,6 @@ mod ppu_tests {
     use std::cell::RefCell;
 
     use super::*;
-
-    #[test]
-    fn test_get_screen() {
-        let ppu = NESPPU::new();
-        let expected = &[[0x0u8; 256]; 240];
-
-        assert_eq!(expected, ppu.get_screen());
-    }
 
     #[test]
     fn test_ppu_read_ppu_ctrl() {

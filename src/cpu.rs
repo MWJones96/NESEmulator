@@ -135,17 +135,17 @@ impl CPU {
         }
     }
 
-    pub fn system_nmi(&mut self) {
+    pub fn cpu_nmi(&mut self) {
         //Edge-detected
         self.pending_nmi = true;
     }
 
-    pub fn system_irq(&mut self, interrupt: bool) {
+    pub fn cpu_irq(&mut self, interrupt: bool) {
         //Level-detected
         self.pending_irq = interrupt;
     }
 
-    pub fn system_reset(&mut self) {
+    pub fn cpu_reset(&mut self) {
         self.current_instruction = CurrentInstruction {
             remaining_cycles: self.resetc(),
             instruction_type: InstructionType::Reset,
@@ -483,7 +483,7 @@ mod cpu_tests {
             },
         };
 
-        cpu.system_reset();
+        cpu.cpu_reset();
 
         assert_eq!(
             CurrentInstruction {
@@ -511,7 +511,7 @@ mod cpu_tests {
 
         bus.expect_write().return_const(());
 
-        cpu.system_nmi();
+        cpu.cpu_nmi();
 
         assert_eq!(true, cpu.pending_nmi);
 
@@ -567,7 +567,7 @@ mod cpu_tests {
         }
 
         cpu.i = false;
-        cpu.system_irq(true);
+        cpu.cpu_irq(true);
         for _ in 0..2 {
             cpu.clock(&mut bus);
         }
@@ -603,7 +603,7 @@ mod cpu_tests {
         }
 
         cpu.i = true;
-        cpu.system_irq(true);
+        cpu.cpu_irq(true);
 
         for _ in 0..2 {
             cpu.clock(&mut bus);
@@ -639,7 +639,7 @@ mod cpu_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.system_irq(true);
+        cpu.cpu_irq(true);
 
         for _ in 0..7 {
             cpu.clock(&mut bus);
@@ -702,7 +702,7 @@ mod cpu_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.system_irq(true);
+        cpu.cpu_irq(true);
 
         for _ in 0..7 {
             cpu.clock(&mut bus);
@@ -757,7 +757,7 @@ mod cpu_tests {
 
         bus.expect_read().return_const(0x0);
 
-        cpu.system_irq(true);
+        cpu.cpu_irq(true);
 
         for _ in 0..7 {
             cpu.clock(&mut bus);
@@ -828,7 +828,7 @@ mod cpu_tests {
             cpu.current_instruction.instruction_type
         );
 
-        cpu.system_nmi();
+        cpu.cpu_nmi();
 
         for _ in 0..10_000 {
             cpu.clock(&mut bus);
@@ -839,7 +839,7 @@ mod cpu_tests {
             cpu.current_instruction.instruction_type
         );
 
-        cpu.system_irq(true);
+        cpu.cpu_irq(true);
 
         for _ in 0..10_000 {
             cpu.clock(&mut bus);
@@ -850,7 +850,7 @@ mod cpu_tests {
             cpu.current_instruction.instruction_type
         );
 
-        cpu.system_reset();
+        cpu.cpu_reset();
 
         assert_eq!(
             CurrentInstruction {

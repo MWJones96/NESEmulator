@@ -21,6 +21,11 @@ impl<'a> MainBus<'a> {
     pub fn clock(&mut self, cpu: &mut CPU) {
         cpu.clock(self);
     }
+
+    pub fn reset(&mut self, cpu: &mut CPU) {
+        cpu.cpu_reset();
+        self.ppu.reset();
+    }
 }
 
 impl CPUBus for MainBus<'_> {
