@@ -6,7 +6,7 @@ use super::Bus;
 
 pub struct PPUBus<'a> {
     cartridge: Rc<dyn Cartridge + 'a>,
-    _nametable_0: [u8; 0x400],
+    nametable_0: [u8; 0x400],
     _nametable_1: [u8; 0x400],
     _palette: [u8; 0x20],
 }
@@ -15,7 +15,7 @@ impl<'a> PPUBus<'a> {
     pub fn new(cartridge: Rc<dyn Cartridge + 'a>) -> Self {
         PPUBus {
             cartridge,
-            _nametable_0: [0x0; 0x400],
+            nametable_0: [0x0; 0x400],
             _nametable_1: [0x0; 0x400],
             _palette: [0x0; 0x20],
         }
@@ -26,7 +26,8 @@ impl Bus for PPUBus<'_> {
     fn read(&self, addr: u16) -> u8 {
         assert!(addr <= 0x3fff);
         match addr {
-            ..=0x1fff => self.cartridge.ppu_read(addr),
+            0x0000..=0x1fff => self.cartridge.ppu_read(addr),
+            0x2000..=0x23ff => self.nametable_0[(addr - 0x2000) as usize],
             _ => 0x0, //Open bus read
         }
     }
@@ -35,7 +36,7 @@ impl Bus for PPUBus<'_> {
         assert!(addr <= 0x3fff);
         match addr {
             0x0000..=0x1fff => self.cartridge.ppu_write(addr, data),
-            0x2000..=0x23ff => {}
+            0x2000..=0x23ff => self.nametable_0[(addr - 0x2000) as usize] = data,
             _ => {} //Open bus write
         }
     }
@@ -123,5 +124,29 @@ mod ppu_bus_tests {
         ppu_bus.write(0x0, 0x0);
         ppu_bus.write(0x1fff, 0x0);
         ppu_bus.write(0x2000, 0x0);
+    }
+
+    #[test]
+    fn test_read_from_nametable_0() {
+        let cartridge = MockCartridge::new();
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.nametable_0[0x0] = 0xff;
+        ppu_bus.nametable_0[0x3ff] = 0xff;
+
+        assert_eq!(0xff, ppu_bus.read(0x2000));
+        assert_eq!(0xff, ppu_bus.read(0x23ff));
+        assert_eq!(0x0, ppu_bus.read(0x2400));
+    }
+
+    #[test]
+    fn test_write_to_nametable_0() {
+        let cartridge = MockCartridge::new();
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+
+        ppu_bus.write(0x2000, 0xff);
+        ppu_bus.write(0x23ff, 0xff);
+
+        assert_eq!(0xff, ppu_bus.nametable_0[0x0]);
+        assert_eq!(0xff, ppu_bus.nametable_0[0x3ff]);
     }
 }
