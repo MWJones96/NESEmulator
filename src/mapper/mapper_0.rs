@@ -27,14 +27,14 @@ impl Mapper for Mapper0 {
     }
 
     fn read_chr(&self, addr: u16, chr_banks: u8) -> u16 {
-        assert!((0x0..=0x1fff).contains(&addr));
+        assert!((..=0x1fff).contains(&addr));
         assert!(chr_banks == 1);
 
         addr
     }
 
-    fn write_chr(&self, addr: u16, data: u8, chr_banks: u8) {
-        assert!((0x0..=0x1fff).contains(&addr));
+    fn write_chr(&self, addr: u16, _data: u8, chr_banks: u8) {
+        assert!((..=0x1fff).contains(&addr));
         assert!(chr_banks == 1);
     }
 }

@@ -9,6 +9,7 @@ use nes_emu::cpu::CPU;
 use nes_emu::cpu::NESCPU;
 use nes_emu::mapper::mapper_factory;
 use nes_emu::ppu::MockPPU;
+use nes_emu::util::extract_chr_rom;
 use nes_emu::util::extract_header;
 use nes_emu::util::extract_prg_rom;
 use nes_emu::util::read_bytes_from_file;
@@ -23,9 +24,10 @@ fn test_nestest_rom() {
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
+    let chr_rom = extract_chr_rom(&header, &bytes);
 
     let mapper = mapper_factory(header.mapper_num);
-    let cartridge = NESCartridge::new(prg_rom, Box::new(mapper));
+    let cartridge = NESCartridge::new(prg_rom, chr_rom, Box::new(mapper));
 
     let mut cpu = NESCPU::new();
     let mut main_bus = CPUBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));

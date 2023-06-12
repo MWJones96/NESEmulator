@@ -33,7 +33,7 @@ impl Bus for CPUBus<'_> {
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
             0x2000..=0x3fff | 0x4014 => self.ppu.read(addr),
-            0x8000..=0xffff => Cartridge::read(self.cartridge.as_ref(), addr),
+            0x8000..=0xffff => Cartridge::cpu_read(self.cartridge.as_ref(), addr),
             _ => 0x0, //Open Bus Read
         }
     }
@@ -44,7 +44,7 @@ impl Bus for CPUBus<'_> {
                 self.ram[(addr & 0x7ff) as usize] = data;
             }
             0x2000..=0x3fff | 0x4014 => self.ppu.write(addr, data),
-            0x8000..=0xffff => self.cartridge.write(addr, data),
+            0x8000..=0xffff => self.cartridge.cpu_write(addr, data),
             _ => {} //Open Bus Write
         }
     }
@@ -93,16 +93,16 @@ mod cpu_bus_tests {
     fn test_cartridge_read() {
         let mut cartridge = MockCartridge::new();
 
-        cartridge.expect_read().with(eq(0x7fff)).never();
+        cartridge.expect_cpu_read().with(eq(0x7fff)).never();
 
         cartridge
-            .expect_read()
+            .expect_cpu_read()
             .with(eq(0x8000))
             .once()
             .return_const(0x0);
 
         cartridge
-            .expect_read()
+            .expect_cpu_read()
             .with(eq(0xffff))
             .once()
             .return_const(0x0);
@@ -118,16 +118,19 @@ mod cpu_bus_tests {
     fn test_cartridge_write() {
         let mut cartridge = MockCartridge::new();
 
-        cartridge.expect_write().with(eq(0x7fff), eq(0x0)).never();
+        cartridge
+            .expect_cpu_write()
+            .with(eq(0x7fff), eq(0x0))
+            .never();
 
         cartridge
-            .expect_write()
+            .expect_cpu_write()
             .with(eq(0x8000), eq(0x0))
             .once()
             .return_const(());
 
         cartridge
-            .expect_write()
+            .expect_cpu_write()
             .with(eq(0xffff), eq(0x0))
             .once()
             .return_const(());
@@ -143,7 +146,7 @@ mod cpu_bus_tests {
     fn test_ppu_read() {
         let mut ppu = MockPPU::new();
         let mut cartridge = MockCartridge::new();
-        cartridge.expect_read().return_const(0x0);
+        cartridge.expect_cpu_read().return_const(0x0);
 
         ppu.expect_read().with(eq(0x2000)).once().return_const(0x0);
         ppu.expect_read().with(eq(0x3fff)).once().return_const(0x0);
@@ -163,7 +166,7 @@ mod cpu_bus_tests {
     fn test_ppu_write() {
         let mut ppu = MockPPU::new();
         let mut cartridge = MockCartridge::new();
-        cartridge.expect_write().return_const(());
+        cartridge.expect_cpu_write().return_const(());
 
         ppu.expect_write()
             .with(eq(0x2000), eq(0x0))
