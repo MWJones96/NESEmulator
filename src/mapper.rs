@@ -5,8 +5,10 @@ mod mapper_0;
 
 #[automock]
 pub trait Mapper {
-    fn read(&self, addr: u16, prg_banks: u8) -> u16;
-    fn write(&self, addr: u16, data: u8, prg_banks: u8);
+    fn read_prg(&self, addr: u16, prg_banks: u8) -> u16;
+    fn write_prg(&self, addr: u16, data: u8, prg_banks: u8);
+    fn read_chr(&self, addr: u16, chr_banks: u8) -> u16;
+    fn write_chr(&self, addr: u16, data: u8, chr_banks: u8);
 }
 
 pub fn mapper_factory(mapper: u8) -> impl Mapper {

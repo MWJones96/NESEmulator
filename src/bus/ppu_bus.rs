@@ -5,12 +5,12 @@ use crate::cartridge::Cartridge;
 use super::Bus;
 
 pub struct PPUBus<'a> {
-    cartridge: Rc<dyn Cartridge + 'a>,
+    _cartridge: Rc<dyn Cartridge + 'a>,
 }
 
 impl<'a> PPUBus<'a> {
-    pub fn new(cartridge: Rc<dyn Cartridge + 'a>) -> Self {
-        PPUBus { cartridge }
+    pub fn new(_cartridge: Rc<dyn Cartridge + 'a>) -> Self {
+        PPUBus { _cartridge }
     }
 }
 
@@ -20,7 +20,7 @@ impl Bus for PPUBus<'_> {
         0
     }
 
-    fn write(&mut self, addr: u16, data: u8) {
+    fn write(&mut self, addr: u16, _data: u8) {
         assert!(addr <= 0x3fff)
     }
 }
