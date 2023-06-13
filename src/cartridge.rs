@@ -1,6 +1,6 @@
 use mockall::automock;
 
-use crate::mapper::Mapper;
+use crate::{mapper::Mapper, util::Mirroring};
 
 #[automock]
 pub trait Cartridge {
@@ -8,6 +8,8 @@ pub trait Cartridge {
     fn cpu_write(&self, addr: u16, data: u8);
     fn ppu_read(&self, addr: u16) -> u8;
     fn ppu_write(&self, addr: u16, data: u8);
+
+    fn get_mirroring(&self) -> Mirroring;
 }
 
 pub struct NESCartridge<'a> {
@@ -18,13 +20,19 @@ pub struct NESCartridge<'a> {
     chr_rom_banks: u8,
 
     mapper: Box<dyn Mapper + 'a>,
+    mirroring: Mirroring,
 }
 
 impl<'a> NESCartridge<'a> {
     const BYTES_PER_PRG_BANK: u32 = 16384;
     const BYTES_PER_CHR_BANK: u32 = 8192;
 
-    pub fn new(prg_rom: &'a [u8], chr_rom: &'a [u8], mapper: Box<dyn Mapper + 'a>) -> Self {
+    pub fn new(
+        prg_rom: &'a [u8],
+        chr_rom: &'a [u8],
+        mapper: Box<dyn Mapper + 'a>,
+        mirroring: Mirroring,
+    ) -> Self {
         Self {
             prg_rom,
             chr_rom,
@@ -33,6 +41,7 @@ impl<'a> NESCartridge<'a> {
             chr_rom_banks: (chr_rom.len() as u32 / NESCartridge::BYTES_PER_CHR_BANK) as u8,
 
             mapper,
+            mirroring,
         }
     }
 }
@@ -55,6 +64,10 @@ impl Cartridge for NESCartridge<'_> {
 
     fn ppu_write(&self, addr: u16, _data: u8) {
         assert!((..=0x1fff).contains(&addr));
+    }
+
+    fn get_mirroring(&self) -> Mirroring {
+        self.mirroring
     }
 }
 
@@ -79,6 +92,7 @@ mod cartridge_tests {
             &[0; NESCartridge::BYTES_PER_PRG_BANK as usize],
             &[0; NESCartridge::BYTES_PER_CHR_BANK as usize],
             Box::new(mapper),
+            Mirroring::HORIZONTAL,
         );
 
         cartridge.cpu_read(0x8000);
@@ -98,6 +112,7 @@ mod cartridge_tests {
             &[0; NESCartridge::BYTES_PER_PRG_BANK as usize],
             &[0; NESCartridge::BYTES_PER_CHR_BANK as usize],
             Box::new(mapper),
+            Mirroring::HORIZONTAL,
         );
 
         cartridge.cpu_write(0x8000, 0x0);
@@ -120,6 +135,7 @@ mod cartridge_tests {
             &[0; NESCartridge::BYTES_PER_PRG_BANK as usize],
             &chr_rom,
             Box::new(mapper),
+            Mirroring::HORIZONTAL,
         );
 
         assert_eq!(0xff, cartridge.ppu_read(0x1234));

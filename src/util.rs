@@ -1,6 +1,6 @@
 use std::fs;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Mirroring {
     HORIZONTAL,
     VERTICAL,

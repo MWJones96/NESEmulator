@@ -27,7 +27,7 @@ fn test_nestest_rom() {
     let chr_rom = extract_chr_rom(&header, &bytes);
 
     let mapper = mapper_factory(header.mapper_num);
-    let cartridge = NESCartridge::new(prg_rom, chr_rom, Box::new(mapper));
+    let cartridge = NESCartridge::new(prg_rom, chr_rom, Box::new(mapper), header.mirroring);
 
     let mut cpu = NESCPU::new();
     let mut main_bus = CPUBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
