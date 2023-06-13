@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use crate::cartridge::Cartridge;
+use crate::util::Mirroring;
 
 use super::Bus;
 
@@ -28,8 +29,14 @@ impl Bus for PPUBus<'_> {
         match addr {
             0x0000..=0x1fff => self.cartridge.ppu_read(addr),
             0x2000..=0x23ff => self.nametable_0[(addr - 0x2000) as usize],
-            0x2400..=0x27ff => 0x0,
-            0x2800..=0x2bff => 0x0,
+            0x2400..=0x27ff => match self.cartridge.get_mirroring() {
+                Mirroring::HORIZONTAL => self.nametable_0[(addr - 0x2400) as usize],
+                Mirroring::VERTICAL => self.nametable_1[(addr - 0x2400) as usize],
+            },
+            0x2800..=0x2bff => match self.cartridge.get_mirroring() {
+                Mirroring::HORIZONTAL => self.nametable_1[(addr - 0x2800) as usize],
+                Mirroring::VERTICAL => self.nametable_0[(addr - 0x2800) as usize],
+            },
             0x2c00..=0x2fff => self.nametable_1[(addr - 0x2c00) as usize],
             0x3000..=0x3eff => self.read(addr - 0x1000),
             0x3f00..=0x3fff => self.palette[((addr - 0x3f00) & 0x1f) as usize],
@@ -42,8 +49,14 @@ impl Bus for PPUBus<'_> {
         match addr {
             0x0000..=0x1fff => self.cartridge.ppu_write(addr, data),
             0x2000..=0x23ff => self.nametable_0[(addr - 0x2000) as usize] = data,
-            0x2400..=0x27ff => {}
-            0x2800..=0x2bff => {}
+            0x2400..=0x27ff => match self.cartridge.get_mirroring() {
+                Mirroring::HORIZONTAL => self.nametable_0[(addr - 0x2400) as usize] = data,
+                Mirroring::VERTICAL => self.nametable_1[(addr - 0x2400) as usize] = data,
+            },
+            0x2800..=0x2bff => match self.cartridge.get_mirroring() {
+                Mirroring::HORIZONTAL => self.nametable_1[(addr - 0x2800) as usize] = data,
+                Mirroring::VERTICAL => self.nametable_0[(addr - 0x2800) as usize] = data,
+            },
             0x2c00..=0x2fff => self.nametable_1[(addr - 0x2c00) as usize] = data,
             0x3000..=0x3eff => self.write(addr - 0x1000, data),
             0x3f00..=0x3fff => self.palette[((addr - 0x3f00) & 0x1f) as usize] = data,
@@ -56,7 +69,7 @@ impl Bus for PPUBus<'_> {
 mod ppu_bus_tests {
     use mockall::predicate::eq;
 
-    use crate::cartridge::MockCartridge;
+    use crate::{cartridge::MockCartridge, util::Mirroring};
 
     use super::*;
 
@@ -138,8 +151,13 @@ mod ppu_bus_tests {
 
     #[test]
     fn test_read_from_nametable_0() {
-        let cartridge = MockCartridge::new();
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .return_const(Mirroring::VERTICAL);
+
         let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+
         ppu_bus.nametable_0[0x0] = 0xff;
         ppu_bus.nametable_0[0x3ff] = 0xff;
 
@@ -226,5 +244,109 @@ mod ppu_bus_tests {
         ppu_bus.write(0x3f20, 0xff);
 
         assert_eq!(0xff, ppu_bus.palette[0x0]);
+    }
+
+    #[test]
+    fn test_read_from_logical_nametable_2400_horizontal_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::HORIZONTAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.nametable_0[0x0] = 0xff;
+        assert_eq!(0xff, ppu_bus.read(0x2400));
+    }
+
+    #[test]
+    fn test_read_from_logical_nametable_2400_vertical_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::VERTICAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.nametable_1[0x0] = 0xff;
+        assert_eq!(0xff, ppu_bus.read(0x2400));
+    }
+
+    #[test]
+    fn test_read_from_logical_nametable_2800_horizontal_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::HORIZONTAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.nametable_1[0x0] = 0xff;
+        assert_eq!(0xff, ppu_bus.read(0x2800));
+    }
+
+    #[test]
+    fn test_read_from_logical_nametable_2800_vertical_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::VERTICAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.nametable_0[0x0] = 0xff;
+        assert_eq!(0xff, ppu_bus.read(0x2800));
+    }
+
+    #[test]
+    fn test_write_from_logical_nametable_2400_horizontal_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::HORIZONTAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.write(0x2400, 0xff);
+        assert_eq!(0xff, ppu_bus.nametable_0[0x0]);
+    }
+
+    #[test]
+    fn test_write_from_logical_nametable_2400_vertical_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::VERTICAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.write(0x2400, 0xff);
+        assert_eq!(0xff, ppu_bus.nametable_1[0x0]);
+    }
+
+    #[test]
+    fn test_write_from_logical_nametable_2800_horizontal_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::HORIZONTAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.write(0x2800, 0xff);
+        assert_eq!(0xff, ppu_bus.nametable_1[0x0]);
+    }
+
+    #[test]
+    fn test_write_from_logical_nametable_2800_vertical_mirroring() {
+        let mut cartridge = MockCartridge::new();
+        cartridge
+            .expect_get_mirroring()
+            .once()
+            .return_const(Mirroring::VERTICAL);
+
+        let mut ppu_bus = PPUBus::new(Rc::new(cartridge));
+        ppu_bus.write(0x2800, 0xff);
+        assert_eq!(0xff, ppu_bus.nametable_0[0x0]);
     }
 }
