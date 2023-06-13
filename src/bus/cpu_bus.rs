@@ -33,7 +33,7 @@ impl Bus for CPUBus<'_> {
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
             0x2000..=0x3fff | 0x4014 => self.ppu.read(addr),
-            0x8000..=0xffff => Cartridge::cpu_read(self.cartridge.as_ref(), addr),
+            0x8000..=0xffff => self.cartridge.cpu_read(addr),
             _ => 0x0, //Open Bus Read
         }
     }
