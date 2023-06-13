@@ -40,10 +40,14 @@ impl PPU for NESPPU<'_> {
             0x0 => 0x0, //PPUCTRL is write-only
             0x1 => 0x0, //PPUMASK is write-only
             0x2 => {
+                let mut status_reg = self.registers.ppu_status.borrow_mut();
+                let data = *status_reg;
+                *status_reg &= 0x7f;
+
                 self.registers.scroll_latch.replace(false);
                 self.registers.addr_latch.replace(false);
 
-                self.registers.ppu_status
+                data
             }
             0x3 => 0x0, //OAMADDR is write-only,
             0x4 => self.registers.oam_data,
@@ -128,11 +132,11 @@ mod ppu_tests {
         let mut ppu = NESPPU::new(Box::new(MockBus::new()));
         ppu.registers.addr_latch = RefCell::new(true);
         ppu.registers.scroll_latch = RefCell::new(true);
-        ppu.registers.ppu_status = 0xff;
+        ppu.registers.ppu_status = RefCell::new(0xe0);
 
-        assert_eq!(0xff, ppu.read(0x2002));
-        assert_eq!(0xff, ppu.read(0x200A));
-        assert_eq!(0xff, ppu.read(0x2012));
+        assert_eq!(0xe0, ppu.read(0x2002));
+        assert_eq!(0x60, ppu.read(0x200A));
+        assert_eq!(0x60, ppu.read(0x2012));
 
         assert_eq!(false, *ppu.registers.addr_latch.borrow());
         assert_eq!(false, *ppu.registers.scroll_latch.borrow());
@@ -225,7 +229,7 @@ mod ppu_tests {
         ppu.write(0x200A, 0xee);
         ppu.write(0x2012, 0xdd);
 
-        assert_eq!(0x0, ppu.registers.ppu_status);
+        assert_eq!(0x0, ppu.registers.ppu_status.into_inner());
     }
 
     #[test]

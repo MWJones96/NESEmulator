@@ -3,7 +3,7 @@ use std::cell::RefCell;
 pub(super) struct Registers {
     pub ppu_ctrl: u8,
     pub ppu_mask: u8,
-    pub ppu_status: u8,
+    pub ppu_status: RefCell<u8>,
 
     pub oam_addr: u8,
     pub oam_data: u8,
@@ -25,7 +25,7 @@ impl Registers {
         Registers {
             ppu_ctrl: 0x0,
             ppu_mask: 0x0,
-            ppu_status: 0x0,
+            ppu_status: RefCell::new(0x0),
 
             oam_addr: 0x0,
             oam_data: 0x0,
