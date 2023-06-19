@@ -1,12 +1,19 @@
 use std::rc::Rc;
 
-use crate::{cartridge::Cartridge, cpu::CPU, ppu::PPU};
+use crate::{
+    cartridge::Cartridge,
+    cpu::CPU,
+    ppu::{Frame, PPU},
+};
 
 use super::Bus;
 pub struct CPUBus<'a> {
     ppu: Box<dyn PPU + 'a>,
     cartridge: Rc<dyn Cartridge + 'a>,
     ram: [u8; 0x800],
+
+    #[allow(arithmetic_overflow)]
+    nes_cycles: u64,
 }
 
 impl<'a> CPUBus<'a> {
@@ -15,16 +22,30 @@ impl<'a> CPUBus<'a> {
             ppu,
             cartridge,
             ram: [0; 0x800],
+            nes_cycles: 0,
         }
     }
 
     pub fn clock(&mut self, cpu: &mut dyn CPU) {
-        cpu.clock(self);
+        self.nes_cycles += 1;
+
+        self.ppu.clock();
+        if self.nes_cycles % 3 == 0 {
+            cpu.clock(self);
+        }
     }
 
     pub fn reset(&mut self, cpu: &mut dyn CPU) {
         cpu.cpu_reset();
         self.ppu.reset();
+    }
+
+    pub fn is_frame_completed(&self) -> bool {
+        self.ppu.is_frame_completed()
+    }
+
+    pub fn get_frame_from_ppu(&self) -> Frame {
+        self.ppu.get_frame()
     }
 }
 

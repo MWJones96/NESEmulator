@@ -1,4 +1,7 @@
+use std::cell::RefCell;
+
 use mockall::automock;
+use rand::Rng;
 
 use crate::bus::Bus;
 
@@ -6,28 +9,73 @@ use self::registers::Registers;
 
 mod registers;
 
+pub type Frame = [[u8; 256]; 240];
+
 #[automock]
 pub trait PPU {
+    fn clock(&mut self);
     fn read(&self, addr: u16) -> u8;
     fn write(&mut self, addr: u16, data: u8);
     fn reset(&mut self);
+    fn is_frame_completed(&self) -> bool;
+    fn get_frame(&self) -> Frame;
 }
 
 pub struct NESPPU<'a> {
-    registers: Registers,
+    _registers: Registers,
     _ppu_bus: Box<dyn Bus + 'a>,
+    _ppu_buffer: RefCell<u8>,
+
+    scanline: i16,
+    cycle: u16,
+
+    front_buffer: Frame,
+    back_buffer: Frame,
+
+    completed_frame: RefCell<bool>,
 }
 
 impl<'a> NESPPU<'a> {
     pub fn new(_ppu_bus: Box<dyn Bus + 'a>) -> Self {
         NESPPU {
-            registers: Registers::new(),
+            _registers: Registers::new(),
             _ppu_bus,
+
+            _ppu_buffer: RefCell::new(0x0),
+            scanline: 0,
+            cycle: 0,
+
+            front_buffer: [[0x0; 256]; 240],
+            back_buffer: [[0x0; 256]; 240],
+
+            completed_frame: RefCell::new(false),
         }
     }
 }
 
 impl PPU for NESPPU<'_> {
+    fn clock(&mut self) {
+        if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
+            self.back_buffer[self.scanline as usize][self.cycle as usize] =
+                if rand::thread_rng().gen_bool(0.5) {
+                    0x3f
+                } else {
+                    0x30
+                };
+        }
+
+        self.cycle += 1;
+        if self.cycle >= 341 {
+            self.cycle = 0;
+            self.scanline += 1;
+            if self.scanline >= 261 {
+                std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
+                self.scanline = -1;
+                self.completed_frame = RefCell::new(true);
+            }
+        }
+    }
+
     fn read(&self, addr: u16) -> u8 {
         assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
 
@@ -39,282 +87,53 @@ impl PPU for NESPPU<'_> {
         match offset {
             0x0 => 0x0, //PPUCTRL is write-only
             0x1 => 0x0, //PPUMASK is write-only
-            0x2 => {
-                let mut status_reg = self.registers.ppu_status.borrow_mut();
-                let data = *status_reg;
-                *status_reg &= 0x7f;
-
-                self.registers.scroll_latch.replace(false);
-                self.registers.addr_latch.replace(false);
-
-                data
-            }
-            0x3 => 0x0, //OAMADDR is write-only,
-            0x4 => self.registers.oam_data,
+            0x2 => 0x0,
+            0x3 => 0x0,
+            0x4 => 0x0,
             0x5 => 0x0, //PPUSCROLL is write-only
             0x6 => 0x0, //PPUADDR is write-only
-            0x7 => self.registers.ppu_data,
-            _ => panic!("Register {offset} is invalid, must be from 0x0 to 0x7"),
+            0x7 => 0x0,
+            _ => panic!("PPU Register {offset} is invalid, must be from 0x0 to 0x7"),
         }
     }
 
-    fn write(&mut self, addr: u16, data: u8) {
+    fn write(&mut self, addr: u16, _data: u8) {
         assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
 
         if addr == 0x4014 {
-            self.registers.oam_dma = data;
             return;
         }
 
         let offset: u8 = ((addr - 0x2000) & 0x7) as u8;
         match offset {
-            0x0 => self.registers.ppu_ctrl = data,
-            0x1 => self.registers.ppu_mask = data,
+            0x0 => {}
+            0x1 => {}
             0x2 => {} //PPUSTATUS is read-only
-            0x3 => self.registers.oam_addr = data,
-            0x4 => self.registers.oam_data = data,
-            0x5 => {
-                if *self.registers.scroll_latch.borrow() {
-                    self.registers.ppu_scroll_y = data;
-                    self.registers.scroll_latch.replace(false);
-                } else {
-                    self.registers.ppu_scroll_x = data;
-                    self.registers.scroll_latch.replace(true);
-                }
-            }
-            0x6 => {
-                if *self.registers.addr_latch.borrow() {
-                    self.registers.ppu_addr = self.registers.ppu_addr & 0xFF00 | data as u16;
-                    self.registers.addr_latch.replace(false);
-                } else {
-                    self.registers.ppu_addr = self.registers.ppu_addr & 0xff | (data as u16) << 8;
-                    self.registers.addr_latch.replace(true);
-                }
-            }
-            0x7 => self.registers.ppu_data = data,
+            0x3 => {}
+            0x4 => {}
+            0x5 => {}
+            0x6 => {}
+            0x7 => {}
             _ => panic!("Register {offset} is invalid, must be from 0x0 to 0x7"),
         }
     }
 
     fn reset(&mut self) {}
+
+    fn is_frame_completed(&self) -> bool {
+        let mut completed = self.completed_frame.borrow_mut();
+        if *completed {
+            *completed = false;
+            return true;
+        }
+
+        false
+    }
+
+    fn get_frame(&self) -> Frame {
+        self.front_buffer
+    }
 }
 
 #[cfg(test)]
-mod ppu_tests {
-    use std::cell::RefCell;
-
-    use crate::bus::MockBus;
-
-    use super::*;
-
-    #[test]
-    fn test_ppu_read_ppu_ctrl() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_ctrl = 0xff;
-
-        assert_eq!(0x0, ppu.read(0x2000));
-        assert_eq!(0x0, ppu.read(0x2008));
-        assert_eq!(0x0, ppu.read(0x2010));
-    }
-
-    #[test]
-    fn test_ppu_read_ppu_mask() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_mask = 0xff;
-
-        assert_eq!(0x0, ppu.read(0x2001));
-        assert_eq!(0x0, ppu.read(0x2009));
-        assert_eq!(0x0, ppu.read(0x2011));
-    }
-
-    #[test]
-    fn test_ppu_read_ppu_status() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.addr_latch = RefCell::new(true);
-        ppu.registers.scroll_latch = RefCell::new(true);
-        ppu.registers.ppu_status = RefCell::new(0xe0);
-
-        assert_eq!(0xe0, ppu.read(0x2002));
-        assert_eq!(0x60, ppu.read(0x200A));
-        assert_eq!(0x60, ppu.read(0x2012));
-
-        assert_eq!(false, *ppu.registers.addr_latch.borrow());
-        assert_eq!(false, *ppu.registers.scroll_latch.borrow());
-    }
-
-    #[test]
-    fn test_ppu_read_oam_addr() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.oam_addr = 0xff;
-
-        assert_eq!(0x0, ppu.read(0x2003));
-        assert_eq!(0x0, ppu.read(0x200B));
-        assert_eq!(0x0, ppu.read(0x2013));
-    }
-    #[test]
-    fn test_ppu_read_oam_data() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.oam_data = 0xff;
-
-        assert_eq!(0xff, ppu.read(0x2004));
-        assert_eq!(0xff, ppu.read(0x200C));
-        assert_eq!(0xff, ppu.read(0x2014));
-    }
-
-    #[test]
-    fn test_ppu_read_ppu_scroll() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_scroll_x = 0xff;
-        ppu.registers.ppu_scroll_y = 0xff;
-
-        assert_eq!(0x0, ppu.read(0x2005));
-        assert_eq!(0x0, ppu.read(0x200D));
-        assert_eq!(0x0, ppu.read(0x2015));
-        assert_eq!(false, *ppu.registers.scroll_latch.borrow());
-    }
-
-    #[test]
-    fn test_ppu_read_ppu_addr() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_addr = 0xff;
-
-        assert_eq!(0x0, ppu.read(0x2006));
-        assert_eq!(0x0, ppu.read(0x200E));
-        assert_eq!(0x0, ppu.read(0x2016));
-        assert_eq!(false, *ppu.registers.addr_latch.borrow());
-    }
-
-    #[test]
-    fn test_ppu_read_ppu_data() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_data = 0xff;
-
-        assert_eq!(0xff, ppu.read(0x2007));
-        assert_eq!(0xff, ppu.read(0x200F));
-        assert_eq!(0xff, ppu.read(0x2017));
-    }
-
-    #[test]
-    fn test_ppu_read_oam_dma() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.oam_data = 0xff;
-
-        assert_eq!(0x0, ppu.read(0x4014));
-    }
-
-    #[test]
-    fn test_ppu_write_ppu_ctrl() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.write(0x2000, 0xff);
-        ppu.write(0x2008, 0xee);
-        ppu.write(0x2010, 0xdd);
-
-        assert_eq!(0xdd, ppu.registers.ppu_ctrl);
-    }
-
-    #[test]
-    fn test_ppu_write_ppu_mask() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.write(0x2001, 0xff);
-        ppu.write(0x2009, 0xee);
-        ppu.write(0x2011, 0xdd);
-
-        assert_eq!(0xdd, ppu.registers.ppu_mask);
-    }
-
-    #[test]
-    fn test_ppu_write_ppu_status() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.write(0x2002, 0xff);
-        ppu.write(0x200A, 0xee);
-        ppu.write(0x2012, 0xdd);
-
-        assert_eq!(0x0, ppu.registers.ppu_status.into_inner());
-    }
-
-    #[test]
-    fn test_ppu_write_omm_addr() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.write(0x2003, 0xff);
-        ppu.write(0x200B, 0xee);
-        ppu.write(0x2013, 0xdd);
-
-        assert_eq!(0xdd, ppu.registers.oam_addr);
-    }
-
-    #[test]
-    fn test_ppu_write_omm_data() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.write(0x2004, 0xff);
-        ppu.write(0x200C, 0xee);
-        ppu.write(0x2014, 0xdd);
-
-        assert_eq!(0xdd, ppu.registers.oam_data);
-    }
-
-    #[test]
-    fn test_ppu_write_ppu_scroll() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_scroll_x = 0xff;
-        ppu.registers.ppu_scroll_y = 0xff;
-
-        ppu.write(0x2005, 0x11);
-
-        assert_eq!(0x11, ppu.registers.ppu_scroll_x);
-        assert_eq!(0xff, ppu.registers.ppu_scroll_y);
-        assert_eq!(true, *ppu.registers.scroll_latch.borrow());
-
-        ppu.write(0x2005, 0x22);
-
-        assert_eq!(0x11, ppu.registers.ppu_scroll_x);
-        assert_eq!(0x22, ppu.registers.ppu_scroll_y);
-        assert_eq!(false, *ppu.registers.scroll_latch.borrow());
-
-        ppu.write(0x2005, 0x33);
-
-        assert_eq!(0x33, ppu.registers.ppu_scroll_x);
-        assert_eq!(0x22, ppu.registers.ppu_scroll_y);
-        assert_eq!(true, *ppu.registers.scroll_latch.borrow());
-    }
-
-    #[test]
-    fn test_ppu_write_ppu_addr() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_addr = 0xeeee;
-
-        ppu.write(0x2006, 0x11);
-
-        assert_eq!(0x11ee, ppu.registers.ppu_addr);
-        assert_eq!(true, *ppu.registers.addr_latch.borrow());
-
-        ppu.write(0x2006, 0x22);
-
-        assert_eq!(0x1122, ppu.registers.ppu_addr);
-        assert_eq!(false, *ppu.registers.addr_latch.borrow());
-
-        ppu.write(0x2006, 0x33);
-
-        assert_eq!(0x3322, ppu.registers.ppu_addr);
-        assert_eq!(true, *ppu.registers.addr_latch.borrow());
-    }
-
-    #[test]
-    fn test_ppu_write_ppu_data() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-
-        ppu.write(0x2007, 0xff);
-        ppu.write(0x200F, 0xee);
-        ppu.write(0x2017, 0xdd);
-
-        assert_eq!(0xdd, ppu.registers.ppu_data);
-    }
-
-    #[test]
-    fn test_ppu_write_oam_dma() {
-        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-
-        ppu.write(0x4014, 0xff);
-
-        assert_eq!(0xff, ppu.registers.oam_dma);
-    }
-}
+mod ppu_tests {}
