@@ -1,4 +1,4 @@
-use minifb::{Key, Window, WindowOptions};
+use minifb::{Icon, Key, Window, WindowOptions};
 
 use nes_emu::{
     bus::{cpu_bus::CPUBus, ppu_bus::PPUBus},
@@ -8,7 +8,7 @@ use nes_emu::{
     ppu::NESPPU,
     util::{extract_chr_rom, extract_header, extract_prg_rom, read_bytes_from_file},
 };
-use std::{rc::Rc, time::SystemTime};
+use std::{rc::Rc, str::FromStr, time::SystemTime};
 
 #[allow(dead_code)]
 #[rustfmt::skip]
@@ -48,6 +48,7 @@ fn main() {
         .unwrap_or_else(|e| {
             panic!("{}", e);
         });
+    window.set_icon(Icon::from_str("res/icon.ico").unwrap());
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let start = SystemTime::now();
