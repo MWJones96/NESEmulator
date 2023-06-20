@@ -1,4 +1,3 @@
-use bitflags::bitflags;
 use std::cell::RefCell;
 
 pub(super) struct Registers {

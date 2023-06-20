@@ -10,7 +10,6 @@ use nes_emu::{
 };
 use std::{rc::Rc, str::FromStr, time::SystemTime};
 
-#[allow(dead_code)]
 #[rustfmt::skip]
 const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
     ( 84,  84,  84), (  0,  30, 116), (  8,  16, 144), ( 48,   0, 136), ( 68,   0, 100), ( 92,   0,  48), ( 84,   4,   0), ( 60,  24,   0),
