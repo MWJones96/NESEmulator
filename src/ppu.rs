@@ -153,7 +153,15 @@ impl PPU for NESPPU<'_> {
         }
     }
 
-    fn reset(&mut self) {}
+    fn reset(&mut self) {
+        self.registers.ppu_ctrl = 0x0;
+        self.registers.ppu_mask = 0x0;
+        self.registers.ppu_status &= 0x80;
+
+        *self.registers.write_latch.borrow_mut() = false;
+        self.registers.loopy_t = 0x0;
+        self.registers.odd_frame = false;
+    }
 
     fn is_frame_completed(&self) -> bool {
         let mut completed = self.completed_frame.borrow_mut();
@@ -228,5 +236,22 @@ mod ppu_tests {
         assert_eq!(false, *ppu.registers.write_latch.borrow());
         assert_eq!(0b0011_1111_1111_1110, ppu.registers.loopy_t);
         assert_eq!(0b0011_1111_1111_1110, ppu.registers.loopy_v);
+    }
+
+    #[test]
+    fn test_ppu_reset() {
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
+        ppu.registers.ppu_status = 0xff;
+        ppu.registers.loopy_v = 0xffff;
+        ppu.registers.odd_frame = true;
+        ppu.reset();
+
+        assert_eq!(false, *ppu.registers.write_latch.borrow());
+        assert_eq!(false, ppu.registers.odd_frame);
+
+        assert_eq!(0x0, ppu.registers.ppu_ctrl);
+        assert_eq!(0x80, ppu.registers.ppu_status);
+        assert_eq!(0x0, ppu.registers.loopy_t);
+        assert_eq!(0xffff, ppu.registers.loopy_v);
     }
 }
