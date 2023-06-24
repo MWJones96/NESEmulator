@@ -1,11 +1,7 @@
-use std::cell::RefCell;
-
-use mockall::automock;
-use rand::Rng;
-
-use crate::bus::Bus;
-
 use self::registers::Registers;
+use crate::bus::Bus;
+use mockall::automock;
+use std::cell::RefCell;
 
 mod registers;
 
@@ -40,7 +36,7 @@ impl<'a> NESPPU<'a> {
             registers: Registers::new(),
             ppu_bus,
 
-            scanline: 0,
+            scanline: -1,
             cycle: 0,
 
             front_buffer: [[0x0; 256]; 240],
@@ -53,23 +49,57 @@ impl<'a> NESPPU<'a> {
 
 impl PPU for NESPPU<'_> {
     fn clock(&mut self) {
-        if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
-            self.back_buffer[self.scanline as usize][self.cycle as usize] =
-                if rand::thread_rng().gen_bool(0.5) {
-                    0x1A
-                } else {
-                    0x12
-                };
+        //Update registers
+        match self.scanline {
+            -1 => {
+                //Clear VBlank
+                if self.cycle == 1 {
+                    *self.registers.ppu_status.borrow_mut() &= 0x7f;
+                }
+            } //Pre-render
+            0..=239 => {
+                //Render
+                match self.cycle {
+                    (2..=250) if (self.cycle - 2) % 8 == 0 => {}
+                    (4..=252) if (self.cycle - 4) % 8 == 0 => {}
+                    (6..=254) if (self.cycle - 6) % 8 == 0 => {}
+                    (8..=256) if (self.cycle - 8) % 8 == 0 => {}
+                    (9..=257) if (self.cycle - 9) % 8 == 0 => {}
+                    257 => {}
+                    322 | 330 | 338 | 340 => {}
+                    324 | 332 => {}
+                    326 | 334 => {}
+                    328 | 336 => {}
+                    329 | 337 => {}
+                    _ => {}
+                }
+            }
+            240 | 242..=260 => {} //Post-render
+            241 => {
+                //VBlank, send an NMI to the CPU
+                if self.cycle == 1 {
+                    *self.registers.ppu_status.borrow_mut() |= 0x80;
+                }
+            } //Post-render
+            sl => panic!("Invalid scanline {sl}. Must be between -1 and 260 inclusive"),
         }
 
-        self.cycle += 1;
+        //Draw pixel
+        if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
+            self.back_buffer[self.scanline as usize][self.cycle as usize] = 0x1A;
+        }
+
+        //Increment cycle/scanline
+        self.cycle += 1 + ((self.cycle == 339 && self.registers.odd_frame) as u16);
         if self.cycle >= 341 {
             self.cycle = 0;
             self.scanline += 1;
+
             if self.scanline >= 261 {
                 std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
                 self.scanline = -1;
                 self.completed_frame = RefCell::new(true);
+                self.registers.odd_frame = !self.registers.odd_frame;
             }
         }
     }
@@ -86,14 +116,32 @@ impl PPU for NESPPU<'_> {
             0x0 => 0x0, //PPUCTRL is write-only
             0x1 => 0x0, //PPUMASK is write-only
             0x2 => {
+                let status = *self.registers.ppu_status.borrow();
+                *self.registers.ppu_status.borrow_mut() &= 0x7f;
                 *self.registers.write_latch.borrow_mut() = false;
-                0x0
+
+                status
             }
             0x3 => 0x0,
             0x4 => 0x0,
             0x5 => 0x0, //PPUSCROLL is write-only
             0x6 => 0x0, //PPUADDR is write-only
-            0x7 => 0x0,
+            0x7 => {
+                let mut data = *self.registers.ppu_data_buffer.borrow();
+                *self.registers.ppu_data_buffer.borrow_mut() =
+                    self.ppu_bus.read(*self.registers.loopy_v.borrow());
+                if *self.registers.loopy_v.borrow() >= 0x3f00 {
+                    data = *self.registers.ppu_data_buffer.borrow();
+                }
+
+                *self.registers.loopy_v.borrow_mut() += if self.registers.ppu_ctrl & 0x4 != 0 {
+                    32
+                } else {
+                    1
+                };
+
+                data
+            }
             _ => panic!("PPU Register {offset} is invalid, must be from 0x0 to 0x7"),
         }
     }
@@ -108,11 +156,14 @@ impl PPU for NESPPU<'_> {
         let offset = (addr - 0x2000) & 0x7;
         match offset {
             0x0 => {
+                self.registers.ppu_ctrl = data;
                 self.registers.loopy_t &= 0b1111_0011_1111_1111;
                 let nametable = data & 0x3;
                 self.registers.loopy_t |= (nametable as u16) << 10;
             }
-            0x1 => {}
+            0x1 => {
+                self.registers.ppu_mask = data;
+            }
             0x2 => {} //PPUSTATUS is read-only
             0x3 => {}
             0x4 => {}
@@ -140,7 +191,7 @@ impl PPU for NESPPU<'_> {
                     *self.registers.write_latch.borrow_mut() = false;
                     self.registers.loopy_t &= 0b1111_1111_0000_0000;
                     self.registers.loopy_t |= data as u16;
-                    self.registers.loopy_v = self.registers.loopy_t;
+                    *self.registers.loopy_v.borrow_mut() = self.registers.loopy_t;
                 } else {
                     *self.registers.write_latch.borrow_mut() = true;
                     self.registers.loopy_t &= 0b0000_0000_1111_1111;
@@ -148,7 +199,14 @@ impl PPU for NESPPU<'_> {
                     self.registers.loopy_t &= 0x3fff;
                 }
             }
-            0x7 => {}
+            0x7 => {
+                self.ppu_bus.write(*self.registers.loopy_v.borrow(), data);
+                *self.registers.loopy_v.borrow_mut() += if self.registers.ppu_ctrl & 0x4 != 0 {
+                    32
+                } else {
+                    1
+                };
+            }
             _ => panic!("Register {offset} is invalid, must be from 0x0 to 0x7"),
         }
     }
@@ -156,7 +214,7 @@ impl PPU for NESPPU<'_> {
     fn reset(&mut self) {
         self.registers.ppu_ctrl = 0x0;
         self.registers.ppu_mask = 0x0;
-        self.registers.ppu_status &= 0x80;
+        *self.registers.ppu_status.borrow_mut() &= 0x80;
 
         *self.registers.write_latch.borrow_mut() = false;
         self.registers.loopy_t = 0x0;
@@ -180,6 +238,8 @@ impl PPU for NESPPU<'_> {
 
 #[cfg(test)]
 mod ppu_tests {
+    use mockall::predicate::eq;
+
     use crate::bus::MockBus;
 
     use super::*;
@@ -188,26 +248,32 @@ mod ppu_tests {
     fn test_ppu_ctrl_write_sets_nt_bits_in_t_reg() {
         let mut ppu = NESPPU::new(Box::new(MockBus::new()));
 
-        ppu.write(0x2000, 0x03);
+        ppu.write(0x2000, 0x3);
         assert_eq!(0b0000_1100_0000_0000, ppu.registers.loopy_t);
+        assert_eq!(0x3, ppu.registers.ppu_ctrl);
 
         ppu.write(0x2000, 0x0);
         assert_eq!(0b0000_0000_0000_0000, ppu.registers.loopy_t);
+        assert_eq!(0x0, ppu.registers.ppu_ctrl);
 
         ppu.write(0x2000, 0x2);
         assert_eq!(0b0000_1000_0000_0000, ppu.registers.loopy_t);
+        assert_eq!(0x2, ppu.registers.ppu_ctrl);
     }
 
     #[test]
     fn test_ppu_status_read_resets_latch() {
         let ppu = NESPPU::new(Box::new(MockBus::new()));
         *ppu.registers.write_latch.borrow_mut() = true;
+        *ppu.registers.ppu_status.borrow_mut() = 0xff;
 
-        ppu.read(0x2002);
+        assert_eq!(0xff, ppu.read(0x2002));
         assert_eq!(false, *ppu.registers.write_latch.borrow());
+        assert_eq!(0x7f, *ppu.registers.ppu_status.borrow());
 
-        ppu.read(0x2002);
+        assert_eq!(0x7f, ppu.read(0x2002));
         assert_eq!(false, *ppu.registers.write_latch.borrow());
+        assert_eq!(0x7f, *ppu.registers.ppu_status.borrow());
     }
 
     #[test]
@@ -235,14 +301,14 @@ mod ppu_tests {
         ppu.write(0x2006, 0xfe);
         assert_eq!(false, *ppu.registers.write_latch.borrow());
         assert_eq!(0b0011_1111_1111_1110, ppu.registers.loopy_t);
-        assert_eq!(0b0011_1111_1111_1110, ppu.registers.loopy_v);
+        assert_eq!(0b0011_1111_1111_1110, *ppu.registers.loopy_v.borrow());
     }
 
     #[test]
     fn test_ppu_reset() {
         let mut ppu = NESPPU::new(Box::new(MockBus::new()));
-        ppu.registers.ppu_status = 0xff;
-        ppu.registers.loopy_v = 0xffff;
+        *ppu.registers.ppu_status.borrow_mut() = 0xff;
+        *ppu.registers.loopy_v.borrow_mut() = 0xffff;
         ppu.registers.odd_frame = true;
         ppu.reset();
 
@@ -250,8 +316,69 @@ mod ppu_tests {
         assert_eq!(false, ppu.registers.odd_frame);
 
         assert_eq!(0x0, ppu.registers.ppu_ctrl);
-        assert_eq!(0x80, ppu.registers.ppu_status);
+        assert_eq!(0x80, *ppu.registers.ppu_status.borrow());
         assert_eq!(0x0, ppu.registers.loopy_t);
-        assert_eq!(0xffff, ppu.registers.loopy_v);
+        assert_eq!(0xffff, *ppu.registers.loopy_v.borrow());
+    }
+
+    #[test]
+    fn test_ppu_mask() {
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
+        ppu.write(0x2001, 0xff);
+        assert_eq!(0xff, ppu.registers.ppu_mask);
+    }
+
+    #[test]
+    fn test_ppu_data_read() {
+        let mut bus = MockBus::new();
+        bus.expect_read().with(eq(0x2000)).once().return_const(0xff);
+        bus.expect_read().with(eq(0x2001)).once().return_const(0xee);
+        bus.expect_read().with(eq(0x3f00)).once().return_const(0xdd);
+        bus.expect_read().with(eq(0x2400)).once().return_const(0xcc);
+
+        let mut ppu = NESPPU::new(Box::new(bus));
+        *ppu.registers.loopy_v.borrow_mut() = 0x2000;
+
+        assert_eq!(0x0, ppu.read(0x2007));
+        assert_eq!(0x2001, *ppu.registers.loopy_v.borrow());
+        assert_eq!(0xff, *ppu.registers.ppu_data_buffer.borrow());
+
+        assert_eq!(0xff, ppu.read(0x2007));
+        assert_eq!(0x2002, *ppu.registers.loopy_v.borrow());
+        assert_eq!(0xee, *ppu.registers.ppu_data_buffer.borrow());
+
+        *ppu.registers.loopy_v.borrow_mut() = 0x3f00;
+        assert_eq!(0xdd, ppu.read(0x2007));
+        assert_eq!(0x3f01, *ppu.registers.loopy_v.borrow());
+        assert_eq!(0xdd, *ppu.registers.ppu_data_buffer.borrow());
+
+        *ppu.registers.loopy_v.borrow_mut() = 0x2400;
+        ppu.registers.ppu_ctrl = 0x4;
+        assert_eq!(0xdd, ppu.read(0x2007));
+        assert_eq!(0x2420, *ppu.registers.loopy_v.borrow());
+        assert_eq!(0xcc, *ppu.registers.ppu_data_buffer.borrow());
+    }
+
+    #[test]
+    fn test_ppu_data_write() {
+        let mut bus = MockBus::new();
+        bus.expect_write()
+            .with(eq(0x2000), eq(0xff))
+            .once()
+            .return_const(());
+        bus.expect_write()
+            .with(eq(0x2001), eq(0xee))
+            .once()
+            .return_const(());
+
+        let mut ppu = NESPPU::new(Box::new(bus));
+
+        *ppu.registers.loopy_v.borrow_mut() = 0x2000;
+        ppu.write(0x2007, 0xff);
+        assert_eq!(0x2001, *ppu.registers.loopy_v.borrow());
+
+        ppu.registers.ppu_ctrl = 0x4;
+        ppu.write(0x2007, 0xee);
+        assert_eq!(0x2021, *ppu.registers.loopy_v.borrow());
     }
 }

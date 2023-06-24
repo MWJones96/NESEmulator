@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bitflags = "2.3.2"
+itertools = "0.11.0"
 minifb = "0.24.0"
 mockall = "0.11.4"
 rand = "0.8.5"
