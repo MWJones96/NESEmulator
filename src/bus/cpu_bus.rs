@@ -29,7 +29,7 @@ impl<'a> CPUBus<'a> {
     pub fn clock(&mut self, cpu: &mut dyn CPU) {
         self.nes_cycles += 1;
 
-        self.ppu.clock();
+        self.ppu.clock(cpu);
         if self.nes_cycles % 3 == 0 {
             cpu.clock(self);
         }

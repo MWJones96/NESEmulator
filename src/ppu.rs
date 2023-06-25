@@ -1,5 +1,5 @@
 use self::registers::Registers;
-use crate::bus::Bus;
+use crate::{bus::Bus, cpu::CPU};
 use mockall::automock;
 use std::cell::RefCell;
 
@@ -9,7 +9,7 @@ pub type Frame = [[u8; 256]; 240];
 
 #[automock]
 pub trait PPU {
-    fn clock(&mut self);
+    fn clock(&mut self, cpu: &mut dyn CPU);
     fn read(&self, addr: u16) -> u8;
     fn write(&mut self, addr: u16, data: u8);
     fn reset(&mut self);
@@ -48,7 +48,7 @@ impl<'a> NESPPU<'a> {
 }
 
 impl PPU for NESPPU<'_> {
-    fn clock(&mut self) {
+    fn clock(&mut self, cpu: &mut dyn CPU) {
         //Update registers
         match self.scanline {
             -1 => {
@@ -78,6 +78,7 @@ impl PPU for NESPPU<'_> {
             241 => {
                 //VBlank, send an NMI to the CPU
                 if self.cycle == 1 {
+                    cpu.cpu_nmi();
                     *self.registers.ppu_status.borrow_mut() |= 0x80;
                 }
             } //Post-render
