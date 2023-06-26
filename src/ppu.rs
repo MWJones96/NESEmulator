@@ -52,68 +52,6 @@ impl<'a> NESPPU<'a> {
 }
 
 impl PPU for NESPPU<'_> {
-    fn clock(&mut self, cpu: &mut dyn CPU) {
-        //Update registers
-        match self.scanline {
-            -1 => {
-                //Clear VBlank
-                if self.cycle == 1 {
-                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
-                    (*ppu_status).set_vblank(false);
-                }
-            } //Pre-render
-            0..=239 => {
-                //Render
-                match self.cycle {
-                    (2..=250) if (self.cycle - 2) % 8 == 0 => {}
-                    (4..=252) if (self.cycle - 4) % 8 == 0 => {}
-                    (6..=254) if (self.cycle - 6) % 8 == 0 => {}
-                    (8..=256) if (self.cycle - 8) % 8 == 0 => {}
-                    (9..=257) if (self.cycle - 9) % 8 == 0 => {}
-                    257 => {}
-                    322 | 330 | 338 | 340 => {}
-                    324 | 332 => {}
-                    326 | 334 => {}
-                    328 | 336 => {}
-                    329 | 337 => {}
-                    _ => {}
-                }
-            }
-            240 | 242..=260 => {} //Post-render
-            241 => {
-                //VBlank, send an NMI to the CPU
-                if self.cycle == 1 {
-                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
-                    (*ppu_status).set_vblank(true);
-
-                    if self.registers.ppu_ctrl.nmi_enable() {
-                        cpu.cpu_nmi();
-                    }
-                }
-            } //Post-render
-            sl => panic!("Invalid scanline {sl}. Must be between -1 and 260 inclusive"),
-        }
-
-        //Draw pixel
-        if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
-            self.back_buffer[self.scanline as usize][self.cycle as usize] = 0x1A;
-        }
-
-        //Increment cycle/scanline
-        self.cycle += 1 + ((self.cycle == 339 && self.registers.odd_frame) as u16);
-        if self.cycle >= 341 {
-            self.cycle = 0;
-            self.scanline += 1;
-
-            if self.scanline >= 261 {
-                std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
-                self.scanline = -1;
-                self.completed_frame = RefCell::new(true);
-                self.registers.odd_frame = !self.registers.odd_frame;
-            }
-        }
-    }
-
     fn read(&self, addr: u16) -> u8 {
         assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
 
@@ -241,6 +179,78 @@ impl PPU for NESPPU<'_> {
         *write_latch = false;
         self.registers.loopy_t = LoopyRegister::from_bytes([0x0; 2]);
         self.registers.odd_frame = false;
+    }
+
+    fn clock(&mut self, cpu: &mut dyn CPU) {
+        //Update registers
+        match self.scanline {
+            -1 => {
+                match self.cycle {
+                    1 => {
+                        //Clean VBlank
+                        let mut ppu_status = self.registers.ppu_status.borrow_mut();
+                        (*ppu_status).set_vblank(false);
+                    }
+                    (280..=304) => {}
+                    322 | 330 | 338 | 340 => {}
+                    324 | 332 => {}
+                    326 | 334 => {}
+                    328 | 336 => {}
+                    329 | 337 => {}
+                    _ => {}
+                }
+            } //Pre-render
+            0..=239 => {
+                //Render
+                match self.cycle {
+                    (2..=250) if (self.cycle - 2) % 8 == 0 => {}
+                    (4..=252) if (self.cycle - 4) % 8 == 0 => {}
+                    (6..=254) if (self.cycle - 6) % 8 == 0 => {}
+                    (8..=256) if (self.cycle - 8) % 8 == 0 => {}
+                    (9..=257) if (self.cycle - 9) % 8 == 0 => {}
+                    257 => {}
+                    322 | 330 | 338 | 340 => {}
+                    324 | 332 => {}
+                    326 | 334 => {}
+                    328 | 336 => {}
+                    329 | 337 => {}
+                    _ => {}
+                }
+            }
+            240 | 242..=260 => {} //Post-render, do nothings
+            241 => {
+                //VBlank, send an NMI to the CPU
+                if self.cycle == 1 {
+                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
+                    (*ppu_status).set_vblank(true);
+
+                    if self.registers.ppu_ctrl.nmi_enable() {
+                        cpu.cpu_nmi();
+                    }
+                }
+            } //Post-render
+            sl => panic!("Invalid scanline {sl}. Must be between -1 and 260 inclusive"),
+        }
+
+        //Draw pixel
+        if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
+            self.back_buffer[self.scanline as usize][self.cycle as usize] = 0x1A;
+        }
+
+        //Increment cycle/scanline
+        let skip_cycle: bool = self.scanline == -1 && self.cycle == 339 && self.registers.odd_frame;
+        self.cycle += 1 + (skip_cycle as u16);
+        if self.cycle >= 341 {
+            self.cycle = 0;
+            self.scanline += 1;
+
+            if self.scanline >= 261 {
+                std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
+                self.scanline = -1;
+                self.completed_frame = RefCell::new(true);
+                self.registers.odd_frame = !self.registers.odd_frame;
+            }
+        }
     }
 
     fn is_frame_completed(&self) -> bool {
