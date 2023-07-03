@@ -24,13 +24,13 @@ impl NESCPU {
         self._absy(addr, bus)
     }
 
-    pub(in crate::cpu) fn _absy(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn _absy(&self, addr: u16, _bus: &dyn Bus) -> AddrModeResult {
         let page_before: u8 = (addr >> 8) as u8;
         let resolved_addr = addr.wrapping_add(self.y as u16);
         let page_after: u8 = (resolved_addr >> 8) as u8;
 
         AddrModeResult {
-            data: Some(bus.read(resolved_addr)),
+            data: None,
             cycles: 2 + ((page_before != page_after) as u8),
             mode: AddrModeType::Absy,
             addr: Some(resolved_addr),
@@ -60,7 +60,7 @@ mod absy_tests {
         let result = cpu._absy(0x0, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0x88),
+                data: None,
                 cycles: 2,
                 addr: Some(0x2),
                 mode: AddrModeType::Absy,
@@ -84,7 +84,7 @@ mod absy_tests {
         let result = cpu._absy(0xffff, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0x88),
+                data: None,
                 cycles: 3,
                 mode: AddrModeType::Absy,
                 addr: Some(0x1),

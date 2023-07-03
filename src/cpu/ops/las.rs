@@ -22,8 +22,8 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn las(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        let data = mode.data.unwrap() & self.sp;
+    pub(in crate::cpu) fn las(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        let data = bus.read(mode.addr.unwrap()) & self.sp;
 
         self.a = data;
         self.x = data;
@@ -65,7 +65,7 @@ mod las_tests {
         let mut bus = MockBus::new();
         bus.expect_read().return_const(0b1111_1100);
 
-        cpu.las(&cpu._absy(0x0, &bus), &mut MockBus::new());
+        cpu.las(&cpu._absy(0x0, &bus), &mut bus);
 
         assert_eq!(0xf0, cpu.a);
         assert_eq!(0xf0, cpu.x);

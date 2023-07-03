@@ -27,7 +27,7 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn dec(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let result = mode.data.unwrap().wrapping_sub(1);
+        let result = bus.read(mode.addr.unwrap()).wrapping_sub(1);
         bus.write(mode.addr.unwrap(), result);
 
         self.n = (result & 0x80) != 0;

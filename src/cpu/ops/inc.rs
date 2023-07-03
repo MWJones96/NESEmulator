@@ -30,12 +30,10 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn inc(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let data = mode.data.unwrap().wrapping_add(1);
-        let addr = mode.addr.unwrap();
+        let data = bus.read(mode.addr.unwrap()).wrapping_add(1);
+        bus.write(mode.addr.unwrap(), data);
 
-        bus.write(addr, data);
-
-        self.n = (data & 0x80) > 0;
+        self.n = (data & 0x80) != 0;
         self.z = data == 0;
     }
 }

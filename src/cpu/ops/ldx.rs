@@ -20,9 +20,13 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn ldx(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        self.x = mode.data.unwrap();
-        self.n = (self.x & 0x80) > 0;
+    pub(in crate::cpu) fn ldx(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        if let Some(addr) = mode.addr {
+            self.x = bus.read(addr);
+        } else {
+            self.x = mode.data.unwrap();
+        }
+        self.n = (self.x & 0x80) != 0;
         self.z = self.x == 0;
     }
 }
@@ -94,7 +98,8 @@ mod ldx_tests {
     #[test]
     fn test_ldx_value_goes_to_x_register() {
         let mut cpu = NESCPU::new();
-        cpu.ldx(&cpu._imm(0xff), &mut MockBus::new());
+        let mut bus = MockBus::new();
+        cpu.ldx(&cpu._imm(0xff), &mut bus);
         assert_eq!(0xff, cpu.x);
     }
 

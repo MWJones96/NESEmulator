@@ -24,11 +24,11 @@ impl NESCPU {
         self._zpx(addr, bus)
     }
 
-    pub(in crate::cpu) fn _zpx(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn _zpx(&self, addr: u8, _bus: &dyn Bus) -> AddrModeResult {
         let resolved_addr = addr.wrapping_add(self.x) as u16;
 
         AddrModeResult {
-            data: Some(bus.read(resolved_addr)),
+            data: None,
             cycles: 2,
             mode: AddrModeType::Zpx,
             addr: Some(resolved_addr),
@@ -57,7 +57,7 @@ mod zpx_tests {
         let result = cpu._zpx(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0x77),
+                data: None,
                 cycles: 2,
                 mode: AddrModeType::Zpx,
                 addr: Some(0x1),

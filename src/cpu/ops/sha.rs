@@ -49,7 +49,7 @@ impl NESCPU {
                 let v = bus.read(write_addr.wrapping_sub(self.y as u16)) + 1;
                 bus.write(write_addr, ax & v);
             }
-            addr => panic!("Addressing mode {:?} not implemented for SHA", addr),
+            mode => panic!("Addressing mode {:?} not implemented for SHA", mode),
         }
     }
 }
@@ -87,7 +87,6 @@ mod sha_tests {
         cpu.y = 0x1;
 
         let mut bus = MockBus::new();
-        bus.expect_read().with(eq(0x1235)).once().return_const(0x0);
         bus.expect_write()
             .with(eq(0x1235), eq(0xff & 0x13))
             .once()

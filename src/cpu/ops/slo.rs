@@ -33,11 +33,12 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn slo(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let data_to_write = mode.data.unwrap() << 1;
+        let data = bus.read(mode.addr.unwrap());
+        let data_to_write = data << 1;
         bus.write(mode.addr.unwrap(), data_to_write);
         self.a |= data_to_write;
 
-        self.c = (mode.data.unwrap() & 0x80) != 0;
+        self.c = (data & 0x80) != 0;
         self.n = (self.a & 0x80) != 0;
         self.z = self.a == 0;
     }

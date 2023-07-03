@@ -36,7 +36,7 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn rra(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
+        let data = bus.read(mode.addr.unwrap());
         let data_to_write = (self.c as u8) << 7 | data >> 1;
         self.c = (data & 0x1) != 0;
         bus.write(mode.addr.unwrap(), data_to_write);

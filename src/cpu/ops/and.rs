@@ -22,11 +22,15 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn and(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        self.a &= mode.data.unwrap();
+    pub(in crate::cpu) fn and(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        if let Some(addr) = mode.addr {
+            self.a &= bus.read(addr);
+        } else {
+            self.a &= mode.data.unwrap();
+        }
 
         self.z = self.a == 0;
-        self.n = (self.a & 0x80) > 0;
+        self.n = (self.a & 0x80) != 0;
     }
 }
 

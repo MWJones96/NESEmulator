@@ -27,18 +27,23 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
+    pub(in crate::cpu) fn adc(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
         let a: u16 = self.a as u16;
-        let v: u16 = mode.data.unwrap() as u16;
+
+        let v: u16;
+        if let Some(addr) = mode.addr {
+            v = bus.read(addr) as u16;
+        } else {
+            v = mode.data.unwrap() as u16;
+        }
 
         let s: u16 = a + v + self.c as u16;
 
         self.a = s as u8;
-
         self.c = s > 0xff;
         self.z = self.a == 0_u8;
-        self.n = (self.a & 0b_1000_0000_u8) > 0;
-        self.v = ((a ^ s) & (v ^ s) & 0x80) > 0;
+        self.n = (self.a & 0b_1000_0000_u8) != 0;
+        self.v = ((a ^ s) & (v ^ s) & 0x80) != 0;
     }
 }
 

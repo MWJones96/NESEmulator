@@ -34,7 +34,7 @@ impl NESCPU {
         let page_after = (resolved_addr >> 8) as u8;
 
         AddrModeResult {
-            data: Some(bus.read(resolved_addr)),
+            data: None,
             cycles: 3 + ((page_before != page_after) as u8),
             mode: AddrModeType::Indy,
             addr: Some(resolved_addr),
@@ -66,7 +66,7 @@ mod indy_tests {
         let result = cpu._indy(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0xbb),
+                data: None,
                 cycles: 3,
                 mode: AddrModeType::Indy,
                 addr: Some(0x8879),
@@ -92,7 +92,7 @@ mod indy_tests {
         let result = cpu._indy(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0xcc),
+                data: None,
                 cycles: 4,
                 mode: AddrModeType::Indy,
                 addr: Some(0x8976),

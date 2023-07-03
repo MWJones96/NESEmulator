@@ -53,7 +53,7 @@ impl Bus for CPUBus<'_> {
     fn read(&self, addr: u16) -> u8 {
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
-            0x2000..=0x3fff | 0x4014 => self.ppu.read(addr),
+            0x2000..=0x3fff | 0x4014 => self.ppu.read(addr, false),
             0x8000..=0xffff => self.cartridge.cpu_read(addr),
             _ => 0x0, //Open Bus Read
         }
@@ -169,11 +169,26 @@ mod cpu_bus_tests {
         let mut cartridge = MockCartridge::new();
         cartridge.expect_cpu_read().return_const(0x0);
 
-        ppu.expect_read().with(eq(0x2000)).once().return_const(0x0);
-        ppu.expect_read().with(eq(0x3fff)).once().return_const(0x0);
-        ppu.expect_read().with(eq(0x1fff)).never().return_const(0x0);
-        ppu.expect_read().with(eq(0x4000)).never().return_const(0x0);
-        ppu.expect_read().with(eq(0x4014)).once().return_const(0x0);
+        ppu.expect_read()
+            .with(eq(0x2000), eq(false))
+            .once()
+            .return_const(0x0);
+        ppu.expect_read()
+            .with(eq(0x3fff), eq(false))
+            .once()
+            .return_const(0x0);
+        ppu.expect_read()
+            .with(eq(0x1fff), eq(false))
+            .never()
+            .return_const(0x0);
+        ppu.expect_read()
+            .with(eq(0x4000), eq(false))
+            .never()
+            .return_const(0x0);
+        ppu.expect_read()
+            .with(eq(0x4014), eq(false))
+            .once()
+            .return_const(0x0);
 
         let main_bus = CPUBus::new(Box::new(ppu), Rc::new(cartridge));
         main_bus.read(0x2000);

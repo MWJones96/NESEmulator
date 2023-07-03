@@ -23,7 +23,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
+    let bytes = read_bytes_from_file("roms/dk.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -72,10 +72,5 @@ fn main() {
         while SystemTime::now().duration_since(start).unwrap().as_nanos() <= 16_666_667 {
             //Wait until 16.67ms has elapsed
         }
-
-        println!(
-            "FPS: {:?}",
-            1_000_000_000f64 / SystemTime::now().duration_since(start).unwrap().as_nanos() as f64
-        );
     }
 }

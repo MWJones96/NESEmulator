@@ -55,7 +55,9 @@ impl Bus for PPUBus<'_> {
         assert!(addr <= 0x3fff);
         match addr {
             0x0000..=0x1fff => self.cartridge.ppu_write(addr, data),
-            0x2000..=0x23ff => self.nametable_0[(addr - 0x2000) as usize] = data,
+            0x2000..=0x23ff => {
+                self.nametable_0[(addr - 0x2000) as usize] = data;
+            }
             0x2400..=0x27ff => match self.cartridge.get_mirroring() {
                 Mirroring::HORIZONTAL => self.nametable_0[(addr - 0x2400) as usize] = data,
                 Mirroring::VERTICAL => self.nametable_1[(addr - 0x2400) as usize] = data,

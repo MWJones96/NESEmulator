@@ -20,8 +20,12 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        self.y = mode.data.unwrap();
+    pub(in crate::cpu) fn ldy(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        self.y = match mode.addr {
+            Some(addr) => bus.read(addr),
+            None => mode.data.unwrap(),
+        };
+
         self.n = (self.y & 0x80) > 0;
         self.z = self.y == 0;
     }

@@ -25,11 +25,11 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
+    pub(in crate::cpu) fn bit(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        let data = bus.read(mode.addr.unwrap());
 
-        self.n = (data & 0b1000_0000) > 0;
-        self.v = (data & 0b0100_0000) > 0;
+        self.n = (data & 0b1000_0000) != 0;
+        self.v = (data & 0b0100_0000) != 0;
         self.z = (self.a & data) == 0;
     }
 }
@@ -45,9 +45,7 @@ mod bit_tests {
     #[test]
     fn test_bit_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-
-        bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(3, cpu.bitc(&cpu._zp(0x0, &bus)));
     }
@@ -55,9 +53,7 @@ mod bit_tests {
     #[test]
     fn test_bit_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-
-        bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(4, cpu.bitc(&cpu._abs(0x0, &bus)));
     }
@@ -70,7 +66,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x80);
 
-        cpu.bit(&cpu._zp(0x0, &bus), &mut MockBus::new());
+        cpu.bit(&cpu._zp(0x0, &bus), &mut bus);
 
         assert_eq!(true, cpu.n);
         assert_eq!(false, cpu.v);
@@ -85,7 +81,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x40);
 
-        cpu.bit(&cpu._zp(0x0, &bus), &mut MockBus::new());
+        cpu.bit(&cpu._zp(0x0, &bus), &mut bus);
 
         assert_eq!(false, cpu.n);
         assert_eq!(true, cpu.v);
@@ -99,7 +95,7 @@ mod bit_tests {
 
         bus.expect_read().with(eq(0x0)).times(1).return_const(0x0);
 
-        cpu.bit(&cpu._zp(0x0, &bus), &mut MockBus::new());
+        cpu.bit(&cpu._zp(0x0, &bus), &mut bus);
 
         assert_eq!(false, cpu.n);
         assert_eq!(false, cpu.v);

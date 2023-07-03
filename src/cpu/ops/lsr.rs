@@ -34,16 +34,23 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn lsr(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let before_shift = mode.data.unwrap();
-        let after_shift = before_shift >> 1;
-
-        self.c = (before_shift & 0x1) != 0;
-        self.z = after_shift == 0;
-        self.n = false;
-
         if let Some(addr) = mode.addr {
+            let before_shift = bus.read(mode.addr.unwrap());
+            let after_shift = before_shift >> 1;
+
+            self.c = (before_shift & 0x1) != 0;
+            self.z = after_shift == 0;
+            self.n = false;
+
             bus.write(addr, after_shift);
         } else {
+            let before_shift = mode.data.unwrap();
+            let after_shift = before_shift >> 1;
+
+            self.c = (before_shift & 0x1) != 0;
+            self.z = after_shift == 0;
+            self.n = false;
+
             self.a = after_shift;
         }
     }
@@ -68,9 +75,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_zp() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-
-        bus.expect_read().with(eq(0x0)).times(1).return_const(0xff);
+        let bus = MockBus::new();
 
         assert_eq!(5, cpu.lsrc(&cpu._zp(0x0, &bus)));
     }
@@ -78,10 +83,9 @@ mod lsr_tests {
     #[test]
     fn test_lsr_zpx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockBus::new();
+        let bus = MockBus::new();
 
         cpu.x = 0x2;
-        bus.expect_read().with(eq(0x2)).times(1).return_const(0x1);
 
         assert_eq!(6, cpu.lsrc(&cpu._zpx(0x0, &bus)));
     }
@@ -89,12 +93,7 @@ mod lsr_tests {
     #[test]
     fn test_lsr_abs() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-
-        bus.expect_read()
-            .with(eq(0xffff))
-            .times(1)
-            .return_const(0xaa);
+        let bus = MockBus::new();
 
         assert_eq!(6, cpu.lsrc(&cpu._abs(0xffff, &bus)));
     }
@@ -102,11 +101,9 @@ mod lsr_tests {
     #[test]
     fn test_lsr_absx() {
         let mut cpu = NESCPU::new();
-        let mut bus = MockBus::new();
+        let bus = MockBus::new();
 
         cpu.x = 0x2;
-
-        bus.expect_read().with(eq(0x1)).times(1).return_const(0x88);
 
         assert_eq!(7, cpu.lsrc(&cpu._absx(0xffff, &bus)));
     }

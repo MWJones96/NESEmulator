@@ -30,8 +30,12 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
+    pub(in crate::cpu) fn cpx(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        let data = match mode.addr {
+            Some(addr) => bus.read(addr),
+            None => mode.data.unwrap(),
+        };
+
         let result = self.x.wrapping_add(!data).wrapping_add(1);
 
         self.n = (result & 0x80) > 0;

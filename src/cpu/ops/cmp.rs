@@ -24,11 +24,17 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
+    pub(in crate::cpu) fn cmp(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        let data: u8;
+        if let Some(addr) = mode.addr {
+            data = bus.read(addr);
+        } else {
+            data = mode.data.unwrap();
+        }
+
         let result = self.a.wrapping_add(!data).wrapping_add(1);
 
-        self.n = (result & 0x80) > 0;
+        self.n = (result & 0x80) != 0;
         self.z = self.a == data;
         self.c = self.a >= data;
     }

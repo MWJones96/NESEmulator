@@ -32,7 +32,7 @@ impl NESCPU {
             ((bus.read(high_byte_addr as u16) as u16) << 8) | bus.read(low_byte_addr as u16) as u16;
 
         AddrModeResult {
-            data: Some(bus.read(resolved_addr)),
+            data: None,
             cycles: 4,
             mode: AddrModeType::Indx,
             addr: Some(resolved_addr),
@@ -64,7 +64,7 @@ mod indx_tests {
         let result = cpu._indx(0xff, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0xaa),
+                data: None,
                 cycles: 4,
                 mode: AddrModeType::Indx,
                 addr: Some(0x8877),

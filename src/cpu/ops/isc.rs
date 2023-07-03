@@ -38,8 +38,7 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn isc(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
-        let data_to_write = data.wrapping_add(1);
+        let data_to_write = bus.read(mode.addr.unwrap()).wrapping_add(1);
         bus.write(mode.addr.unwrap(), data_to_write);
         self.sbc(&self._imm(data_to_write), bus);
     }

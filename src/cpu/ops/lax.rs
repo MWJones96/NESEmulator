@@ -20,8 +20,11 @@ impl NESCPU {
         2 + mode.cycles
     }
 
-    pub(in crate::cpu) fn lax(&mut self, mode: &AddrModeResult, _bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
+    pub(in crate::cpu) fn lax(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
+        let data = match mode.addr {
+            Some(addr) => bus.read(addr),
+            None => mode.data.unwrap(),
+        };
 
         self.a = data;
         self.x = data;

@@ -1,20 +1,27 @@
-use self::registers::{LoopyRegister, Registers};
+use self::{
+    registers::{LoopyRegister, Registers},
+    render::RenderArgs,
+};
 use crate::{
     bus::Bus,
     cpu::CPU,
     ppu::registers::{PPUCtrl, PPUMask},
 };
 use mockall::automock;
-use std::{borrow::BorrowMut, cell::RefCell};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    cell::RefCell,
+};
 
 mod registers;
+mod render;
 
 pub type Frame = [[u8; 256]; 240];
 
 #[automock]
 pub trait PPU {
     fn clock(&mut self, cpu: &mut dyn CPU);
-    fn read(&self, addr: u16) -> u8;
+    fn read(&self, addr: u16, rd_only: bool) -> u8;
     fn write(&mut self, addr: u16, data: u8);
     fn reset(&mut self);
     fn is_frame_completed(&self) -> bool;
@@ -23,6 +30,8 @@ pub trait PPU {
 
 pub struct NESPPU<'a> {
     registers: Registers,
+    render_args: RenderArgs,
+
     ppu_bus: Box<dyn Bus + 'a>,
 
     scanline: i16,
@@ -38,6 +47,8 @@ impl<'a> NESPPU<'a> {
     pub fn new(ppu_bus: Box<dyn Bus + 'a>) -> Self {
         NESPPU {
             registers: Registers::new(),
+            render_args: RenderArgs::new(),
+
             ppu_bus,
 
             scanline: -1,
@@ -52,7 +63,7 @@ impl<'a> NESPPU<'a> {
 }
 
 impl PPU for NESPPU<'_> {
-    fn read(&self, addr: u16) -> u8 {
+    fn read(&self, addr: u16, rd_only: bool) -> u8 {
         assert!((0x2000..=0x3fff).contains(&addr) || addr == 0x4014);
 
         if addr == 0x4014 {
@@ -79,6 +90,10 @@ impl PPU for NESPPU<'_> {
             0x5 => 0x0, //PPUSCROLL is write-only
             0x6 => 0x0, //PPUADDR is write-only
             0x7 => {
+                if rd_only {
+                    return 0x0;
+                }
+
                 let mut data = *self.registers.ppu_data_buffer.borrow();
                 let mut loopy_v = self.registers.loopy_v.borrow_mut();
 
@@ -90,11 +105,18 @@ impl PPU for NESPPU<'_> {
                     data = *self.registers.ppu_data_buffer.borrow();
                 }
 
-                if self.registers.ppu_ctrl.increment() {
-                    (*loopy_v).increment(32);
+                let offset = if self.registers.ppu_ctrl.increment() {
+                    32
                 } else {
-                    (*loopy_v).increment(1);
+                    1
                 };
+
+                let to_write = loopy_v_raw + offset;
+
+                *loopy_v = LoopyRegister::from_bytes([
+                    (to_write & 0xff) as u8,
+                    ((to_write & 0xff00) >> 8) as u8,
+                ]);
 
                 data
             }
@@ -113,8 +135,11 @@ impl PPU for NESPPU<'_> {
         match offset {
             0x0 => {
                 self.registers.ppu_ctrl = PPUCtrl::from_bytes([data]);
-                let nametable = self.registers.ppu_ctrl.nametable();
-                self.registers.loopy_t.set_nametable(nametable);
+                let nametable_x = self.registers.ppu_ctrl.nametable_x();
+                let nametable_y = self.registers.ppu_ctrl.nametable_y();
+
+                self.registers.loopy_t.set_nametable_x(nametable_x);
+                self.registers.loopy_t.set_nametable_y(nametable_y);
             }
             0x1 => {
                 self.registers.ppu_mask = PPUMask::from_bytes([data]);
@@ -126,17 +151,12 @@ impl PPU for NESPPU<'_> {
                 let latch = *self.registers.write_latch.borrow();
                 if latch {
                     *self.registers.write_latch.borrow_mut() = false;
-                    let fine_y = data & 0x7;
-                    let coarse_y = data >> 3;
-
-                    self.registers.loopy_t.set_coarse_y(coarse_y);
-                    self.registers.loopy_t.set_fine_y(fine_y);
+                    self.registers.loopy_t.set_coarse_y(data >> 3);
+                    self.registers.loopy_t.set_fine_y(data & 0x7);
                 } else {
                     *self.registers.write_latch.borrow_mut() = true;
                     self.registers.fine_x = data & 0x7;
-                    let coarse_x = data >> 3;
-
-                    self.registers.loopy_t.set_coarse_x(coarse_x);
+                    self.registers.loopy_t.set_coarse_x(data >> 3);
                 }
             }
             0x6 => {
@@ -144,23 +164,32 @@ impl PPU for NESPPU<'_> {
                 if latch {
                     *self.registers.write_latch.borrow_mut() = false;
 
-                    self.registers.loopy_t.set_low_byte(data);
+                    let mut bytes = self.registers.loopy_t.into_bytes();
+                    bytes[0] = data;
+                    *self.registers.loopy_t.borrow_mut() = LoopyRegister::from_bytes(bytes);
+
                     *self.registers.loopy_v.borrow_mut() = self.registers.loopy_t;
                 } else {
                     *self.registers.write_latch.borrow_mut() = true;
-                    self.registers.loopy_t.borrow_mut().set_high_byte(data);
-                    self.registers.loopy_t.borrow_mut().set_bit_15_to_0();
+                    let mut bytes = self.registers.loopy_t.into_bytes();
+                    bytes[1] = data & 0x3f;
+                    *self.registers.loopy_t.borrow_mut() = LoopyRegister::from_bytes(bytes);
                 }
             }
             0x7 => {
                 let mut loopy_v = self.registers.loopy_v.borrow_mut();
-                self.ppu_bus.write((*loopy_v).get_raw() & 0x3fff, data);
+                self.ppu_bus.write(loopy_v.get_raw() & 0x3fff, data);
 
-                if self.registers.ppu_ctrl.increment() {
-                    (*loopy_v).increment(32);
+                let offset = if self.registers.ppu_ctrl.increment() {
+                    32
                 } else {
-                    (*loopy_v).increment(1);
+                    1
                 };
+
+                let raw = loopy_v.borrow().get_raw() + offset;
+
+                *loopy_v =
+                    LoopyRegister::from_bytes([(raw & 0xff) as u8, ((raw & 0xff00) >> 8) as u8]);
             }
             _ => panic!("Register {offset} is invalid, must be from 0x0 to 0x7"),
         }
@@ -191,33 +220,66 @@ impl PPU for NESPPU<'_> {
                         let mut ppu_status = self.registers.ppu_status.borrow_mut();
                         (*ppu_status).set_vblank(false);
                     }
-                    (280..=304) => {}
-                    322 | 330 | 338 | 340 => {}
-                    324 | 332 => {}
-                    326 | 334 => {}
-                    328 | 336 => {}
-                    329 | 337 => {}
+                    (2..=250) if (self.cycle - 2) % 8 == 0 => self.fetch_nt_data(),
+                    (4..=252) if (self.cycle - 4) % 8 == 0 => self.fetch_at_data(),
+                    (6..=254) if (self.cycle - 6) % 8 == 0 => self.fetch_bg_lsb(),
+                    (8..=248) if (self.cycle - 8) % 8 == 0 => {
+                        self.fetch_bg_msb();
+                        self.increment_x();
+                    }
+                    (9..=249) if (self.cycle - 9) % 8 == 0 => {
+                        self.update_shift_registers_lower_byte();
+                    }
+                    256 => {
+                        self.fetch_bg_msb();
+                        self.increment_x();
+                        self.increment_y();
+                    }
+                    257 => self.reset_x(),
+                    (280..=304) => self.reset_y(),
+                    322 | 330 | 338 | 340 => self.fetch_nt_data(),
+                    324 | 332 => self.fetch_at_data(),
+                    326 | 334 => self.fetch_bg_lsb(),
+                    328 | 336 => {
+                        self.fetch_bg_msb();
+                        self.increment_x();
+                    }
+                    329 => self.update_shift_registers_upper_byte(),
+                    337 => self.update_shift_registers_lower_byte(),
                     _ => {}
                 }
             } //Pre-render
             0..=239 => {
                 //Render
                 match self.cycle {
-                    (2..=250) if (self.cycle - 2) % 8 == 0 => {}
-                    (4..=252) if (self.cycle - 4) % 8 == 0 => {}
-                    (6..=254) if (self.cycle - 6) % 8 == 0 => {}
-                    (8..=256) if (self.cycle - 8) % 8 == 0 => {}
-                    (9..=257) if (self.cycle - 9) % 8 == 0 => {}
-                    257 => {}
-                    322 | 330 | 338 | 340 => {}
-                    324 | 332 => {}
-                    326 | 334 => {}
-                    328 | 336 => {}
-                    329 | 337 => {}
+                    (2..=250) if (self.cycle - 2) % 8 == 0 => self.fetch_nt_data(),
+                    (4..=252) if (self.cycle - 4) % 8 == 0 => self.fetch_at_data(),
+                    (6..=254) if (self.cycle - 6) % 8 == 0 => self.fetch_bg_lsb(),
+                    (8..=248) if (self.cycle - 8) % 8 == 0 => {
+                        self.fetch_bg_msb();
+                        self.increment_x();
+                    }
+                    (9..=249) if (self.cycle - 9) % 8 == 0 => {
+                        self.update_shift_registers_lower_byte()
+                    }
+                    256 => {
+                        self.fetch_bg_msb();
+                        self.increment_x();
+                        self.increment_y();
+                    }
+                    257 => self.reset_x(),
+                    322 | 330 | 338 | 340 => self.fetch_nt_data(),
+                    324 | 332 => self.fetch_at_data(),
+                    326 | 334 => self.fetch_bg_lsb(),
+                    328 | 336 => {
+                        self.fetch_bg_msb();
+                        self.increment_x();
+                    }
+                    329 | 337 => self.update_shift_registers_lower_byte(),
                     _ => {}
                 }
             }
-            240 | 242..=260 => {} //Post-render, do nothings
+            240 | 242..=260 => {} //Post-render, do nothing
             241 => {
                 //VBlank, send an NMI to the CPU
                 if self.cycle == 1 {
@@ -234,7 +296,7 @@ impl PPU for NESPPU<'_> {
 
         //Draw pixel
         if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
-            self.back_buffer[self.scanline as usize][self.cycle as usize] = 0x1A;
+            self.draw_pixel();
         }
 
         //Increment cycle/scanline
@@ -268,6 +330,166 @@ impl PPU for NESPPU<'_> {
     }
 }
 
+impl NESPPU<'_> {
+    #[inline]
+    fn fetch_bg_msb(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let fine_y = self.registers.loopy_v.borrow().fine_y() as u16;
+        let offset: u16 = if self.registers.ppu_ctrl.bg_addr() {
+            0x1000
+        } else {
+            0x0
+        };
+        self.render_args.bg_high = self
+            .ppu_bus
+            .read(offset + 16 * (self.render_args.nt_data as u16) + fine_y + 8);
+    }
+
+    #[inline]
+    fn fetch_bg_lsb(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let fine_y = self.registers.loopy_v.borrow().fine_y() as u16;
+        let offset: u16 = if self.registers.ppu_ctrl.bg_addr() {
+            0x1000
+        } else {
+            0x0
+        };
+
+        self.render_args.bg_low = self
+            .ppu_bus
+            .read(offset + 16 * (self.render_args.nt_data as u16) + fine_y);
+    }
+
+    #[inline]
+    fn fetch_at_data(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        self.render_args.at_data = 0x0;
+    }
+
+    #[inline]
+    fn fetch_nt_data(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let nt_addr = 0x2000 | ((*self.registers.loopy_v.borrow()).get_raw() & 0xfff);
+        self.render_args.nt_data = self.ppu_bus.read(nt_addr);
+    }
+
+    #[inline]
+    fn update_shift_registers_lower_byte(&mut self) {
+        self.render_args.shift_lsb =
+            (self.render_args.shift_lsb & 0xff00) | (self.render_args.bg_low as u16);
+
+        self.render_args.shift_msb =
+            (self.render_args.shift_msb & 0xff00) | (self.render_args.bg_high as u16);
+    }
+
+    #[inline]
+    fn update_shift_registers_upper_byte(&mut self) {
+        self.render_args.shift_lsb =
+            (self.render_args.shift_lsb & 0xff) | (self.render_args.bg_low as u16) << 8;
+
+        self.render_args.shift_msb =
+            (self.render_args.shift_msb & 0xff) | (self.render_args.bg_high as u16) << 8;
+    }
+
+    #[inline]
+    fn increment_x(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let mut loopy_v = self.registers.loopy_v.borrow_mut();
+        if loopy_v.coarse_x() == 31 {
+            loopy_v.set_coarse_x(0);
+            let other_nt = !loopy_v.nametable_x();
+            loopy_v.set_nametable_x(!other_nt);
+        } else {
+            let new_coarse_x = loopy_v.coarse_x() + 1;
+            loopy_v.set_coarse_x(new_coarse_x);
+        }
+    }
+
+    #[inline]
+    fn increment_y(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let mut loopy_v = self.registers.loopy_v.borrow_mut();
+        let new_fine_y = (*loopy_v).fine_y() + 1;
+        if new_fine_y >= 8 {
+            (*loopy_v).set_fine_y(0);
+            let new_coarse_y = (*loopy_v).coarse_y() + 1;
+            if new_coarse_y >= 30 {
+                let other_nt = !loopy_v.nametable_y();
+                (*loopy_v).set_coarse_y(0);
+                loopy_v.set_nametable_y(other_nt);
+            } else {
+                (*loopy_v).set_coarse_y(new_coarse_y);
+            }
+        } else {
+            (*loopy_v).set_fine_y(new_fine_y);
+        }
+    }
+
+    #[inline]
+    fn reset_y(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let mut loopy_v = self.registers.loopy_v.borrow_mut();
+        let loopy_t = self.registers.loopy_t.borrow();
+
+        (*loopy_v).set_coarse_y(loopy_t.coarse_y());
+        (*loopy_v).set_fine_y(loopy_t.fine_y());
+        (*loopy_v).set_nametable_y(loopy_t.nametable_y());
+    }
+
+    #[inline]
+    fn reset_x(&mut self) {
+        if !(self.registers.ppu_mask.show_bg() || self.registers.ppu_mask.show_spr()) {
+            return;
+        }
+
+        let mut loopy_v = self.registers.loopy_v.borrow_mut();
+        let loopy_t = self.registers.loopy_t.borrow();
+
+        (*loopy_v).set_coarse_x(loopy_t.coarse_x());
+        (*loopy_v).set_nametable_x(loopy_t.nametable_x());
+    }
+
+    #[inline]
+    fn draw_pixel(&mut self) {
+        if !self.registers.ppu_mask.show_bg() {
+            self.back_buffer[self.scanline as usize][self.cycle as usize] = 0x0;
+            return;
+        }
+
+        let pixel_lsb = (self.render_args.shift_lsb >> 15) & 1;
+        let pixel_msb = (self.render_args.shift_msb >> 15) & 1;
+
+        self.render_args.shift_lsb <<= 1;
+        self.render_args.shift_msb <<= 1;
+
+        let pixel = (pixel_msb << 1) | pixel_lsb;
+
+        self.back_buffer[self.scanline as usize][self.cycle as usize] =
+            self.ppu_bus.read(0x3f01 + pixel);
+    }
+}
+
 #[cfg(test)]
 mod ppu_tests {
     use std::borrow::Borrow;
@@ -282,12 +504,21 @@ mod ppu_tests {
     fn test_ppu_ctrl_write_sets_nt_bits_in_t_reg() {
         let mut ppu = NESPPU::new(Box::new(MockBus::new()));
 
-        ppu.write(0x2000, 0x3);
+        ppu.write(0x2000, 0x7);
         assert_eq!(
             0b0000_1100_0000_0000,
             ppu.registers.loopy_t.borrow().get_raw()
         );
-        assert_eq!(0x3, ppu.registers.ppu_ctrl.into_bytes()[0]);
+        assert_eq!(0x7, ppu.registers.ppu_ctrl.into_bytes()[0]);
+
+        assert_eq!(true, ppu.registers.ppu_ctrl.nametable_x());
+        assert_eq!(true, ppu.registers.ppu_ctrl.nametable_y());
+        assert_eq!(true, ppu.registers.ppu_ctrl.increment());
+        assert_eq!(false, ppu.registers.ppu_ctrl.spr_addr());
+        assert_eq!(false, ppu.registers.ppu_ctrl.bg_addr());
+        assert_eq!(false, ppu.registers.ppu_ctrl.spr_size());
+        assert_eq!(false, ppu.registers.ppu_ctrl.master_slave_select());
+        assert_eq!(false, ppu.registers.ppu_ctrl.nmi_enable());
 
         ppu.write(0x2000, 0x0);
         assert_eq!(
@@ -296,12 +527,30 @@ mod ppu_tests {
         );
         assert_eq!(0x0, ppu.registers.ppu_ctrl.into_bytes()[0]);
 
+        assert_eq!(false, ppu.registers.ppu_ctrl.nametable_x());
+        assert_eq!(false, ppu.registers.ppu_ctrl.nametable_y());
+        assert_eq!(false, ppu.registers.ppu_ctrl.increment());
+        assert_eq!(false, ppu.registers.ppu_ctrl.spr_addr());
+        assert_eq!(false, ppu.registers.ppu_ctrl.bg_addr());
+        assert_eq!(false, ppu.registers.ppu_ctrl.spr_size());
+        assert_eq!(false, ppu.registers.ppu_ctrl.master_slave_select());
+        assert_eq!(false, ppu.registers.ppu_ctrl.nmi_enable());
+
         ppu.write(0x2000, 0x2);
         assert_eq!(
             0b0000_1000_0000_0000,
             ppu.registers.loopy_t.borrow().get_raw()
         );
         assert_eq!(0x2, ppu.registers.ppu_ctrl.into_bytes()[0]);
+
+        assert_eq!(false, ppu.registers.ppu_ctrl.nametable_x());
+        assert_eq!(true, ppu.registers.ppu_ctrl.nametable_y());
+        assert_eq!(false, ppu.registers.ppu_ctrl.increment());
+        assert_eq!(false, ppu.registers.ppu_ctrl.spr_addr());
+        assert_eq!(false, ppu.registers.ppu_ctrl.bg_addr());
+        assert_eq!(false, ppu.registers.ppu_ctrl.spr_size());
+        assert_eq!(false, ppu.registers.ppu_ctrl.master_slave_select());
+        assert_eq!(false, ppu.registers.ppu_ctrl.nmi_enable());
     }
 
     #[test]
@@ -311,11 +560,11 @@ mod ppu_tests {
         *ppu.registers.write_latch.borrow_mut() = true;
         *ppu.registers.ppu_status.borrow_mut() = PPUStatus::from_bytes([0xff]);
 
-        assert_eq!(0xff, ppu.read(0x2002));
+        assert_eq!(0xff, ppu.read(0x2002, false));
         assert_eq!(false, *ppu.registers.write_latch.borrow());
         assert_eq!(0x7f, ppu.registers.ppu_status.borrow().into_bytes()[0]);
 
-        assert_eq!(0x7f, ppu.read(0x2002));
+        assert_eq!(0x7f, ppu.read(0x2002, false));
         assert_eq!(false, *ppu.registers.write_latch.borrow());
         assert_eq!(0x7f, ppu.registers.ppu_status.borrow().into_bytes()[0]);
     }
@@ -398,22 +647,22 @@ mod ppu_tests {
         let mut ppu = NESPPU::new(Box::new(bus));
         ppu.registers.loopy_v = RefCell::new(LoopyRegister::from_bytes([0x00, 0x20]));
 
-        assert_eq!(0x0, ppu.read(0x2007));
+        assert_eq!(0x0, ppu.read(0x2007, false));
         assert_eq!(0x2001, ppu.registers.loopy_v.borrow().get_raw());
         assert_eq!(0xff, *ppu.registers.ppu_data_buffer.borrow());
 
-        assert_eq!(0xff, ppu.read(0x2007));
+        assert_eq!(0xff, ppu.read(0x2007, false));
         assert_eq!(0x2002, ppu.registers.loopy_v.borrow().get_raw());
         assert_eq!(0xee, *ppu.registers.ppu_data_buffer.borrow());
 
         ppu.registers.loopy_v = RefCell::new(LoopyRegister::from_bytes([0x00, 0x3f]));
-        assert_eq!(0xdd, ppu.read(0x2007));
+        assert_eq!(0xdd, ppu.read(0x2007, false));
         assert_eq!(0x3f01, ppu.registers.loopy_v.borrow().get_raw());
         assert_eq!(0xdd, *ppu.registers.ppu_data_buffer.borrow());
 
         ppu.registers.loopy_v = RefCell::new(LoopyRegister::from_bytes([0x00, 0x24]));
         ppu.registers.ppu_ctrl.set_increment(true);
-        assert_eq!(0xdd, ppu.read(0x2007));
+        assert_eq!(0xdd, ppu.read(0x2007, false));
         assert_eq!(0x2420, ppu.registers.loopy_v.borrow().get_raw());
         assert_eq!(0xcc, *ppu.registers.ppu_data_buffer.borrow());
     }

@@ -20,9 +20,9 @@ impl NESCPU {
         self._zp(addr, bus)
     }
 
-    pub(in crate::cpu) fn _zp(&self, addr: u8, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn _zp(&self, addr: u8, _bus: &dyn Bus) -> AddrModeResult {
         AddrModeResult {
-            data: Some(bus.read(addr as u16)),
+            data: None,
             cycles: 1,
             mode: AddrModeType::Zp,
             addr: Some(addr as u16),
@@ -50,7 +50,7 @@ mod zp_tests {
         let result = cpu._zp(0x0, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0x77),
+                data: None,
                 cycles: 1,
                 mode: AddrModeType::Zp,
                 addr: Some(0x0),

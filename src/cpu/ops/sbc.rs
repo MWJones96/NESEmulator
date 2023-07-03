@@ -28,7 +28,14 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn sbc(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        self.adc(&self._imm(!mode.data.unwrap()), bus)
+        let data: u8;
+        if let Some(addr) = mode.addr {
+            data = bus.read(addr);
+        } else {
+            data = mode.data.unwrap();
+        }
+
+        self.adc(&self._imm(!data), bus)
     }
 }
 

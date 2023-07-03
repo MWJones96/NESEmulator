@@ -20,9 +20,9 @@ impl NESCPU {
         self._abs(addr, bus)
     }
 
-    pub(in crate::cpu) fn _abs(&self, addr: u16, bus: &dyn Bus) -> AddrModeResult {
+    pub(in crate::cpu) fn _abs(&self, addr: u16, _bus: &dyn Bus) -> AddrModeResult {
         AddrModeResult {
-            data: Some(bus.read(addr)),
+            data: None,
             cycles: 2,
             mode: AddrModeType::Abs,
             addr: Some(addr),
@@ -50,7 +50,7 @@ mod abs_tests {
         let result = cpu._abs(0xffff, &mock_bus);
         assert_eq!(
             AddrModeResult {
-                data: Some(0x88),
+                data: None,
                 cycles: 2,
                 mode: AddrModeType::Abs,
                 addr: Some(0xffff),

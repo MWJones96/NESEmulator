@@ -34,7 +34,7 @@ impl NESCPU {
     }
 
     pub(in crate::cpu) fn dcp(&mut self, mode: &AddrModeResult, bus: &mut dyn Bus) {
-        let data = mode.data.unwrap();
+        let data = bus.read(mode.addr.unwrap());
         let data_to_write = data.wrapping_sub(1);
 
         bus.write(mode.addr.unwrap(), data_to_write);
@@ -57,8 +57,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_zp_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(5, cpu.dcpc(&cpu._zp(0x0, &bus)));
     }
@@ -66,8 +65,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_zpx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(6, cpu.dcpc(&cpu._zpx(0x0, &bus)));
     }
@@ -75,8 +73,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_abs_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(6, cpu.dcpc(&cpu._abs(0x0, &bus)));
     }
@@ -84,8 +81,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_absx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(7, cpu.dcpc(&cpu._absx(0x0, &bus)));
     }
@@ -93,8 +89,7 @@ mod dcp_tests {
     #[test]
     fn test_dcp_absy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
-        let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        let bus = MockBus::new();
 
         assert_eq!(7, cpu.dcpc(&cpu._absy(0x0, &bus)));
     }
@@ -103,7 +98,8 @@ mod dcp_tests {
     fn test_dcp_indx_correct_number_of_cycles() {
         let cpu = NESCPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        bus.expect_read().with(eq(0x0)).once().return_const(0x00);
+        bus.expect_read().with(eq(0x1)).once().return_const(0x80);
 
         assert_eq!(8, cpu.dcpc(&cpu._indx(0x0, &bus)));
     }
@@ -112,7 +108,8 @@ mod dcp_tests {
     fn test_dcp_indy_correct_number_of_cycles() {
         let cpu = NESCPU::new();
         let mut bus = MockBus::new();
-        bus.expect_read().return_const(0x0);
+        bus.expect_read().with(eq(0x0)).once().return_const(0x00);
+        bus.expect_read().with(eq(0x1)).once().return_const(0x80);
 
         assert_eq!(8, cpu.dcpc(&cpu._indy(0x0, &bus)));
     }
