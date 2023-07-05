@@ -372,7 +372,25 @@ impl NESPPU<'_> {
             return;
         }
 
-        self.render_args.at_data = 0x0;
+        let loopy_v = *self.registers.loopy_v.borrow();
+
+        self.render_args.at_data = self.ppu_bus.read(
+            0x23C0
+                | ((loopy_v.nametable_y() as u16) << 11)
+                | ((loopy_v.nametable_x() as u16) << 10)
+                | (((loopy_v.coarse_y() as u16) >> 2) << 3)
+                | ((loopy_v.coarse_x() as u16) >> 2),
+        );
+
+        if (loopy_v.coarse_y() & 0x2) != 0 {
+            self.render_args.at_data >>= 4;
+        }
+
+        if (loopy_v.coarse_x() & 0x2) != 0 {
+            self.render_args.at_data >>= 2;
+        }
+
+        self.render_args.at_data &= 0x3;
     }
 
     #[inline]
@@ -389,9 +407,21 @@ impl NESPPU<'_> {
     fn update_shift_registers_lower_byte(&mut self) {
         self.render_args.shift_lsb =
             (self.render_args.shift_lsb & 0xff00) | (self.render_args.bg_low as u16);
-
         self.render_args.shift_msb =
             (self.render_args.shift_msb & 0xff00) | (self.render_args.bg_high as u16);
+
+        self.render_args.palette_shift_lsb = (self.render_args.palette_shift_lsb & 0xff00)
+            | (if (self.render_args.at_data & 0b1) != 0 {
+                0xff
+            } else {
+                0x00
+            });
+        self.render_args.palette_shift_msb = (self.render_args.palette_shift_msb & 0xff00)
+            | (if (self.render_args.at_data & 0b10) != 0 {
+                0xff
+            } else {
+                0x00
+            });
     }
 
     #[inline]
@@ -401,6 +431,19 @@ impl NESPPU<'_> {
 
         self.render_args.shift_msb =
             (self.render_args.shift_msb & 0xff) | (self.render_args.bg_high as u16) << 8;
+
+        self.render_args.palette_shift_lsb = (self.render_args.palette_shift_lsb & 0xff)
+            | (if (self.render_args.at_data & 0b1) != 0 {
+                0xff << 8
+            } else {
+                0x00 << 8
+            });
+        self.render_args.palette_shift_msb = (self.render_args.palette_shift_msb & 0xff)
+            | (if (self.render_args.at_data & 0b10) != 0 {
+                0xff << 8
+            } else {
+                0x00 << 8
+            });
     }
 
     #[inline]
@@ -477,16 +520,25 @@ impl NESPPU<'_> {
             return;
         }
 
-        let pixel_lsb = (self.render_args.shift_lsb >> 15) & 1;
-        let pixel_msb = (self.render_args.shift_msb >> 15) & 1;
+        let fine_x_bitmux: u16 = 0x8000 >> self.registers.fine_x;
+
+        let pixel_lsb = ((self.render_args.shift_lsb & fine_x_bitmux) != 0) as u16;
+        let pixel_msb = ((self.render_args.shift_msb & fine_x_bitmux) != 0) as u16;
+
+        let palette_lsb = ((self.render_args.palette_shift_lsb & fine_x_bitmux) != 0) as u16;
+        let palette_msb = ((self.render_args.palette_shift_msb & fine_x_bitmux) != 0) as u16;
 
         self.render_args.shift_lsb <<= 1;
         self.render_args.shift_msb <<= 1;
 
+        self.render_args.palette_shift_lsb <<= 1;
+        self.render_args.palette_shift_msb <<= 1;
+
         let pixel = (pixel_msb << 1) | pixel_lsb;
+        let palette = (palette_msb << 1) | palette_lsb;
 
         self.back_buffer[self.scanline as usize][self.cycle as usize] =
-            self.ppu_bus.read(0x3f01 + pixel);
+            self.ppu_bus.read(0x3f00 + palette * 4 + pixel);
     }
 }
 

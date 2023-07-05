@@ -9,7 +9,7 @@ pub struct PPUBus<'a> {
     cartridge: Rc<dyn Cartridge + 'a>,
     nametable_0: [u8; 0x400],
     nametable_1: [u8; 0x400],
-    palette: [u8; 0x21],
+    palette: [u8; 0x20],
 }
 
 impl<'a> PPUBus<'a> {
@@ -18,7 +18,7 @@ impl<'a> PPUBus<'a> {
             cartridge,
             nametable_0: [0x0; 0x400],
             nametable_1: [0x0; 0x400],
-            palette: [0x0; 0x21],
+            palette: [0x0; 0x20],
         }
     }
 }
@@ -45,7 +45,7 @@ impl Bus for PPUBus<'_> {
                     offset = 0;
                 }
 
-                self.palette[(offset & 0x1f) as usize]
+                self.palette[offset as usize]
             }
             _ => 0x0, //Open bus read
         }
@@ -74,7 +74,7 @@ impl Bus for PPUBus<'_> {
                     offset = 0;
                 }
 
-                self.palette[(offset & 0x1f) as usize] = data;
+                self.palette[offset as usize] = data;
             }
             _ => {} //Open bus write
         }

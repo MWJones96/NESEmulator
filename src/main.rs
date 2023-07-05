@@ -43,7 +43,7 @@ fn main() {
     let ppu = NESPPU::new(Box::new(PPUBus::new(cartridge_ppu)));
     let mut main_bus = CPUBus::new(Box::new(ppu), cartridge_cpu);
 
-    let mut window = Window::new("NES Emulator", 256, 240, WindowOptions::default())
+    let mut window = Window::new("NES Emulator", 512, 480, WindowOptions::default())
         .unwrap_or_else(|e| {
             panic!("{}", e);
         });
