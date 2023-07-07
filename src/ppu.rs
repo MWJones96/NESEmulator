@@ -224,6 +224,16 @@ impl PPU for NESPPU<'_> {
             }
         }
 
+        if self.scanline == 241 && self.cycle == 1 {
+            //VBlank, send an NMI to the CPU
+            let mut ppu_status = self.registers.ppu_status.borrow_mut();
+            (*ppu_status).set_vblank(true);
+
+            if self.registers.ppu_ctrl.nmi_enable() {
+                cpu.cpu_nmi();
+            }
+        }
+
         match self.scanline {
             -1..=239 => {
                 //Render
@@ -253,19 +263,7 @@ impl PPU for NESPPU<'_> {
                     _ => {}
                 }
             }
-            240 | 242..=260 => {} //Post-render, do nothing
-            241 => {
-                //VBlank, send an NMI to the CPU
-                if self.cycle == 1 {
-                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
-                    (*ppu_status).set_vblank(true);
-
-                    if self.registers.ppu_ctrl.nmi_enable() {
-                        cpu.cpu_nmi();
-                    }
-                }
-            } //Post-render
-            sl => panic!("Invalid scanline {sl}. Must be between -1 and 260 inclusive"),
+            _ => {}
         }
 
         //Draw pixel
