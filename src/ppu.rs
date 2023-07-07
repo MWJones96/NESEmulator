@@ -238,28 +238,20 @@ impl PPU for NESPPU<'_> {
             -1..=239 => {
                 //Render
                 match self.cycle {
-                    (2..=250) if (self.cycle - 2) % 8 == 0 => self.fetch_nt_data(),
-                    (4..=252) if (self.cycle - 4) % 8 == 0 => self.fetch_at_data(),
-                    (6..=254) if (self.cycle - 6) % 8 == 0 => self.fetch_bg_lsb(),
-                    (8..=248) if (self.cycle - 8) % 8 == 0 => {
+                    328 | 336 | (8..=248) if (self.cycle - 8) % 8 == 0 => {
+                        self.fetch_nt_data();
+                        self.fetch_at_data();
+                        self.fetch_bg_lsb();
                         self.fetch_bg_msb();
+
                         self.increment_x();
-                        self.update_shift_registers();
+                        self.push_to_shift_registers();
                     }
                     256 => {
-                        self.fetch_bg_msb();
                         self.increment_x();
                         self.increment_y();
                     }
                     257 => self.reset_x(),
-                    322 | 330 | 338 | 340 => self.fetch_nt_data(),
-                    324 | 332 => self.fetch_at_data(),
-                    326 | 334 => self.fetch_bg_lsb(),
-                    328 | 336 => {
-                        self.fetch_bg_msb();
-                        self.increment_x();
-                    }
-                    329 | 337 => self.update_shift_registers(),
                     _ => {}
                 }
             }
@@ -376,7 +368,7 @@ impl NESPPU<'_> {
     }
 
     #[inline]
-    fn update_shift_registers(&mut self) {
+    fn push_to_shift_registers(&mut self) {
         self.render_args.shift_lsb =
             (self.render_args.shift_lsb & 0xff00) | (self.render_args.bg_low as u16);
         self.render_args.shift_msb =
@@ -490,7 +482,7 @@ impl NESPPU<'_> {
     }
 
     fn shift_registers_left(&mut self) {
-        if self.cycle >= 337 {
+        if self.cycle >= 336 {
             return;
         }
 
