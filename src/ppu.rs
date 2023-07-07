@@ -212,44 +212,20 @@ impl PPU for NESPPU<'_> {
 
     fn clock(&mut self, cpu: &mut dyn CPU) {
         //Update registers
-        match self.scanline {
-            -1 => {
-                match self.cycle {
-                    1 => {
-                        //Clean VBlank
-                        let mut ppu_status = self.registers.ppu_status.borrow_mut();
-                        (*ppu_status).set_vblank(false);
-                    }
-                    (2..=250) if (self.cycle - 2) % 8 == 0 => self.fetch_nt_data(),
-                    (4..=252) if (self.cycle - 4) % 8 == 0 => self.fetch_at_data(),
-                    (6..=254) if (self.cycle - 6) % 8 == 0 => self.fetch_bg_lsb(),
-                    (8..=248) if (self.cycle - 8) % 8 == 0 => {
-                        self.fetch_bg_msb();
-                        self.increment_x();
-                    }
-                    (9..=249) if (self.cycle - 9) % 8 == 0 => {
-                        self.update_shift_registers_lower_byte();
-                    }
-                    256 => {
-                        self.fetch_bg_msb();
-                        self.increment_x();
-                        self.increment_y();
-                    }
-                    257 => self.reset_x(),
-                    (280..=304) => self.reset_y(),
-                    322 | 330 | 338 | 340 => self.fetch_nt_data(),
-                    324 | 332 => self.fetch_at_data(),
-                    326 | 334 => self.fetch_bg_lsb(),
-                    328 | 336 => {
-                        self.fetch_bg_msb();
-                        self.increment_x();
-                    }
-                    329 => self.update_shift_registers_upper_byte(),
-                    337 => self.update_shift_registers_lower_byte(),
-                    _ => {}
+        if self.scanline == -1 {
+            match self.cycle {
+                1 => {
+                    //Clean VBlank
+                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
+                    (*ppu_status).set_vblank(false);
                 }
-            } //Pre-render
-            0..=239 => {
+                (280..=304) => self.reset_y(),
+                _ => {}
+            }
+        }
+
+        match self.scanline {
+            -1..=239 => {
                 //Render
                 match self.cycle {
                     (2..=250) if (self.cycle - 2) % 8 == 0 => self.fetch_nt_data(),
@@ -258,9 +234,7 @@ impl PPU for NESPPU<'_> {
                     (8..=248) if (self.cycle - 8) % 8 == 0 => {
                         self.fetch_bg_msb();
                         self.increment_x();
-                    }
-                    (9..=249) if (self.cycle - 9) % 8 == 0 => {
-                        self.update_shift_registers_lower_byte()
+                        self.update_shift_registers();
                     }
                     256 => {
                         self.fetch_bg_msb();
@@ -275,7 +249,7 @@ impl PPU for NESPPU<'_> {
                         self.fetch_bg_msb();
                         self.increment_x();
                     }
-                    329 | 337 => self.update_shift_registers_lower_byte(),
+                    329 | 337 => self.update_shift_registers(),
                     _ => {}
                 }
             }
@@ -295,9 +269,9 @@ impl PPU for NESPPU<'_> {
         }
 
         //Draw pixel
-        if self.scanline >= 0 && self.scanline < 240 && self.cycle < 256 {
-            self.draw_pixel();
-        }
+        self.draw_pixel();
+        //Shift registers for next pixel
+        self.shift_registers_left();
 
         //Increment cycle/scanline
         let skip_cycle: bool = self.scanline == -1 && self.cycle == 339 && self.registers.odd_frame;
@@ -404,7 +378,7 @@ impl NESPPU<'_> {
     }
 
     #[inline]
-    fn update_shift_registers_lower_byte(&mut self) {
+    fn update_shift_registers(&mut self) {
         self.render_args.shift_lsb =
             (self.render_args.shift_lsb & 0xff00) | (self.render_args.bg_low as u16);
         self.render_args.shift_msb =
@@ -421,28 +395,6 @@ impl NESPPU<'_> {
                 0xff
             } else {
                 0x00
-            });
-    }
-
-    #[inline]
-    fn update_shift_registers_upper_byte(&mut self) {
-        self.render_args.shift_lsb =
-            (self.render_args.shift_lsb & 0xff) | (self.render_args.bg_low as u16) << 8;
-
-        self.render_args.shift_msb =
-            (self.render_args.shift_msb & 0xff) | (self.render_args.bg_high as u16) << 8;
-
-        self.render_args.palette_shift_lsb = (self.render_args.palette_shift_lsb & 0xff)
-            | (if (self.render_args.at_data & 0b1) != 0 {
-                0xff << 8
-            } else {
-                0x00 << 8
-            });
-        self.render_args.palette_shift_msb = (self.render_args.palette_shift_msb & 0xff)
-            | (if (self.render_args.at_data & 0b10) != 0 {
-                0xff << 8
-            } else {
-                0x00 << 8
             });
     }
 
@@ -515,6 +467,10 @@ impl NESPPU<'_> {
 
     #[inline]
     fn draw_pixel(&mut self) {
+        if !(self.scanline >= 0 && self.scanline < 240 && self.cycle < 256) {
+            return;
+        }
+
         if !self.registers.ppu_mask.show_bg() {
             self.back_buffer[self.scanline as usize][self.cycle as usize] = 0x0;
             return;
@@ -528,17 +484,23 @@ impl NESPPU<'_> {
         let palette_lsb = ((self.render_args.palette_shift_lsb & fine_x_bitmux) != 0) as u16;
         let palette_msb = ((self.render_args.palette_shift_msb & fine_x_bitmux) != 0) as u16;
 
-        self.render_args.shift_lsb <<= 1;
-        self.render_args.shift_msb <<= 1;
-
-        self.render_args.palette_shift_lsb <<= 1;
-        self.render_args.palette_shift_msb <<= 1;
-
         let pixel = (pixel_msb << 1) | pixel_lsb;
         let palette = (palette_msb << 1) | palette_lsb;
 
         self.back_buffer[self.scanline as usize][self.cycle as usize] =
             self.ppu_bus.read(0x3f00 + palette * 4 + pixel);
+    }
+
+    fn shift_registers_left(&mut self) {
+        if self.cycle >= 337 {
+            return;
+        }
+
+        self.render_args.shift_lsb <<= 1;
+        self.render_args.shift_msb <<= 1;
+
+        self.render_args.palette_shift_lsb <<= 1;
+        self.render_args.palette_shift_msb <<= 1;
     }
 }
 
