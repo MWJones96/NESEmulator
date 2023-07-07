@@ -8,7 +8,11 @@ use nes_emu::{
     ppu::NESPPU,
     util::{extract_chr_rom, extract_header, extract_prg_rom, read_bytes_from_file},
 };
-use std::{rc::Rc, str::FromStr, time::SystemTime};
+use std::{
+    rc::Rc,
+    str::FromStr,
+    time::{Duration, Instant},
+};
 
 #[rustfmt::skip]
 const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
@@ -23,7 +27,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("roms/ice_climber.nes".to_owned());
+    let bytes = read_bytes_from_file("roms/dk.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -49,28 +53,32 @@ fn main() {
         });
     window.set_icon(Icon::from_str("res/icon.ico").unwrap());
 
+    let frame_duration = Duration::new(0, 16_666_600);
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        let start = SystemTime::now();
+        update_screen_buffer(&main_bus, &mut window);
+
+        let start = Instant::now();
 
         //Emulate one frame's worth of cycles
         while !main_bus.is_frame_completed() {
             main_bus.clock(&mut cpu);
         }
 
-        let buffer: Vec<u32> = main_bus
-            .get_frame_from_ppu()
-            .iter()
-            .flatten()
-            .map(|&value| {
-                let rgb = SCREEN_COLORS[value as usize];
-                (rgb.0 as u32) << 16 | (rgb.1 as u32) << 8 | rgb.2 as u32
-            })
-            .collect();
-
-        window.update_with_buffer(&buffer, 256, 240).unwrap();
-
-        while SystemTime::now().duration_since(start).unwrap().as_nanos() <= 16_666_667 {
-            //Wait until 16.67ms has elapsed
-        }
+        while start.elapsed() < frame_duration {}
     }
+}
+
+#[inline]
+fn update_screen_buffer(main_bus: &CPUBus<'_>, window: &mut Window) {
+    let buffer: Vec<u32> = main_bus
+        .get_frame_from_ppu()
+        .iter()
+        .flatten()
+        .map(|&value| {
+            let rgb = SCREEN_COLORS[value as usize];
+            (rgb.0 as u32) << 16 | (rgb.1 as u32) << 8 | rgb.2 as u32
+        })
+        .collect();
+
+    window.update_with_buffer(&buffer, 256, 240).unwrap();
 }
