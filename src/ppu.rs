@@ -212,51 +212,7 @@ impl PPU for NESPPU<'_> {
 
     fn clock(&mut self, cpu: &mut dyn CPU) {
         //Update registers
-        if self.scanline == -1 {
-            match self.cycle {
-                1 => {
-                    //Clean VBlank
-                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
-                    (*ppu_status).set_vblank(false);
-                }
-                (280..=304) => self.reset_y(),
-                _ => {}
-            }
-        }
-
-        if self.scanline == 241 && self.cycle == 1 {
-            //VBlank, send an NMI to the CPU
-            let mut ppu_status = self.registers.ppu_status.borrow_mut();
-            (*ppu_status).set_vblank(true);
-
-            if self.registers.ppu_ctrl.nmi_enable() {
-                cpu.cpu_nmi();
-            }
-        }
-
-        match self.scanline {
-            -1..=239 => {
-                //Render
-                match self.cycle {
-                    328 | 336 | (8..=248) if (self.cycle - 8) % 8 == 0 => {
-                        self.fetch_nt_data();
-                        self.fetch_at_data();
-                        self.fetch_bg_lsb();
-                        self.fetch_bg_msb();
-
-                        self.increment_x();
-                        self.push_to_shift_registers();
-                    }
-                    256 => {
-                        self.increment_x();
-                        self.increment_y();
-                    }
-                    257 => self.reset_x(),
-                    _ => {}
-                }
-            }
-            _ => {}
-        }
+        self.update_registers(cpu);
 
         //Draw pixel
         self.draw_pixel();
@@ -264,19 +220,7 @@ impl PPU for NESPPU<'_> {
         self.shift_registers_left();
 
         //Increment cycle/scanline
-        let skip_cycle: bool = self.scanline == -1 && self.cycle == 339 && self.registers.odd_frame;
-        self.cycle += 1 + (skip_cycle as u16);
-        if self.cycle >= 341 {
-            self.cycle = 0;
-            self.scanline += 1;
-
-            if self.scanline >= 261 {
-                std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
-                self.scanline = -1;
-                self.completed_frame = RefCell::new(true);
-                self.registers.odd_frame = !self.registers.odd_frame;
-            }
-        }
+        self.increment_cycle();
     }
 
     fn is_frame_completed(&self) -> bool {
@@ -481,6 +425,7 @@ impl NESPPU<'_> {
             self.ppu_bus.read(0x3f00 + palette * 4 + pixel);
     }
 
+    #[inline]
     fn shift_registers_left(&mut self) {
         if self.cycle >= 336 {
             return;
@@ -491,6 +436,69 @@ impl NESPPU<'_> {
 
         self.render_args.palette_shift_lsb <<= 1;
         self.render_args.palette_shift_msb <<= 1;
+    }
+
+    #[inline]
+    fn update_registers(&mut self, cpu: &mut dyn CPU) {
+        if self.scanline == -1 {
+            match self.cycle {
+                1 => {
+                    //Clean VBlank
+                    let mut ppu_status = self.registers.ppu_status.borrow_mut();
+                    (*ppu_status).set_vblank(false);
+                }
+                (280..=304) => self.reset_y(),
+                _ => {}
+            }
+        }
+
+        if let -1..=239 = self.scanline {
+            //Render
+            match self.cycle {
+                328 | 336 | (8..=248) if (self.cycle - 8) % 8 == 0 => {
+                    self.fetch_nt_data();
+                    self.fetch_at_data();
+                    self.fetch_bg_lsb();
+                    self.fetch_bg_msb();
+
+                    self.increment_x();
+                    self.push_to_shift_registers();
+                }
+                256 => {
+                    self.increment_x();
+                    self.increment_y();
+                }
+                257 => self.reset_x(),
+                _ => {}
+            }
+        }
+
+        if self.scanline == 241 && self.cycle == 1 {
+            //VBlank, send an NMI to the CPU
+            let mut ppu_status = self.registers.ppu_status.borrow_mut();
+            (*ppu_status).set_vblank(true);
+
+            if self.registers.ppu_ctrl.nmi_enable() {
+                cpu.cpu_nmi();
+            }
+        }
+    }
+
+    #[inline]
+    fn increment_cycle(&mut self) {
+        let skip_cycle: bool = self.scanline == -1 && self.cycle == 339 && self.registers.odd_frame;
+        self.cycle += 1 + (skip_cycle as u16);
+        if self.cycle >= 341 {
+            self.cycle = 0;
+            self.scanline += 1;
+
+            if self.scanline >= 261 {
+                std::mem::swap(&mut self.front_buffer, &mut self.back_buffer);
+                self.scanline = -1;
+                self.completed_frame = RefCell::new(true);
+                self.registers.odd_frame = !self.registers.odd_frame;
+            }
+        }
     }
 }
 

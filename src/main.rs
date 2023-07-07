@@ -27,7 +27,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("roms/smb.nes".to_owned());
+    let bytes = read_bytes_from_file("roms/dk.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
