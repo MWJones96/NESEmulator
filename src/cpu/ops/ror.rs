@@ -55,8 +55,6 @@ impl NESCPU {
 
 #[cfg(test)]
 mod ror_tests {
-    use mockall::predicate::eq;
-
     use crate::bus::MockBus;
 
     use super::*;

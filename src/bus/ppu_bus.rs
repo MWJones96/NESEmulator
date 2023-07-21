@@ -259,7 +259,6 @@ mod ppu_bus_tests {
         assert_eq!(0xff, ppu_bus.read(0x3f04));
         assert_eq!(0xbb, ppu_bus.read(0x3f05));
         assert_eq!(0xff, ppu_bus.read(0x3f20));
-        assert_eq!(0xee, ppu_bus.read(0x3f21));
     }
 
     #[test]

@@ -8,10 +8,7 @@ use crate::{
     ppu::registers::{PPUCtrl, PPUMask},
 };
 use mockall::automock;
-use std::{
-    borrow::{Borrow, BorrowMut},
-    cell::RefCell,
-};
+use std::{borrow::BorrowMut, cell::RefCell};
 
 mod registers;
 mod render;
@@ -186,7 +183,7 @@ impl PPU for NESPPU<'_> {
                     1
                 };
 
-                let raw = loopy_v.borrow().get_raw() + offset;
+                let raw = loopy_v.get_raw() + offset;
 
                 *loopy_v =
                     LoopyRegister::from_bytes([(raw & 0xff) as u8, ((raw & 0xff00) >> 8) as u8]);
@@ -379,7 +376,7 @@ impl NESPPU<'_> {
         }
 
         let mut loopy_v = self.registers.loopy_v.borrow_mut();
-        let loopy_t = self.registers.loopy_t.borrow();
+        let loopy_t = self.registers.loopy_t;
 
         (*loopy_v).set_coarse_y(loopy_t.coarse_y());
         (*loopy_v).set_fine_y(loopy_t.fine_y());
@@ -393,7 +390,7 @@ impl NESPPU<'_> {
         }
 
         let mut loopy_v = self.registers.loopy_v.borrow_mut();
-        let loopy_t = self.registers.loopy_t.borrow();
+        let loopy_t = self.registers.loopy_t;
 
         (*loopy_v).set_coarse_x(loopy_t.coarse_x());
         (*loopy_v).set_nametable_x(loopy_t.nametable_x());

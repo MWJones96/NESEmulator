@@ -57,6 +57,9 @@ fn main() {
     while window.is_open() && !window.is_key_down(Key::Escape) {
         update_screen_buffer(&main_bus, &mut window);
 
+        //Update controller input
+        update_controller_input(&window);
+
         let start = Instant::now();
 
         //Emulate one frame's worth of cycles
@@ -65,6 +68,33 @@ fn main() {
         }
 
         while start.elapsed() < frame_duration {}
+    }
+}
+
+fn update_controller_input(window: &Window) {
+    if window.is_key_down(Key::W) {
+        println!("Up pressed");
+    }
+    if window.is_key_down(Key::A) {
+        println!("Left pressed");
+    }
+    if window.is_key_down(Key::S) {
+        println!("Down pressed");
+    }
+    if window.is_key_down(Key::D) {
+        println!("Right pressed");
+    }
+    if window.is_key_down(Key::K) {
+        println!("B pressed");
+    }
+    if window.is_key_down(Key::L) {
+        println!("A pressed");
+    }
+    if window.is_key_down(Key::I) {
+        println!("Start pressed");
+    }
+    if window.is_key_down(Key::O) {
+        println!("Select pressed");
     }
 }
 
