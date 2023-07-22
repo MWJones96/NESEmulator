@@ -3,14 +3,13 @@ use minifb::{Icon, Key, Window, WindowOptions};
 use nes_emu::{
     bus::{cpu_bus::CPUBus, ppu_bus::PPUBus},
     cartridge::NESCartridge,
-    controller::{self, Controller, NESController},
+    controller::NESController,
     cpu::NESCPU,
     mapper::mapper_factory,
     ppu::NESPPU,
     util::{extract_chr_rom, extract_header, extract_prg_rom, read_bytes_from_file},
 };
 use std::{
-    borrow::BorrowMut,
     cell::RefCell,
     rc::Rc,
     str::FromStr,
@@ -30,7 +29,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
+    let bytes = read_bytes_from_file("roms/ice_climber.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -46,11 +45,11 @@ fn main() {
     ));
     let cartridge_ppu = Rc::clone(&cartridge_cpu);
 
-    let mut controller_1 = Rc::new(RefCell::new(NESController::new()));
-    let mut controller_2 = Rc::new(RefCell::new(NESController::new()));
+    let controller_1 = Rc::new(RefCell::new(NESController::new()));
+    let controller_2 = Rc::new(RefCell::new(NESController::new()));
 
-    let mut controller_1_clone = Rc::clone(&controller_1);
-    let mut controller_2_clone = Rc::clone(&controller_2);
+    let controller_1_clone = Rc::clone(&controller_1);
+    let controller_2_clone = Rc::clone(&controller_2);
 
     let mut cpu = NESCPU::new();
     let ppu = NESPPU::new(Box::new(PPUBus::new(cartridge_ppu)));

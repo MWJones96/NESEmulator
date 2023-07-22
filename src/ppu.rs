@@ -501,8 +501,6 @@ impl NESPPU<'_> {
 
 #[cfg(test)]
 mod ppu_tests {
-    use std::borrow::Borrow;
-
     use mockall::predicate::eq;
 
     use crate::{bus::MockBus, ppu::registers::PPUStatus};
@@ -514,10 +512,7 @@ mod ppu_tests {
         let mut ppu = NESPPU::new(Box::new(MockBus::new()));
 
         ppu.write(0x2000, 0x7);
-        assert_eq!(
-            0b0000_1100_0000_0000,
-            ppu.registers.loopy_t.borrow().get_raw()
-        );
+        assert_eq!(0b0000_1100_0000_0000, ppu.registers.loopy_t.get_raw());
         assert_eq!(0x7, ppu.registers.ppu_ctrl.into_bytes()[0]);
 
         assert_eq!(true, ppu.registers.ppu_ctrl.nametable_x());
@@ -530,10 +525,7 @@ mod ppu_tests {
         assert_eq!(false, ppu.registers.ppu_ctrl.nmi_enable());
 
         ppu.write(0x2000, 0x0);
-        assert_eq!(
-            0b0000_0000_0000_0000,
-            ppu.registers.loopy_t.borrow().get_raw()
-        );
+        assert_eq!(0b0000_0000_0000_0000, ppu.registers.loopy_t.get_raw());
         assert_eq!(0x0, ppu.registers.ppu_ctrl.into_bytes()[0]);
 
         assert_eq!(false, ppu.registers.ppu_ctrl.nametable_x());
@@ -546,10 +538,7 @@ mod ppu_tests {
         assert_eq!(false, ppu.registers.ppu_ctrl.nmi_enable());
 
         ppu.write(0x2000, 0x2);
-        assert_eq!(
-            0b0000_1000_0000_0000,
-            ppu.registers.loopy_t.borrow().get_raw()
-        );
+        assert_eq!(0b0000_1000_0000_0000, ppu.registers.loopy_t.get_raw());
         assert_eq!(0x2, ppu.registers.ppu_ctrl.into_bytes()[0]);
 
         assert_eq!(false, ppu.registers.ppu_ctrl.nametable_x());
@@ -585,14 +574,11 @@ mod ppu_tests {
 
         assert_eq!(true, *ppu.registers.write_latch.borrow());
         assert_eq!(0b101, ppu.registers.fine_x);
-        assert_eq!(0b10001, ppu.registers.loopy_t.borrow().get_raw());
+        assert_eq!(0b10001, ppu.registers.loopy_t.get_raw());
 
         ppu.write(0x2005, 0b10001101);
         assert_eq!(false, *ppu.registers.write_latch.borrow());
-        assert_eq!(
-            0b0101_0010_0011_0001,
-            ppu.registers.loopy_t.borrow().get_raw()
-        );
+        assert_eq!(0b0101_0010_0011_0001, ppu.registers.loopy_t.get_raw());
     }
 
     #[test]
@@ -601,17 +587,11 @@ mod ppu_tests {
         ppu.write(0x2006, 0xff);
 
         assert_eq!(true, *ppu.registers.write_latch.borrow());
-        assert_eq!(
-            0b0011_1111_0000_0000,
-            ppu.registers.loopy_t.borrow().get_raw()
-        );
+        assert_eq!(0b0011_1111_0000_0000, ppu.registers.loopy_t.get_raw());
 
         ppu.write(0x2006, 0xfe);
         assert_eq!(false, *ppu.registers.write_latch.borrow());
-        assert_eq!(
-            0b0011_1111_1111_1110,
-            ppu.registers.loopy_t.borrow().get_raw()
-        );
+        assert_eq!(0b0011_1111_1111_1110, ppu.registers.loopy_t.get_raw());
         assert_eq!(
             0b0011_1111_1111_1110,
             ppu.registers.loopy_v.borrow().get_raw()
@@ -634,7 +614,7 @@ mod ppu_tests {
             0x80,
             ppu.registers.ppu_status.borrow().into_bytes()[0] & 0xe0
         );
-        assert_eq!(0x0, ppu.registers.loopy_t.borrow().get_raw());
+        assert_eq!(0x0, ppu.registers.loopy_t.get_raw());
         assert_eq!(0x7fff, ppu.registers.loopy_v.borrow().get_raw());
     }
 

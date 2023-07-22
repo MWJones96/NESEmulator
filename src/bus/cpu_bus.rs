@@ -68,6 +68,14 @@ impl Bus for CPUBus<'_> {
         match addr {
             0x0000..=0x1fff => self.ram[(addr & 0x7ff) as usize],
             0x2000..=0x3fff | 0x4014 => self.ppu.read(addr, false),
+            0x4016 => {
+                let c1 = (*self.controller_1.as_ref()).borrow();
+                c1.read()
+            }
+            0x4017 => {
+                let c2 = (*self.controller_2.as_ref()).borrow();
+                c2.read()
+            }
             0x8000..=0xffff => self.cartridge.cpu_read(addr),
             _ => 0x0, //Open Bus Read
         }
@@ -79,6 +87,12 @@ impl Bus for CPUBus<'_> {
                 self.ram[(addr & 0x7ff) as usize] = data;
             }
             0x2000..=0x3fff | 0x4014 => self.ppu.write(addr, data),
+            0x4016 => {
+                let mut c1 = (*self.controller_1.as_ref()).borrow_mut();
+                let mut c2 = (*self.controller_2.as_ref()).borrow_mut();
+                c1.write(data);
+                c2.write(data);
+            }
             0x8000..=0xffff => self.cartridge.cpu_write(addr, data),
             _ => {} //Open Bus Write
         }
