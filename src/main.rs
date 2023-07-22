@@ -29,7 +29,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("roms/ice_climber.nes".to_owned());
+    let bytes = read_bytes_from_file("roms/smb.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -69,7 +69,6 @@ fn main() {
     let frame_duration = Duration::new(0, 16_666_600);
     while window.is_open() && !window.is_key_down(Key::Escape) {
         let start = Instant::now();
-
         //Update screen
         update_screen_buffer(&main_bus, &mut window);
 
