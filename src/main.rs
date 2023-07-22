@@ -3,12 +3,15 @@ use minifb::{Icon, Key, Window, WindowOptions};
 use nes_emu::{
     bus::{cpu_bus::CPUBus, ppu_bus::PPUBus},
     cartridge::NESCartridge,
+    controller::{self, Controller, NESController},
     cpu::NESCPU,
     mapper::mapper_factory,
     ppu::NESPPU,
     util::{extract_chr_rom, extract_header, extract_prg_rom, read_bytes_from_file},
 };
 use std::{
+    borrow::BorrowMut,
+    cell::RefCell,
     rc::Rc,
     str::FromStr,
     time::{Duration, Instant},
@@ -27,7 +30,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("roms/dk.nes".to_owned());
+    let bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -43,9 +46,20 @@ fn main() {
     ));
     let cartridge_ppu = Rc::clone(&cartridge_cpu);
 
+    let mut controller_1 = Rc::new(RefCell::new(NESController::new()));
+    let mut controller_2 = Rc::new(RefCell::new(NESController::new()));
+
+    let mut controller_1_clone = Rc::clone(&controller_1);
+    let mut controller_2_clone = Rc::clone(&controller_2);
+
     let mut cpu = NESCPU::new();
     let ppu = NESPPU::new(Box::new(PPUBus::new(cartridge_ppu)));
-    let mut main_bus = CPUBus::new(Box::new(ppu), cartridge_cpu);
+    let mut main_bus = CPUBus::new(
+        Box::new(ppu),
+        cartridge_cpu,
+        controller_1_clone,
+        controller_2_clone,
+    );
 
     let mut window = Window::new("NES Emulator", 512, 480, WindowOptions::default())
         .unwrap_or_else(|e| {
@@ -55,12 +69,13 @@ fn main() {
 
     let frame_duration = Duration::new(0, 16_666_600);
     while window.is_open() && !window.is_key_down(Key::Escape) {
+        let start = Instant::now();
+
+        //Update screen
         update_screen_buffer(&main_bus, &mut window);
 
         //Update controller input
-        update_controller_input(&window);
-
-        let start = Instant::now();
+        update_controller_input(&window, &controller_1);
 
         //Emulate one frame's worth of cycles
         while !main_bus.is_frame_completed() {
@@ -71,31 +86,19 @@ fn main() {
     }
 }
 
-fn update_controller_input(window: &Window) {
-    if window.is_key_down(Key::W) {
-        println!("Up pressed");
-    }
-    if window.is_key_down(Key::A) {
-        println!("Left pressed");
-    }
-    if window.is_key_down(Key::S) {
-        println!("Down pressed");
-    }
-    if window.is_key_down(Key::D) {
-        println!("Right pressed");
-    }
-    if window.is_key_down(Key::K) {
-        println!("B pressed");
-    }
-    if window.is_key_down(Key::L) {
-        println!("A pressed");
-    }
-    if window.is_key_down(Key::I) {
-        println!("Start pressed");
-    }
-    if window.is_key_down(Key::O) {
-        println!("Select pressed");
-    }
+#[inline]
+fn update_controller_input(window: &Window, controller_1: &Rc<RefCell<NESController>>) {
+    let mut controller_1 = (*controller_1.as_ref()).borrow_mut();
+
+    controller_1.up_latch = window.is_key_down(Key::W);
+    controller_1.left_latch = window.is_key_down(Key::A);
+    controller_1.down_latch = window.is_key_down(Key::S);
+    controller_1.right_latch = window.is_key_down(Key::D);
+
+    controller_1.b_latch = window.is_key_down(Key::K);
+    controller_1.a_latch = window.is_key_down(Key::L);
+    controller_1.start_latch = window.is_key_down(Key::I);
+    controller_1.select_latch = window.is_key_down(Key::O);
 }
 
 #[inline]

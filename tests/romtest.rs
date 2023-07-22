@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::fs::File;
 use std::io;
 use std::io::BufRead;
@@ -6,6 +7,7 @@ use std::rc::Rc;
 use nes_emu::bus::cpu_bus::CPUBus;
 use nes_emu::bus::MockBus;
 use nes_emu::cartridge::NESCartridge;
+use nes_emu::controller::MockController;
 use nes_emu::cpu::CPU;
 use nes_emu::cpu::NESCPU;
 use nes_emu::mapper::mapper_factory;
@@ -34,6 +36,8 @@ fn test_nestest_rom() {
     let mut main_bus = CPUBus::new(
         Box::new(NESPPU::new(Box::new(MockBus::new()))),
         Rc::new(cartridge),
+        Rc::new(RefCell::new(MockController::new())),
+        Rc::new(RefCell::new(MockController::new())),
     );
 
     //Execute reset routine

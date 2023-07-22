@@ -7,6 +7,7 @@ pub trait Controller {
     fn write(&mut self, data: u8);
 }
 
+#[derive(Debug)]
 pub struct NESController {
     buffer: RefCell<u8>,
     polling: bool,

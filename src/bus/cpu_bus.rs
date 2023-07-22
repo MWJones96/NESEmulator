@@ -1,7 +1,8 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     cartridge::Cartridge,
+    controller::Controller,
     cpu::CPU,
     ppu::{Frame, PPU},
 };
@@ -10,6 +11,10 @@ use super::Bus;
 pub struct CPUBus<'a> {
     ppu: Box<dyn PPU + 'a>,
     cartridge: Rc<dyn Cartridge + 'a>,
+
+    controller_1: Rc<RefCell<dyn Controller + 'a>>,
+    controller_2: Rc<RefCell<dyn Controller + 'a>>,
+
     ram: [u8; 0x800],
 
     #[allow(arithmetic_overflow)]
@@ -17,10 +22,19 @@ pub struct CPUBus<'a> {
 }
 
 impl<'a> CPUBus<'a> {
-    pub fn new(ppu: Box<dyn PPU + 'a>, cartridge: Rc<dyn Cartridge + 'a>) -> Self {
+    pub fn new(
+        ppu: Box<dyn PPU + 'a>,
+        cartridge: Rc<dyn Cartridge + 'a>,
+        controller_1: Rc<RefCell<dyn Controller + 'a>>,
+        controller_2: Rc<RefCell<dyn Controller + 'a>>,
+    ) -> Self {
         Self {
             ppu,
             cartridge,
+
+            controller_1,
+            controller_2,
+
             ram: [0; 0x800],
             nes_cycles: 0,
         }
@@ -75,14 +89,19 @@ impl Bus for CPUBus<'_> {
 mod cpu_bus_tests {
     use mockall::predicate::eq;
 
-    use crate::{cartridge::MockCartridge, ppu::MockPPU};
+    use crate::{cartridge::MockCartridge, controller::MockController, ppu::MockPPU};
 
     use super::*;
 
     #[test]
     fn test_cpu_bus_read() {
         let cartridge = MockCartridge::new();
-        let mut main_bus = CPUBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
+        let mut main_bus = CPUBus::new(
+            Box::new(MockPPU::new()),
+            Rc::new(cartridge),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
 
         main_bus.ram[0x0] = 0xff;
 
@@ -95,7 +114,12 @@ mod cpu_bus_tests {
     #[test]
     fn test_cpu_bus_write() {
         let cartridge = MockCartridge::new();
-        let mut main_bus = CPUBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
+        let mut main_bus = CPUBus::new(
+            Box::new(MockPPU::new()),
+            Rc::new(cartridge),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
 
         main_bus.write(0x1, 0x34);
         assert_eq!(0x34, main_bus.ram[0x1]);
@@ -128,7 +152,12 @@ mod cpu_bus_tests {
             .once()
             .return_const(0x0);
 
-        let main_bus = CPUBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
+        let main_bus = CPUBus::new(
+            Box::new(MockPPU::new()),
+            Rc::new(cartridge),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
 
         main_bus.read(0x7fff);
         main_bus.read(0x8000);
@@ -156,7 +185,12 @@ mod cpu_bus_tests {
             .once()
             .return_const(());
 
-        let mut main_bus = CPUBus::new(Box::new(MockPPU::new()), Rc::new(cartridge));
+        let mut main_bus = CPUBus::new(
+            Box::new(MockPPU::new()),
+            Rc::new(cartridge),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
 
         main_bus.write(0x7fff, 0x0);
         main_bus.write(0x8000, 0x0);
@@ -190,7 +224,12 @@ mod cpu_bus_tests {
             .once()
             .return_const(0x0);
 
-        let main_bus = CPUBus::new(Box::new(ppu), Rc::new(cartridge));
+        let main_bus = CPUBus::new(
+            Box::new(ppu),
+            Rc::new(cartridge),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
         main_bus.read(0x2000);
         main_bus.read(0x3fff);
         main_bus.read(0x1fff);
@@ -225,7 +264,12 @@ mod cpu_bus_tests {
             .once()
             .return_const(());
 
-        let mut main_bus = CPUBus::new(Box::new(ppu), Rc::new(cartridge));
+        let mut main_bus = CPUBus::new(
+            Box::new(ppu),
+            Rc::new(cartridge),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
         main_bus.write(0x2000, 0x0);
         main_bus.write(0x3fff, 0x0);
         main_bus.write(0x1fff, 0x0);
