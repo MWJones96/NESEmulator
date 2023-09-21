@@ -12,7 +12,6 @@ use nes_emu::{
 use std::{
     cell::RefCell,
     rc::Rc,
-    str::FromStr,
     time::{Duration, Instant},
 };
 
@@ -29,7 +28,7 @@ const SCREEN_COLORS: [(u8, u8, u8); 0x40] = [
 ];
 
 fn main() {
-    let bytes = read_bytes_from_file("roms/smb.nes".to_owned());
+    let bytes = read_bytes_from_file("tests/roms/nestest.nes".to_owned());
 
     let header = extract_header(&bytes);
     let prg_rom = extract_prg_rom(&header, &bytes);
@@ -64,6 +63,8 @@ fn main() {
         .unwrap_or_else(|e| {
             panic!("{}", e);
         });
+
+    #[cfg(target_os = "windows")]
     window.set_icon(Icon::from_str("res/icon.ico").unwrap());
 
     let frame_duration = Duration::new(0, 16_666_600);

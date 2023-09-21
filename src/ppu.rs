@@ -25,9 +25,29 @@ pub trait PPU {
     fn get_frame(&self) -> Frame;
 }
 
+#[derive(Copy, Clone)]
+struct OAMSprite {
+    y_pos: u8,
+    tile_index: u8,
+    attr: u8,
+    x_pos: u8,
+}
+
+impl OAMSprite {
+    fn new() -> Self {
+        OAMSprite {
+            y_pos: 0,
+            tile_index: 0,
+            attr: 0,
+            x_pos: 0,
+        }
+    }
+}
+
 pub struct NESPPU<'a> {
     registers: Registers,
     render_args: RenderArgs,
+    oam: [OAMSprite; 64],
 
     ppu_bus: Box<dyn Bus + 'a>,
 
@@ -45,6 +65,7 @@ impl<'a> NESPPU<'a> {
         NESPPU {
             registers: Registers::new(),
             render_args: RenderArgs::new(),
+            oam: [OAMSprite::new(); 64],
 
             ppu_bus,
 
@@ -352,6 +373,13 @@ mod ppu_tests {
         );
         assert_eq!(0x0, ppu.registers.loopy_t.get_raw());
         assert_eq!(0x7fff, ppu.registers.loopy_v.borrow().get_raw());
+        assert_eq!(64, ppu.oam.len());
+        for oam_spr in ppu.oam {
+            assert_eq!(0x0, oam_spr.y_pos);
+            assert_eq!(0x0, oam_spr.tile_index);
+            assert_eq!(0x0, oam_spr.attr);
+            assert_eq!(0x0, oam_spr.x_pos);
+        }
     }
 
     #[test]
