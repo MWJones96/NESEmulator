@@ -7,7 +7,7 @@ use crate::{
     ppu::{Frame, PPU},
 };
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 struct DMA {
     cycles: i16,
     page: u8,
@@ -52,17 +52,19 @@ impl<'a> CPUBus<'a> {
 
     pub fn clock(&mut self, cpu: &mut dyn CPU) {
         self.nes_cycles += 1;
-
         self.ppu.clock(cpu);
+
         if self.nes_cycles % 3 == 0 {
-            match &mut self.dma {
-                Some(dma) => {
-                    dma.cycles -= 1;
-                    if dma.cycles <= 0 {
-                        self.dma = None;
-                    }
+            if let Some(mut dma) = self.dma {
+                dma.cycles -= 1;
+                if dma.cycles <= 510 && dma.cycles % 2 == 0 {
+                    let index = ((512 - (dma.cycles + 2)) / 2) as u8;
+                    let addr: u16 = ((dma.page as u16) << 8) | (index as u16);
+                    self.ppu.write(0x2004, self.read(addr));
                 }
-                None => cpu.clock(self),
+                self.dma = if dma.cycles <= 0 { None } else { Some(dma) };
+            } else {
+                cpu.clock(self);
             }
         }
     }
@@ -128,7 +130,13 @@ impl Bus for CPUBus<'_> {
 mod cpu_bus_tests {
     use mockall::predicate::eq;
 
-    use crate::{cartridge::MockCartridge, controller::MockController, cpu::MockCPU, ppu::MockPPU};
+    use crate::{
+        bus::MockBus,
+        cartridge::MockCartridge,
+        controller::MockController,
+        cpu::MockCPU,
+        ppu::{MockPPU, NESPPU},
+    };
 
     use super::*;
 
@@ -313,9 +321,7 @@ mod cpu_bus_tests {
 
     #[test]
     fn test_dma_init() {
-        let mut ppu = MockPPU::new();
-        ppu.expect_write().return_const(());
-        ppu.expect_clock().return_const(());
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
 
         let mut main_bus = CPUBus::new(
             Box::new(ppu),
@@ -324,14 +330,24 @@ mod cpu_bus_tests {
             Rc::new(RefCell::new(MockController::new())),
         );
         assert_eq!(None, main_bus.dma);
-        main_bus.write(0x4014, 0xee);
+        main_bus.write(0x4014, 0x03);
         assert_eq!(
             Some(DMA {
                 cycles: 513,
-                page: 0xee
+                page: 0x03
             }),
             main_bus.dma
         );
+
+        main_bus.write(0x0300, 0xff);
+
+        main_bus.write(0x0304, 0xaa);
+        main_bus.write(0x0305, 0xbb);
+        main_bus.write(0x0306, 0xcc);
+        main_bus.write(0x0307, 0xdd);
+
+        main_bus.write(0x03ff, 0xff);
+
         for _ in 0..513 * 3 {
             let mut cpu = MockCPU::new();
             cpu.expect_clock().never();
@@ -339,5 +355,20 @@ mod cpu_bus_tests {
             main_bus.clock(&mut cpu);
         }
         assert_eq!(None, main_bus.dma);
+
+        main_bus.write(0x2003, 0x0);
+        assert_eq!(0xff, main_bus.read(0x2004));
+
+        main_bus.write(0x2003, 0x4);
+        assert_eq!(0xaa, main_bus.read(0x2004));
+        main_bus.write(0x2003, 0x5);
+        assert_eq!(0xbb, main_bus.read(0x2004));
+        main_bus.write(0x2003, 0x6);
+        assert_eq!(0xcc, main_bus.read(0x2004));
+        main_bus.write(0x2003, 0x7);
+        assert_eq!(0xdd, main_bus.read(0x2004));
+
+        main_bus.write(0x2003, 0xff);
+        assert_eq!(0xff, main_bus.read(0x2004));
     }
 }

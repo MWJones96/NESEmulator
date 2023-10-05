@@ -189,7 +189,7 @@ impl PPU for NESPPU<'_> {
                     _ => {}
                 }
 
-                self.oam_addr += 1;
+                self.oam_addr = self.oam_addr.wrapping_add(1);
             }
             0x5 => {
                 let latch = *self.registers.write_latch.borrow();
