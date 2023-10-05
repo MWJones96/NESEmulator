@@ -108,7 +108,16 @@ impl PPU for NESPPU<'_> {
                 status_to_return
             }
             0x3 => 0x0,
-            0x4 => 0x0,
+            0x4 => {
+                let index = (self.oam_addr / 4) as usize;
+                match self.oam_addr % 4 {
+                    0 => self.oam[index].y_pos,
+                    1 => self.oam[index].tile_index,
+                    2 => self.oam[index].attr,
+                    3 => self.oam[index].x_pos,
+                    _ => 0x0,
+                }
+            }
             0x5 => 0x0, //PPUSCROLL is write-only
             0x6 => 0x0, //PPUADDR is write-only
             0x7 => {
@@ -488,5 +497,26 @@ mod ppu_tests {
             },
             ppu.oam[1]
         );
+    }
+
+    #[test]
+    fn test_ppu_oam_data_read() {
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
+        ppu.oam[0] = OAMSprite {
+            y_pos: 0x1,
+            tile_index: 0x2,
+            attr: 0x3,
+            x_pos: 0x4,
+        };
+        ppu.oam_addr = 0x0;
+
+        assert_eq!(0x1, ppu.read(0x2004, true));
+        assert_eq!(0x1, ppu.read(0x2004, true));
+        ppu.oam_addr += 1;
+        assert_eq!(0x2, ppu.read(0x2004, true));
+        ppu.oam_addr += 1;
+        assert_eq!(0x3, ppu.read(0x2004, true));
+        ppu.oam_addr += 1;
+        assert_eq!(0x4, ppu.read(0x2004, true));
     }
 }
