@@ -47,7 +47,9 @@ impl OAMSprite {
 pub struct NESPPU<'a> {
     registers: Registers,
     render_args: RenderArgs,
+
     oam: [OAMSprite; 64],
+    oam_addr: u8,
 
     ppu_bus: Box<dyn Bus + 'a>,
 
@@ -65,7 +67,9 @@ impl<'a> NESPPU<'a> {
         NESPPU {
             registers: Registers::new(),
             render_args: RenderArgs::new(),
+
             oam: [OAMSprite::new(); 64],
+            oam_addr: 0x0,
 
             ppu_bus,
 
@@ -163,7 +167,9 @@ impl PPU for NESPPU<'_> {
                 self.registers.ppu_mask = PPUMask::from_bytes([data]);
             }
             0x2 => {} //PPUSTATUS is read-only
-            0x3 => {}
+            0x3 => {
+                self.oam_addr = data;
+            }
             0x4 => {}
             0x5 => {
                 let latch = *self.registers.write_latch.borrow();
@@ -380,6 +386,7 @@ mod ppu_tests {
             assert_eq!(0x0, oam_spr.attr);
             assert_eq!(0x0, oam_spr.x_pos);
         }
+        assert_eq!(0x0, ppu.oam_addr);
     }
 
     #[test]
@@ -441,5 +448,12 @@ mod ppu_tests {
         ppu.registers.ppu_ctrl.set_increment(true);
         ppu.write(0x2007, 0xee);
         assert_eq!(0x2021, ppu.registers.loopy_v.borrow().get_raw());
+    }
+
+    #[test]
+    fn test_ppu_oam_addr_write() {
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
+        ppu.write(0x2003, 0xee);
+        assert_eq!(0xee, ppu.oam_addr);
     }
 }
