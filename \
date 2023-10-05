@@ -7,11 +7,7 @@ use crate::{
     ppu::{Frame, PPU},
 };
 
-#[derive(Debug, PartialEq)]
-struct DMA {
-    cycles: u16,
-    page: u8,
-}
+struct DMA;
 
 use super::Bus;
 pub struct CPUBus<'a> {
@@ -96,14 +92,7 @@ impl Bus for CPUBus<'_> {
             0x0000..=0x1fff => {
                 self.ram[(addr & 0x7ff) as usize] = data;
             }
-            0x2000..=0x3fff => self.ppu.write(addr, data),
-            0x4014 => {
-                self.dma = Some(DMA {
-                    cycles: 513,
-                    page: data,
-                });
-                self.ppu.write(addr, data);
-            }
+            0x2000..=0x3fff | 0x4014 => self.ppu.write(addr, data),
             0x4016 => {
                 let mut c1 = (*self.controller_1.as_ref()).borrow_mut();
                 let mut c2 = (*self.controller_2.as_ref()).borrow_mut();
@@ -250,6 +239,10 @@ mod cpu_bus_tests {
             .with(eq(0x4000), eq(false))
             .never()
             .return_const(0x0);
+        ppu.expect_read()
+            .with(eq(0x4014), eq(false))
+            .once()
+            .return_const(0x0);
 
         let main_bus = CPUBus::new(
             Box::new(ppu),
@@ -261,6 +254,7 @@ mod cpu_bus_tests {
         main_bus.read(0x3fff);
         main_bus.read(0x1fff);
         main_bus.read(0x4000);
+        main_bus.read(0x4014);
     }
 
     #[test]
@@ -301,27 +295,5 @@ mod cpu_bus_tests {
         main_bus.write(0x1fff, 0x0);
         main_bus.write(0x4000, 0x0);
         main_bus.write(0x4014, 0x0);
-    }
-
-    #[test]
-    fn test_dma_init() {
-        let mut ppu = MockPPU::new();
-        ppu.expect_write().return_const(());
-
-        let mut main_bus = CPUBus::new(
-            Box::new(ppu),
-            Rc::new(MockCartridge::new()),
-            Rc::new(RefCell::new(MockController::new())),
-            Rc::new(RefCell::new(MockController::new())),
-        );
-        assert_eq!(None, main_bus.dma);
-        main_bus.write(0x4014, 0xee);
-        assert_eq!(
-            Some(DMA {
-                cycles: 513,
-                page: 0xee
-            }),
-            main_bus.dma
-        );
     }
 }
