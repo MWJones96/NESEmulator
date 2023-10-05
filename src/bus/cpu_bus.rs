@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Debug, PartialEq)]
 struct DMA {
-    cycles: u16,
+    cycles: i16,
     page: u8,
 }
 
@@ -55,7 +55,15 @@ impl<'a> CPUBus<'a> {
 
         self.ppu.clock(cpu);
         if self.nes_cycles % 3 == 0 {
-            cpu.clock(self);
+            match &mut self.dma {
+                Some(dma) => {
+                    dma.cycles -= 1;
+                    if dma.cycles <= 0 {
+                        self.dma = None;
+                    }
+                }
+                None => cpu.clock(self),
+            }
         }
     }
 
@@ -120,7 +128,7 @@ impl Bus for CPUBus<'_> {
 mod cpu_bus_tests {
     use mockall::predicate::eq;
 
-    use crate::{cartridge::MockCartridge, controller::MockController, ppu::MockPPU};
+    use crate::{cartridge::MockCartridge, controller::MockController, cpu::MockCPU, ppu::MockPPU};
 
     use super::*;
 
@@ -307,6 +315,7 @@ mod cpu_bus_tests {
     fn test_dma_init() {
         let mut ppu = MockPPU::new();
         ppu.expect_write().return_const(());
+        ppu.expect_clock().return_const(());
 
         let mut main_bus = CPUBus::new(
             Box::new(ppu),
@@ -323,5 +332,12 @@ mod cpu_bus_tests {
             }),
             main_bus.dma
         );
+        for _ in 0..513 * 3 {
+            let mut cpu = MockCPU::new();
+            cpu.expect_clock().never();
+
+            main_bus.clock(&mut cpu);
+        }
+        assert_eq!(None, main_bus.dma);
     }
 }
