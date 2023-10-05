@@ -109,7 +109,7 @@ impl Bus for CPUBus<'_> {
             0x2000..=0x3fff => self.ppu.write(addr, data),
             0x4014 => {
                 self.dma = Some(DMA {
-                    cycles: 513,
+                    cycles: 513 + (self.nes_cycles % 2 == 1) as i16,
                     page: data,
                 });
                 self.ppu.write(addr, data);
@@ -346,7 +346,7 @@ mod cpu_bus_tests {
         main_bus.write(0x0306, 0xcc);
         main_bus.write(0x0307, 0xdd);
 
-        main_bus.write(0x03ff, 0xff);
+        main_bus.write(0x03ff, 0xee);
 
         for _ in 0..513 * 3 {
             let mut cpu = MockCPU::new();
@@ -369,6 +369,30 @@ mod cpu_bus_tests {
         assert_eq!(0xdd, main_bus.read(0x2004));
 
         main_bus.write(0x2003, 0xff);
-        assert_eq!(0xff, main_bus.read(0x2004));
+        assert_eq!(0xee, main_bus.read(0x2004));
+    }
+
+    #[test]
+    fn test_dma_init_with_alignment_cycle() {
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
+
+        let mut main_bus = CPUBus::new(
+            Box::new(ppu),
+            Rc::new(MockCartridge::new()),
+            Rc::new(RefCell::new(MockController::new())),
+            Rc::new(RefCell::new(MockController::new())),
+        );
+
+        main_bus.clock(&mut MockCPU::new());
+
+        assert_eq!(None, main_bus.dma);
+        main_bus.write(0x4014, 0x0);
+        assert_eq!(
+            Some(DMA {
+                cycles: 514,
+                page: 0x0
+            }),
+            main_bus.dma
+        );
     }
 }
