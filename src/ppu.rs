@@ -25,7 +25,7 @@ pub trait PPU {
     fn get_frame(&self) -> Frame;
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 struct OAMSprite {
     y_pos: u8,
     tile_index: u8,
@@ -170,7 +170,18 @@ impl PPU for NESPPU<'_> {
             0x3 => {
                 self.oam_addr = data;
             }
-            0x4 => {}
+            0x4 => {
+                let index = (self.oam_addr / 4) as usize;
+                match self.oam_addr % 4 {
+                    0 => self.oam[index].y_pos = data,
+                    1 => self.oam[index].tile_index = data,
+                    2 => self.oam[index].attr = data,
+                    3 => self.oam[index].x_pos = data,
+                    _ => {}
+                }
+
+                self.oam_addr += 1;
+            }
             0x5 => {
                 let latch = *self.registers.write_latch.borrow();
                 if latch {
@@ -455,5 +466,27 @@ mod ppu_tests {
         let mut ppu = NESPPU::new(Box::new(MockBus::new()));
         ppu.write(0x2003, 0xee);
         assert_eq!(0xee, ppu.oam_addr);
+    }
+
+    #[test]
+    fn test_ppu_oam_data_write() {
+        let mut ppu = NESPPU::new(Box::new(MockBus::new()));
+        ppu.write(0x2003, 0x04);
+
+        ppu.write(0x2004, 0xaa);
+        ppu.write(0x2004, 0xbb);
+        ppu.write(0x2004, 0xcc);
+        ppu.write(0x2004, 0xdd);
+
+        assert_eq!(0x08, ppu.oam_addr);
+        assert_eq!(
+            OAMSprite {
+                y_pos: 0xaa,
+                tile_index: 0xbb,
+                attr: 0xcc,
+                x_pos: 0xdd,
+            },
+            ppu.oam[1]
+        );
     }
 }
